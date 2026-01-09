@@ -871,7 +871,6 @@
                 <table class="estimate-table">
                     <thead>
                         <tr>
-                            <th width="40">№</th>
                             <th width="45">Код</th>
                             <th>Наименование</th>
                             <th width="70">Ед. изм.</th>
@@ -1352,7 +1351,6 @@
                 }
                 
                 tr.innerHTML = `
-                    <td>${row.id}</td>
                     <td class="price-id-cell">${row.isMaterial ? 'МАТ' : (row.priceId || '')}</td>
                     <td class="search-cell">
                         <input type="text" class="search-input" 
