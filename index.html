@@ -298,26 +298,14 @@
             padding: 8px 6px;
             font-size: 0.85rem;
         }
-    /* Границы для колонки "Код" на всех устройствах */
-        .estimate-table th:first-child,
-        .estimate-table td:first-child {
-            border-left: 1px solid #ddd;
-            border-right: 1px solid #ddd;
-            
-        }
-/* Как у полей ввода цифр */
-.estimate-table td:nth-child(3),
-.estimate-table td:nth-child(6) {
-    border: 1px solid #ddd;
-    border-radius: 3px;        /* меньше */
-    padding: 2px 4px;          /* меньше */
-    background: white;
+/* Стиль для колонки "Ед. изм." */
+.estimate-table td.unit-cell {
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    padding: 6px 8px !important;
+    background: white !important;
     text-align: center;
-    font-size: 0.8rem;         /* меньше текст */
-    height: 28px;              /* меньше высота */
-    line-height: 24px;         /* меньше межстрочный */
-    box-sizing: border-box;
-    box-shadow: inset 0 1px 1px rgba(0,0,0,0.05);
+    font-size: 0.85rem;
 }
 /* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
 .estimate-table th:nth-child(5),
