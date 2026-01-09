@@ -301,41 +301,52 @@
     font-size: 0.85rem;
 }
 
-/* ОБЩИЙ СТИЛЬ ДЛЯ ВСЕХ ЭЛЕМЕНТОВ В ТАБЛИЦЕ */
+/* СТИЛИ ДЛЯ ЯЧЕЕК КАК ПОЛЯ ВВОДА */
 .estimate-table td.price-id-cell,
 .estimate-table td.unit-cell,
-.estimate-table td.total-cell,
-.estimate-table .search-input,
-.estimate-table .price-input,
-.estimate-table .quantity-input {
-    /* ОДИНАКОВЫЕ СТИЛИ */
+.estimate-table td.total-cell {
     border: 1px solid #ddd !important;
     border-radius: 4px !important;
     padding: 6px 8px !important;
     background: white !important;
     text-align: center !important;
     font-size: 0.85rem !important;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1) !important;
     box-sizing: border-box !important;
+    vertical-align: middle !important;
     height: 34px !important;
     line-height: 20px !important;
-    vertical-align: middle !important;
+    
+    /* ВЕРТИКАЛЬНЫЕ ОТСТУПЫ - чтобы не сливались со строками выше/ниже */
+    margin-top: 2px !important;
+    margin-bottom: 2px !important;
 }
 
-/* Цвета для специальных ячеек */
+/* Ширины */
 .estimate-table td.price-id-cell {
-    background: #f8f9fa !important;
-    color: var(--secondary) !important;
+    width: 60px !important;
+    min-width: 60px !important;
+    max-width: 60px !important;
     font-weight: 600 !important;
+    color: var(--secondary) !important;
+    background: #f8f9fa !important;
+}
+
+.estimate-table td.unit-cell {
+    width: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px !important;
+    color: #555 !important;
 }
 
 .estimate-table td.total-cell {
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    font-weight: 600 !important;
+    color: var(--success) !important;
     background: #f8fff9 !important;
     border-color: #c3e6cb !important;
-    color: var(--success) !important;
-    font-weight: 600 !important;
 }
-        
 
 /* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
 .estimate-table th:nth-child(4),
