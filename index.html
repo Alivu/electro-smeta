@@ -379,11 +379,9 @@
 /* Колонка 4: "Цена, руб." - заголовок и ячейки */
 .estimate-table th:nth-child(4),         /* Четвертый th (заголовок) */
 .estimate-table td:nth-child(4) {        /* Четвертые td всех строк */
-    width: 80px;                        /* Фиксированная ширина */
-    min-width: 80px;                    /* Минимальная ширина */
-    max-width: 80px;                     /* Максимальная ширина */
-    white-space: nowrap;
-    overflow: visible;
+    width: 90px;                        /* Фиксированная ширина */
+    min-width: 90px;                    /* Минимальная ширина */
+    max-width: 90px;                    /* Максимальная ширина */
     text-align: center;                  /* Выравнивание по центру */
     padding: 6px 6px;                    /* Внутренние отступы */
 }
@@ -486,6 +484,27 @@
         min-width: 90px;
         max-width: 90px;
     }
+}
+
+/* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
+.estimate-table th:nth-child(4),
+.estimate-table td:nth-child(4) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: center;
+    padding: 6px 6px !important;
+}
+
+/* Увеличить поле ввода цены */
+.price-input {
+    width: 75px !important;
+    min-width: 75px !important;
+    padding: 6px 4px !important;
+    font-size: 0.9rem !important;
+}
         .estimate-table {
             width: 100%;
 border-collapse: separate;
