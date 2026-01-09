@@ -293,6 +293,17 @@
             -webkit-overflow-scrolling: touch;
             padding: 15px;
         }
+        .estimate-table th,
+        .estimate-table td {
+            padding: 8px 6px;
+            font-size: 0.85rem;
+        }
+    /* Границы для колонки "Код" на всех устройствах */
+        .estimate-table th:first-child,
+        .estimate-table td:first-child {
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+        }
 /* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
 .estimate-table th:nth-child(5),
 .estimate-table td:nth-child(5) {
