@@ -284,6 +284,7 @@
             font-size: 0.85rem;
         }
 
+
         /* Вкладка 2: Смета */
         .estimate-table-container {
             height: calc(100vh - 300px);
@@ -292,7 +293,25 @@
             -webkit-overflow-scrolling: touch;
             padding: 15px;
         }
+/* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
+.estimate-table th:nth-child(5),
+.estimate-table td:nth-child(5) {
+    width: 110px !important;
+    min-width: 110px !important;
+    max-width: 110px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: center;
+    padding: 8px 6px !important;
+}
 
+/* Увеличить поле ввода цены */
+.price-input {
+    width: 75px !important;
+    min-width: 75px !important;
+    padding: 6px 4px !important;
+    font-size: 0.9rem !important;
+}
         .estimate-table {
             width: 100%;
             border-collapse: collapse;
