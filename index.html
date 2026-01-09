@@ -971,39 +971,45 @@ line-height: 22px;
             height: 100%;
         }
 
-        /* ========== ФИНАЛЬНЫЕ ИСПРАВЛЕНИЯ ========== */
+/* ========== ОТСТУПЫ ТОЛЬКО ДЛЯ 3 КОЛОНОК ========== */
 
-/* 2. Добавляем отступы между строками для всей таблицы */
-.estimate-table tbody tr {
-    margin-bottom: 4px !important; /* Отступ снизу у каждой строки */
-    display: table-row;
-}
-
-/* 3. Явно задаем высоту строк */
-.estimate-table tbody tr {
-    height: 40px; /* Высота строки (подбери нужную) */
-}
-
-/* 4. Добавляем вертикальные отступы для наших ячеек */
+/* Вариант 1: Через margin-top и margin-bottom */
 .estimate-table td.price-id-cell,
 .estimate-table td.unit-cell,
 .estimate-table td.total-cell {
-    margin-top: 0px !important;
-    margin-bottom: 8px !important;
+    /* Твои основные стили... */
+    
+    /* Большие вертикальные отступы */
+    margin-top: 10px !important;     /* 10px сверху */
+    margin-bottom: 10px !important;  /* 10px снизу */
+    
+    /* Итого 20px между строками для этих ячеек */
+    display: inline-block !important; /* Чтобы margin работал */
+}
+
+/* Вариант 2: Через transform (сдвигаем вниз) */
+.estimate-table td.price-id-cell,
+.estimate-table td.unit-cell,
+.estimate-table td.total-cell {
+    /* Твои основные стили... */
+    
+    transform: translateY(10px) !important; /* Сдвигаем на 10px вниз */
     position: relative;
-    top: 1px; /* Легкий сдвиг вниз */
+    top: 10px !important;                  /* Еще +10px вниз */
+    
+    /* padding-top и padding-bottom тоже увеличь */
+    padding-top: 12px !important;          /* Вместо 6px */
+    padding-bottom: 12px !important;       /* Вместо 6px */
 }
 
-/* 5. ИЛИ через transform (более надежно) */
+/* Вариант 3: Через увеличенную высоту */
 .estimate-table td.price-id-cell,
 .estimate-table td.unit-cell,
 .estimate-table td.total-cell {
-    transform: translateY(1px) !important;
-}
-
-/* 6. Делаем все ячейки таблицы одинаковой высоты */
-.estimate-table td {
-    vertical-align: middle !important;
+    /* Твои основные стили... */
+    
+    height: 54px !important;          /* Вместо 34px (34 + 20) */
+    line-height: 30px !important;     /* Увеличиваем line-height */
     padding-top: 12px !important;
     padding-bottom: 12px !important;
 }
