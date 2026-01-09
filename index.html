@@ -831,6 +831,19 @@
             width: 100%;
             height: 100%;
         }
+
+/* СОЗДАЕМ ПРОМЕЖУТКИ МЕЖДУ СТРОКАМИ ТАБЛИЦЫ */
+.estimate-table {
+    border-collapse: separate !important;
+    border-spacing: 0 6px !important; /* 0px горизонтально, 6px вертикально */
+}
+
+/* ЕСЛИ нужно увеличить промежутки между всеми строками */
+.estimate-table tbody tr {
+    margin-bottom: 6px !important;
+    display: table-row;
+}
+        
     </style>
 </head>
 <body>
