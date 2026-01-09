@@ -794,8 +794,9 @@
 .estimate-table td.unit-cell,
 .estimate-table td.total-cell,
 .estimate-table td.price-id-cell {
-    border-collapse: separate !important;
-    display: table-row;
+    transform: translateY(4px) !important; /* Сдвигаем вниз */
+    position: relative !important;
+    top: 4px !important;
     border: 1px solid #ddd;              /* Рамка как у полей ввода */
     border-radius: 4px;                  /* Скругленные углы */
     padding: 6px 8px;                    /* Внутренние отступы */
