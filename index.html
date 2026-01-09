@@ -286,31 +286,190 @@
         }
 
 
-        /* Вкладка 2: Смета */
-        .estimate-table-container {
-            height: calc(100vh - 300px);
-            max-height: 500px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 15px;
-        }
-        .estimate-table th,
-        .estimate-table td {
-            padding: 8px 6px;
-            font-size: 0.85rem;
-        }
-/* Стиль для колонки "Ед. изм." */
-.estimate-table td.unit-cell {
-    border: 1px solid #ddd !important;
-    border-radius: 4px !important;
-    padding: 6px 8px !important;
-    background: white !important;
-    text-align: center;
+/* Вкладка 2: Смета */
+.estimate-table-container {
+    height: calc(100vh - 300px);
+    max-height: 500px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px;
+}
+
+.estimate-table th,
+.estimate-table td {
+    padding: 8px 6px;
     font-size: 0.85rem;
 }
-/* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
+
+/* ========== КОЛОНКИ КАК ПОЛЯ ВВОДА ========== */
+.estimate-table td.unit-cell,
+.estimate-table td.total-cell,
+.estimate-table td.price-id-cell {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 6px 8px;
+    background: white;
+    text-align: center;
+    font-size: 0.85rem;
+    min-height: 32px;
+    line-height: 1.3;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* Колонка Код */
+.estimate-table td.price-id-cell {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    font-weight: 600;
+    color: var(--secondary);
+    background: #f8f9fa;
+}
+
+/* Колонка Ед. изм. */
+.estimate-table td.unit-cell {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+    color: #555;
+}
+
+/* Колонка Сумма, руб. */
+.estimate-table td.total-cell {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+    font-weight: 600;
+    color: var(--success);
+    background: #f8fff9;
+    border-color: #c3e6cb;
+}
+
+/* ========== ПРАВИЛЬНЫЕ ШИРИНЫ ДЛЯ ВСЕХ КОЛОНОК ========== */
+
+/* Колонка 1: Код */
+.estimate-table th:nth-child(1),
+.estimate-table td:nth-child(1) {
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    text-align: center;
+}
+
+/* Колонка 2: Наименование - остается гибкой */
+
+/* Колонка 3: Ед. изм. */
+.estimate-table th:nth-child(3),
+.estimate-table td:nth-child(3) {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+    text-align: center;
+}
+
+/* Колонка 4: Цена, руб. - ЭТО ЦЕНА! */
+.estimate-table th:nth-child(4),
+.estimate-table td:nth-child(4) {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+    text-align: center;
+    padding: 8px 6px;
+}
+
+/* Колонка 5: Кол-во */
 .estimate-table th:nth-child(5),
 .estimate-table td:nth-child(5) {
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+    text-align: center;
+    padding: 8px 6px;
+}
+
+/* Колонка 6: Сумма, руб. */
+.estimate-table th:nth-child(6),
+.estimate-table td:nth-child(6) {
+    width: 110px;
+    min-width: 110px;
+    max-width: 110px;
+    text-align: center;
+}
+
+/* Колонка 7: Действия */
+.estimate-table th:nth-child(7),
+.estimate-table td:nth-child(7) {
+    width: 40px;
+    min-width: 40px;
+    max-width: 40px;
+    text-align: center;
+}
+
+/* Мобильная версия */
+@media (max-width: 767px) {
+    .estimate-table td.price-id-cell,
+    .estimate-table td.unit-cell,
+    .estimate-table td.total-cell {
+        padding: 4px 6px;
+        font-size: 0.8rem;
+    }
+    
+    .estimate-table td.price-id-cell {
+        width: 50px;
+        min-width: 50px;
+        max-width: 50px;
+    }
+    
+    .estimate-table td.unit-cell {
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+    }
+    
+    .estimate-table td.total-cell {
+        width: 90px;
+        min-width: 90px;
+        max-width: 90px;
+    }
+    
+    .estimate-table th:nth-child(1),
+    .estimate-table td:nth-child(1) {
+        width: 50px;
+        min-width: 50px;
+        max-width: 50px;
+    }
+    
+    .estimate-table th:nth-child(3),
+    .estimate-table td:nth-child(3) {
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+    }
+    
+    .estimate-table th:nth-child(4),
+    .estimate-table td:nth-child(4) {
+        width: 90px;
+        min-width: 90px;
+        max-width: 90px;
+    }
+    
+    .estimate-table th:nth-child(5),
+    .estimate-table td:nth-child(5) {
+        width: 70px;
+        min-width: 70px;
+        max-width: 70px;
+    }
+    
+    .estimate-table th:nth-child(6),
+    .estimate-table td:nth-child(6) {
+        width: 90px;
+        min-width: 90px;
+        max-width: 90px;
+    }
+}
+/* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
+.estimate-table th:nth-child(4),
+.estimate-table td:nth-child(4) {
     width: 110px !important;
     min-width: 110px !important;
     max-width: 110px !important;
