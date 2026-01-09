@@ -343,6 +343,28 @@
     color: #555;                         /* Темно-серый цвет текста */
 }
 
+/* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
+.estimate-table th:nth-child(4),
+.estimate-table td:nth-child(4) {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: center;
+    padding: 6px 6px !important;
+}
+
+/* Увеличить поле ввода цены */
+.price-input {
+    width: 80px !important;
+    min-width: 80px !important;
+    padding: 6px 4px !important;
+    font-size: 0.9rem !important;
+    margin-left: -6px !important
+   
+}
+        
 /* Колонка "Сумма, руб." - дополнительные стили */
 .estimate-table td.total-cell {
     width: 110px;                        /* Фиксированная ширина */
@@ -387,6 +409,16 @@
     text-align: center;                  /* Выравнивание по центру */
     padding: 6px 6px;                    /* Внутренние отступы */
 }
+
+            /* Увеличить поле Количества */
+.quantity-input {
+    width: 70px !important;
+    min-width: 70px !important;
+    padding: 6px 4px !important;
+    font-size: 0.9rem !important;
+    margin-left: 0px !important
+}
+        
 
 /* Колонка 6: "Сумма, руб." - заголовок и ячейки */
 .estimate-table th:nth-child(6),         /* Шестой th (заголовок) */
@@ -478,26 +510,7 @@
     }
 }
 
-/* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
-.estimate-table th:nth-child(4),
-.estimate-table td:nth-child(4) {
-    width: 80px !important;
-    min-width: 80px !important;
-    max-width: 80px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-align: center;
-    padding: 6px 6px !important;
-}
 
-/* Увеличить поле ввода цены */
-.price-input {
-    width: 80px !important;
-    min-width: 80px !important;
-    padding: 6px 4px !important;
-    font-size: 0.9rem !important;
-    margin-left: -6px !important
-}
         .estimate-table {
             width: 100%;
 border-collapse: separate;
