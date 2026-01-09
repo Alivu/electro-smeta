@@ -301,6 +301,10 @@
     font-size: 0.85rem;
 }
 
+.estimate-table td {
+    height: auto !important; /* Убираем фиксированную высоту */
+    min-height: auto !important;
+        
 /* ========== КОЛОНКИ КАК ПОЛЯ ВВОДА ========== */
 .estimate-table td.unit-cell,
 .estimate-table td.total-cell,
@@ -309,10 +313,15 @@
     border-radius: 4px;
     padding: 6px 8px;
     background: white;
+    height: 34px; /* Высота как у полей ввода (32px + 2px border) */
+    min-height: 34px;
+    line-height: 18px; /* Для вертикального центрирования текста */
+    box-sizing: border-box; /* Чтобы padding не увеличивал размер */
+    vertical-align: middle;
     text-align: center;
     font-size: 0.85rem;
-    min-height: 32px;
-    line-height: 1.3;
+    min-height: 34px;
+    max-height: 34px;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
