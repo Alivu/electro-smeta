@@ -303,7 +303,19 @@
         .estimate-table td:first-child {
             border-left: 1px solid #ddd;
             border-right: 1px solid #ddd;
+            
         }
+        /* Стиль как у поля ввода "Наименования" */
+.estimate-table td:nth-child(3),  /* Ед. изм. */
+.estimate-table td:nth-child(6) {  /* Сумма, руб. */
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px 8px;
+    background: white;
+    text-align: center;
+    margin: 2px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+}
 /* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
 .estimate-table th:nth-child(5),
 .estimate-table td:nth-child(5) {
