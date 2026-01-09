@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -298,50 +299,15 @@
             padding: 8px 6px;
             font-size: 0.85rem;
         }
-/* Стили для колонок, которые должны выглядеть как поля ввода, но без возможности редактирования */
-.estimate-table td.unit-cell,
-.estimate-table td.total-cell,
-.estimate-table td.price-id-cell {
+/* Стиль для колонки "Ед. изм." */
+.estimate-table td.unit-cell {
     border: 1px solid #ddd !important;
     border-radius: 4px !important;
     padding: 6px 8px !important;
     background: white !important;
     text-align: center;
     font-size: 0.85rem;
-    min-height: 32px;
-    line-height: 1.3;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
-
-/* Колонка Код */
-.estimate-table td.price-id-cell {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-    font-weight: 600;
-    color: var(--secondary);
-    background: #f8f9fa !important;
-}
-
-/* Колонка Ед. изм. */
-.estimate-table td.unit-cell {
-    width: 70px !important;
-    min-width: 70px !important;
-    max-width: 70px !important;
-    color: #555;
-}
-
-/* Колонка Сумма, руб. */
-.estimate-table td.total-cell {
-    width: 110px !important;
-    min-width: 110px !important;
-    max-width: 110px !important;
-    font-weight: 600;
-    color: var(--success);
-    background: #f8fff9 !important;
-    border-color: #c3e6cb !important;
-}
-        
 /* ========== УВЕЛИЧЕНИЕ КОЛОНКИ "ЦЕНА" ========== */
 .estimate-table th:nth-child(5),
 .estimate-table td:nth-child(5) {
@@ -759,31 +725,6 @@
                 padding: 6px 4px;
                 font-size: 0.8rem;
             }
-
-    .estimate-table td.unit-cell,
-    .estimate-table td.total-cell,
-    .estimate-table td.price-id-cell {
-        padding: 4px 6px !important;
-        font-size: 0.8rem;
-    }
-    
-    .estimate-table td.price-id-cell {
-        width: 50px !important;
-        min-width: 50px !important;
-        max-width: 50px !important;
-    }
-    
-    .estimate-table td.unit-cell {
-        width: 60px !important;
-        min-width: 60px !important;
-        max-width: 60px !important;
-    }
-    
-    .estimate-table td.total-cell {
-        width: 90px !important;
-        min-width: 90px !important;
-        max-width: 90px !important;
-    }
 
                 /* ДОБАВЬТЕ ЭТУ СЕКЦИЮ - уменьшаем колонку "Код" */
             .estimate-table th:nth-child(1),
@@ -1290,7 +1231,7 @@
             
             // Показываем уведомление о загрузке
             setTimeout(() => {
-                showNotification('Обязательно подпишитесь на меня @Electric Group');
+                showNotification('ЭлектроСмета загружена и готова к работе!');
             }, 500);
             
             console.log('Приложение инициализировано');
@@ -1429,34 +1370,37 @@
                     tr.classList.add('material-row');
                 }
                 
-tr.innerHTML = `
-    <td class="price-id-cell">${row.isMaterial ? 'МАТ' : (row.priceId || '')}</td>
-    <td class="search-cell">
-        <input type="text" class="search-input" 
-               data-row="${index}" 
-               value="${row.name}"
-               placeholder="${row.isMaterial ? 'Материал...' : 'Начните вводить название...'}"
-               autocomplete="off">
-        <div class="dropdown" id="dropdown-${index}"></div>
-    </td>
-    <td class="unit-cell">${row.unit || ''}</td>
-    <td class="price-cell">
-        <input type="number" class="number-input price-input" 
-               data-row="${index}" 
-               value="${row.price || ''}" 
-               min="0" step="0.01">
-    </td>
-    <td class="quantity-cell">
-        <input type="number" class="number-input quantity-input" 
-               data-row="${index}" 
-               value="${row.quantity || 1}" 
-               min="1" step="1">
-    </td>
-    <td class="total-cell">${formatCurrency(row.total)}</td>
-    <td class="actions-cell">
-        <i class="fas fa-trash delete-row" data-row="${index}"></i>
-    </td>
-`;
+                tr.innerHTML = `
+                    <td class="price-id-cell">${row.isMaterial ? 'МАТ' : (row.priceId || '')}</td>
+                    <td class="search-cell">
+                        <input type="text" class="search-input" 
+                               data-row="${index}" 
+                               value="${row.name}"
+                               placeholder="${row.isMaterial ? 'Материал...' : 'Начните вводить название...'}"
+                               autocomplete="off">
+                        <div class="dropdown" id="dropdown-${index}"></div>
+                    </td>
+                    <td class="unit-cell">${row.unit || ''}</td>
+                    <td class="price-cell">
+                        <input type="number" class="number-input price-input" 
+                               data-row="${index}" 
+                               value="${row.price || ''}" 
+                               min="0" step="0.01">
+                    </td>
+                    <td class="quantity-cell">
+                        <input type="number" class="number-input quantity-input" 
+                               data-row="${index}" 
+                               value="${row.quantity || 1}" 
+                               min="1" step="1">
+                    </td>
+                    <td class="total-cell">${formatCurrency(row.total)}</td>
+                    <td class="actions-cell">
+                        <i class="fas fa-trash delete-row" data-row="${index}"></i>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+            
             // Настраиваем обработчики событий для новых строк
             setupRowEventListeners();
         }
