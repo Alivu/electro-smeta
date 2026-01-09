@@ -712,14 +712,16 @@
             }
 
                 /* ДОБАВЬТЕ ЭТУ СЕКЦИЮ - уменьшаем колонку "Код" */
-            .estimate-table th:nth-child(2),
-            .estimate-table td:nth-child(2) {
+            .estimate-table th:nth-child(1),
+            .estimate-table td:nth-child(1) {
                 width: 45px;       /* Уменьшили ширину */
                 min-width: 45px;
                 max-width: 45px;
                 padding: 6px 2px;  /* Меньше горизонтальные отступы */
                 font-size: 0.75rem; /* Меньше текст */
                 border-left: 2px solid #f8f9fa;
+                padding-left: 12px !important;  /* чуть больше */
+                text-indent: 2px;
             }
             .search-input {
                 font-size: 0.8rem;
