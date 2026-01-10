@@ -1312,16 +1312,16 @@ function createPricePDF() {
     const hijri = getHijriDate();
     
     // Создаем массив страниц
-    const sectionsPerPage = 2; // Максимум 2 раздела на страницу
+    const sectionsPerPage = 3; // Увеличили до 3 разделов на страницу
     const pages = [];
     let currentPage = [];
     let currentPageHeight = 0;
-    const maxPageHeight = 250; // мм на странице A4
+    const maxPageHeight = 270; // Почти вся страница A4 (297мм - 15мм отступы)
     
     // Разбиваем на страницы
     priceData.forEach((section, index) => {
-        // Примерная высота раздела (в мм)
-        const sectionHeight = 10 + (section.items.length * 3);
+        // Примерная высота раздела (более плотная)
+        const sectionHeight = 8 + (section.items.length * 2.2);
         
         if (currentPageHeight + sectionHeight > maxPageHeight && currentPage.length > 0) {
             pages.push([...currentPage]);
@@ -1351,146 +1351,122 @@ function createPricePDF() {
     let pageIndex = 0;
     
     function renderPage(pageSections, pageNum, totalPages) {
-    return new Promise((resolve) => {
-        const tempContainer = document.createElement('div');
-        tempContainer.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: -9999px;
-            width: 210mm;
-            padding: 15mm;
-            background: white;
-            font-family: Arial, sans-serif;
-            font-size: 10px;
-        `;
-        
-        // Генерируем контент для страницы
-        let pdfContent = '';
-        
-        // Шапка ТОЛЬКО на первой странице
-        if (pageNum === 1) {
+        return new Promise((resolve) => {
+            const tempContainer = document.createElement('div');
+            tempContainer.style.cssText = `
+                position: fixed;
+                left: -9999px;
+                top: -9999px;
+                width: 180mm; // Уже на 30мм (по 15мм с каждой стороны)
+                padding: 8mm 0; // Минимальные отступы сверху/снизу
+                background: white;
+                font-family: Arial, sans-serif;
+                font-size: 8px; // Меньший базовый шрифт
+                line-height: 1;
+            `;
+            
+            // Генерируем контент для страницы
+            let pdfContent = '';
+            
+            // Компактная шапка на всех страницах
             pdfContent += `
-                <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;">
-                    <h1 style="margin: 0 0 5px 0; font-size: 20px; color: #2c3e50;">ПРАЙС-ЛИСТ</h1>
-                    <div style="font-size: 14px; margin-bottom: 3px;">электромонтажных работ</div>
-                    <div style="font-size: 12px; color: #3498db; margin-bottom: 5px;">Electric_Group</div>
-                    <div style="font-size: 11px;">
-                        <strong>Дата:</strong> ${today} 
-                        <span style="margin-left: 10px; background: #f8f9fa; padding: 2px 6px; border-radius: 2px; font-size: 10px;">
-                            <i class="fas fa-mosque"></i> ${hijri.day} ${hijri.month} ${hijri.year} г.х.
-                        </span>
+                <div style="text-align: center; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">
+                    <div style="font-size: 12px; font-weight: bold; color: #2c3e50; margin-bottom: 2px;">
+                        ${pageNum === 1 ? 'ПРАЙС-ЛИСТ ЭЛЕКТРОМОНТАЖНЫХ РАБОТ' : 'ПРАЙС-ЛИСТ (продолжение)'}
+                    </div>
+                    <div style="font-size: 8px; color: #666;">
+                        ${today} | Electric_Group | Страница ${pageNum} из ${totalPages}
                     </div>
                 </div>
             `;
-        } else {
-            // На остальных страницах - только заголовок "Продолжение прайс-листа"
-            pdfContent += `
-                <div style="text-align: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #ccc;">
-                    <div style="font-size: 12px; color: #2c3e50; font-weight: bold;">Продолжение прайс-листа</div>
-                    <div style="font-size: 9px; color: #666; margin-top: 3px;">
-                        Страница ${pageNum} из ${totalPages}
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Добавляем номер страницы на первой странице (внизу шапки)
-        if (pageNum === 1) {
-            pdfContent += `
-                <div style="text-align: center; font-size: 9px; color: #666; margin-bottom: 10px;">
-                    Страница ${pageNum} из ${totalPages}
-                </div>
-            `;
-        }
-        
-        // Добавляем разделы для этой страницы
-        pageSections.forEach(section => {
-            pdfContent += `
-                <div style="margin-bottom: 12px; page-break-inside: avoid;">
-                    <h2 style="background: #2c3e50; color: white; padding: 6px 10px; margin: 0 0 6px 0; border-radius: 3px; font-size: 12px;">
-                        ${section.section}
-                    </h2>
-                    <table style="width: 100%; border-collapse: collapse; font-size: 9px; line-height: 1.2;">
-                        <thead>
-                            <tr style="background: #f8f9fa;">
-                                <th style="border: 1px solid #ddd; padding: 4px; width: 7%; text-align: center; font-weight: bold;">Код</th>
-                                <th style="border: 1px solid #ddd; padding: 4px; width: 60%; font-weight: bold;">Наименование работ</th>
-                                <th style="border: 1px solid #ddd; padding: 4px; width: 8%; text-align: center; font-weight: bold;">Ед.</th>
-                                <th style="border: 1px solid #ddd; padding: 4px; width: 15%; text-align: right; font-weight: bold;">Цена, руб.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${section.items.map(item => `
-                                <tr>
-                                    <td style="border: 1px solid #ddd; padding: 3px 2px; text-align: center; font-weight: bold; color: #3498db; font-size: 8.5px;">${item.id}</td>
-                                    <td style="border: 1px solid #ddd; padding: 3px 4px; font-size: 8.5px; line-height: 1.1;">${item.name}</td>
-                                    <td style="border: 1px solid #ddd; padding: 3px 2px; text-align: center; font-size: 8.5px;">${item.unit}</td>
-                                    <td style="border: 1px solid #ddd; padding: 3px 2px; text-align: right; font-weight: bold; color: #27ae60; font-size: 8.5px;">${formatCurrency(item.price)}</td>
+            
+            // Добавляем разделы для этой страницы
+            pageSections.forEach(section => {
+                pdfContent += `
+                    <div style="margin-bottom: 6px;">
+                        <div style="background: #2c3e50; color: white; padding: 3px 6px; margin: 0 0 3px 0; font-size: 9px; font-weight: bold; border-radius: 2px;">
+                            ${section.section}
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 7.5px; line-height: 1;">
+                            <thead>
+                                <tr style="background: #f5f5f5;">
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 5%; text-align: center; font-size: 7px;">Код</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 3px; width: 72%; font-size: 7px;">Наименование работ</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 6%; text-align: center; font-size: 7px;">Ед.</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 12%; text-align: right; font-size: 7px;">Цена, руб.</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        });
-        
-        // Добавляем футер только на последней странице
-        if (pageNum === totalPages) {
-            pdfContent += `
-                <div style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 8px; color: #666; text-align: center;">
-                    <div style="margin-bottom: 3px;">
-                        <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
+                            </thead>
+                            <tbody>
+                                ${section.items.map(item => `
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 2px 0; text-align: center; font-weight: bold; color: #3498db; font-size: 7px;">${item.id}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 3px; font-size: 7px; line-height: 1.05;">${item.name}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 0; text-align: center; font-size: 7px;">${item.unit}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: right; font-weight: bold; color: #27ae60; font-size: 7px;">${formatCurrency(item.price)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
-                    <div>
-                        Прайс-лист сформирован в приложении "ЭлектроСмета"<br>
-                        Дата формирования: ${new Date().toLocaleString('ru-RU')}
-                    </div>
-                </div>
-            `;
-        } else if (pageNum < totalPages) {
-            // На промежуточных страницах добавляем "продолжение следует..."
-            pdfContent += `
-                <div style="margin-top: 15px; text-align: center; font-size: 9px; color: #666; font-style: italic;">
-                    продолжение следует...
-                </div>
-            `;
-        }
-        
-        tempContainer.innerHTML = pdfContent;
-        document.body.appendChild(tempContainer);
-        
-        // Даем время на рендеринг
-        setTimeout(() => {
-            html2canvas(tempContainer, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff'
-            }).then(canvas => {
-                const imgData = canvas.toDataURL('image/jpeg', 0.85);
-                const imgWidth = 180;
-                const imgHeight = canvas.height * imgWidth / canvas.width;
-                
-                // Если это не первая страница, добавляем новую
-                if (pageNum > 1) {
-                    pdf.addPage();
-                }
-                
-                // Добавляем изображение на страницу
-                pdf.addImage(imgData, 'JPEG', 15, 10, imgWidth, imgHeight);
-                
-                // Удаляем временный контейнер
-                document.body.removeChild(tempContainer);
-                
-                resolve();
-            }).catch(error => {
-                console.error('Ошибка при создании страницы PDF:', error);
-                document.body.removeChild(tempContainer);
-                resolve();
+                `;
             });
-        }, 100);
-    });
-}
+            
+            // Добавляем футер только на последней странице
+            if (pageNum === totalPages) {
+                pdfContent += `
+                    <div style="margin-top: 8px; padding-top: 4px; border-top: 1px solid #ddd; font-size: 6.5px; color: #666; text-align: center;">
+                        <div style="margin-bottom: 1px;">
+                            <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
+                        </div>
+                        <div>
+                            Прайс-лист сформирован в приложении "ЭлектроСмета" | Дата: ${new Date().toLocaleString('ru-RU')}
+                        </div>
+                    </div>
+                `;
+            } else if (pageNum < totalPages) {
+                // На промежуточных страницах добавляем мини-разделитель
+                pdfContent += `
+                    <div style="margin-top: 4px; text-align: center; font-size: 7px; color: #999;">
+                        --- продолжение ---
+                    </div>
+                `;
+            }
+            
+            tempContainer.innerHTML = pdfContent;
+            document.body.appendChild(tempContainer);
+            
+            // Даем время на рендеринг
+            setTimeout(() => {
+                html2canvas(tempContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                    const imgWidth = 180; // Ширина равна ширине контейнера
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    // Если это не первая страница, добавляем новую
+                    if (pageNum > 1) {
+                        pdf.addPage();
+                    }
+                    
+                    // Добавляем изображение на страницу с минимальными отступами
+                    pdf.addImage(imgData, 'JPEG', 15, 8, imgWidth, imgHeight); // Отступы по 15мм слева/справа
+                    
+                    // Удаляем временный контейнер
+                    document.body.removeChild(tempContainer);
+                    
+                    resolve();
+                }).catch(error => {
+                    console.error('Ошибка при создании страницы PDF:', error);
+                    document.body.removeChild(tempContainer);
+                    resolve();
+                });
+            }, 100);
+        });
+    }
     
     // Рендерим все страницы последовательно
     async function renderAllPages() {
