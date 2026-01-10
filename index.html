@@ -50,14 +50,14 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 15px;
-            padding-bottom: 10px;
+            padding-bottom: 20px;
             border-bottom: 2px solid var(--secondary);
         }
 
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             font-weight: 700;
             font-size: 1.1rem;
         }
@@ -79,8 +79,8 @@
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-bottom: 0;
-            padding: 10px;
+            margin-bottom: 5px;
+            padding: 5px;
             background: white;
             border-radius: 10px 10px 0 0;
             box-shadow: var(--shadow);
@@ -91,11 +91,12 @@
             display: flex;
             flex: 1;
             min-width: 200px;
+			height: 40px; /* Высота контейнера вкладок */
         }
 
         .tab {
             flex: 1;
-            padding: 12px 20px;
+            padding: 12px 12px;
             background: #f8f9fa;
             border: none;
             font-size: 1rem;
@@ -136,12 +137,12 @@
 
         /* Вкладка 1: Прайс-лист */
         .price-header {
-            background: var(--primary);
+            background: linear-gradient(100deg, #1a237e 20%, #283593 100%);
             color: white;
-            padding: 8px 10px;
+            padding: 4px 8px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 5px;
         }
 
         @media (min-width: 768px) {
@@ -162,7 +163,8 @@
         .search-box {
             position: relative;
             width: 100%;
-            height: 40px;
+            height: 31px;
+			top: -2px;
         }
 
         @media (min-width: 768px) {
@@ -173,7 +175,7 @@
 
         .search-box input {
             width: 100%;
-            padding: 9px 13px 9px 37px;
+            padding: 5px 10px 5px 30px;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 0.95rem;
@@ -215,7 +217,7 @@
         .section-header {
             background: linear-gradient(to right, var(--primary), var(--secondary));
             color: white;
-            padding: 10px 12px;
+            padding: 6px 10px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
@@ -525,7 +527,7 @@
             height: 30px;
             line-height: 22px;
             overflow: hidden;
-            min-width: 850px;
+            min-width: 1050px;
         }
 
         .estimate-table thead {
@@ -1040,6 +1042,8 @@
     </style>
 </head>
 <body>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <div class="container">
         <!-- Шапка -->
         <div class="header">
@@ -1100,9 +1104,9 @@
                             <i class="fas fa-folder-open"></i> Загрузить смету
                         </button>
                         <div class="dropdown-divider"></div>
-                        <button class="dropdown-item" id="saveAsPdfBtn">
-                            <i class="fas fa-file-pdf"></i> Сохранить в PDF
-                        </button>
+						<button class="dropdown-item" id="saveAsPdfBtn">
+						<i class="fas fa-file-pdf"></i> Сохранить в PDF
+						</button>
                         <button class="dropdown-item" id="printEstimateBtn">
                             <i class="fas fa-print"></i> Печать сметы
                         </button>
@@ -1251,6 +1255,20 @@
     <script>
         // Проверяем iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+		// Проверяем загрузку библиотек PDF
+function checkPDFLibraries() {
+    if (typeof jspdf === 'undefined') {
+        console.error('jsPDF не загружен!');
+        alert('Библиотека jsPDF не загружена. Пожалуйста, обновите страницу.');
+        return false;
+    }
+    if (typeof html2canvas === 'undefined') {
+        console.error('html2canvas не загружен!');
+        alert('Библиотека html2canvas не загружена. Пожалуйста, обновите страницу.');
+        return false;
+    }
+    return true;
+}
         
         // Функция для iOS - отложенная инициализация
         function initForIOS() {
@@ -1489,6 +1507,282 @@
         let estimateData = [];
         let savedEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
         let nextMaterialId = 1000;
+		
+		// 1. Функция для расчета даты по Хиджре
+function getHijriDate() {
+    const today = new Date();
+    const hijriYear = Math.floor((today.getFullYear() - 622) * (33/32));
+    const hijriMonths = [
+        'Мухаррам', 'Сафар', 'Раби аль-авваль', 'Раби ас-сани',
+        'Джумада аль-уля', 'Джумада ас-сания', 'Раджаб', 'Шаабан',
+        'Рамадан', 'Шавваль', 'Зуль-каада', 'Зуль-хиджа'
+    ];
+    
+    const daysSinceHijra = Math.floor((today - new Date(622, 6, 16)) / (1000 * 60 * 60 * 24));
+    const hijriMonthIndex = Math.floor((daysSinceHijra % 354) / 29.5);
+    const hijriDay = Math.floor((daysSinceHijra % 354) % 29.5) + 1;
+    
+    return {
+        year: hijriYear,
+        month: hijriMonths[hijriMonthIndex],
+        day: hijriDay,
+        monthIndex: hijriMonthIndex + 1
+    };
+}
+
+// 2. Мусульманские праздники
+const islamicHolidays = [
+    { month: 1, day: 10, name: 'День Ашура' },
+    { month: 3, day: 12, name: 'Мавлид ан-Наби (день рождения Пророка ﷺ)' },
+    { month: 7, day: 27, name: 'Ляйлят аль-Мирадж (Ночь Вознесения)' },
+    { month: 8, day: 15, name: 'Ляйлят аль-Бараа (Ночь Освобождения)' },
+    { month: 9, name: 'Рамадан', isRamadan: true },
+    { month: 10, day: 1, name: 'Ид аль-Фитр (Ураза-байрам)' },
+    { month: 12, day: 10, name: 'Ид аль-Адха (Курбан-байрам)' },
+    { month: 12, days: [8,9,10,11,12,13], name: 'Дни Ташрика' }
+];
+		// ========== СИСТЕМА УВЕДОМЛЕНИЙ ==========
+
+const notificationSystem = {
+    getTimeGreeting: function() {
+        const hour = new Date().getHours();
+        if (hour >= 5 && hour < 12) return 'Доброе утро! Да благословит вас Аллах в этот день! 🌅';
+        if (hour >= 12 && hour < 18) return 'Добрый день! Мир вам и милость Аллаха! ☀️';
+        if (hour >= 18 && hour < 23) return 'Добрый вечер! Да примет Аллах ваши дела! 🌆';
+        return 'Доброй ночи! Да охранит вас Аллах до утра! 🌙';
+    },
+    
+    getFridayReminder: function() {
+        const now = new Date();
+        const isFriday = now.getDay() === 5;
+        const hour = now.getHours();
+        
+        if (!isFriday) return null;
+        
+        if (hour >= 12 && hour < 15) {
+            return '🕌 Не пропустите Джума-намаз! Время коллективной молитвы.';
+        }
+        
+        if (hour >= 15 && hour < 18) {
+            return '🕋 Последний час пятницы - особое время для дуа! Не упустите!';
+        }
+        
+        return 'Пятница - лучший день недели! Совершите больше благих дел! 📿';
+    },
+    
+    getHolidayMessage: function() {
+        const hijri = getHijriDate();
+        
+        for (let holiday of islamicHolidays) {
+            if (holiday.month === hijri.monthIndex) {
+                if (holiday.isRamadan && hijri.monthIndex === 9) {
+                    return `🌙 Благословенный месяц Рамадан! Да примет Аллах ваш пост и молитвы!`;
+                }
+                
+                if (holiday.day && hijri.day === holiday.day) {
+                    return `🎉 ${holiday.name}! С праздником! Да примет Аллах ваше поклонение!`;
+                }
+                
+                if (holiday.days && holiday.days.includes(hijri.day)) {
+                    return `📿 ${holiday.name} (${hijri.day} день). Запрещено поститься в эти дни!`;
+                }
+            }
+        }
+        
+        return null;
+    },
+    
+    getPromoMessage: function() {
+        const promos = [
+            '📱 Подпишитесь на @Electric_Group в Telegram!',
+            '⭐ Оставьте отзыв о приложении ЭлектроСмета!',
+            '☎️ Сохраните номер для консультаций',
+            '💡 Новые функции в разработке! Следите за обновлениями!',
+            '🤝 Рекомендуйте нас коллегам-электрикам!'
+        ];
+        return promos[Math.floor(Math.random() * promos.length)];
+    },
+    
+    getNextNotification: function() {
+        const fridayMsg = this.getFridayReminder();
+        if (fridayMsg) return fridayMsg;
+        
+        const holidayMsg = this.getHolidayMessage();
+        if (holidayMsg) return holidayMsg;
+        
+        const timeMsg = this.getTimeGreeting();
+        
+        const shouldShowPromo = Math.random() < 0.3;
+        if (shouldShowPromo) {
+            return `${timeMsg}\n\n${this.getPromoMessage()}`;
+        }
+        
+        return timeMsg;
+    }
+};
+
+// ========== КОНЕЦ СИСТЕМЫ УВЕДОМЛЕНИЙ ==========
+// ========== ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ ХИДЖРЫ ==========
+
+function displayHijriDate() {
+    const hijri = getHijriDate();
+    const hijriElement = document.createElement('div');
+    hijriElement.id = 'hijri-date';
+    hijriElement.style.cssText = `
+        text-align: center;
+        margin: 5px 0;
+        font-size: 0.9rem;
+        color: #2c3e50;
+        font-weight: 500;
+        padding: 5px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+    `;
+    
+    hijriElement.innerHTML = `
+        <i class="fas fa-mosque" style="color: #27ae60; margin-right: 5px;"></i>
+        ${hijri.day} ${hijri.month} ${hijri.year} г.х.
+        <small style="color: #6c757d; margin-left: 8px;">
+            (по Хиджре)
+        </small>
+    `;
+    
+    const header = document.querySelector('.header');
+    if (header && header.parentNode) {
+        header.parentNode.insertBefore(hijriElement, header.nextSibling);
+    }
+}
+
+function adaptHijriDateForMobile() {
+    const hijriElement = document.getElementById('hijri-date');
+    if (!hijriElement) return;
+    
+    if (window.innerWidth <= 767) {
+        hijriElement.style.fontSize = '0.8rem';
+        hijriElement.style.padding = '3px';
+        hijriElement.innerHTML = `
+            <i class="fas fa-mosque" style="color: #27ae60;"></i>
+            ${getHijriDate().day} ${getHijriDate().month} ${getHijriDate().year} г.х.
+        `;
+    }
+}
+
+// ========== КОНЕЦ ФУНКЦИЙ ХИДЖРЫ ==========
+// ========== ИНИЦИАЛИЗАЦИЯ ИСЛАМСКИХ ФУНКЦИЙ ==========
+
+function initializeIslamicFeatures() {
+    // 1. Отображаем дату по Хиджре
+    displayHijriDate();
+    
+    // 2. Адаптируем для мобильных
+    adaptHijriDateForMobile();
+    window.addEventListener('resize', adaptHijriDateForMobile);
+    
+    // 3. Первое уведомление
+    setTimeout(() => {
+        const message = notificationSystem.getNextNotification();
+        showNotification(message);
+    }, 1000);
+    
+    // 4. Периодические уведомления (каждые 2 часа)
+    setInterval(() => {
+        const message = notificationSystem.getNextNotification();
+        showNotification(message);
+    }, 2 * 60 * 60 * 1000);
+    
+    // 5. Пятничные напоминания
+    setInterval(() => {
+        const now = new Date();
+        if (now.getDay() === 5 && now.getHours() === 11) {
+            showNotification('🕌 Напоминание: Джума-намаз скоро! Приготовьтесь к коллективной молитве.');
+        }
+        
+        if (now.getDay() === 5 && now.getHours() === 15) {
+            showNotification('🕋 Сейчас последний час пятницы! Особое время для принятия дуа!');
+        }
+    }, 60 * 1000);
+}
+
+// ========== КОНЕЦ ИНИЦИАЛИЗАЦИИ ==========
+		// Функция форматирования валюты
+function formatCurrency(amount) {
+    if (isNaN(amount)) return '0';
+    return new Intl.NumberFormat('ru-RU').format(parseFloat(amount).toFixed(2));
+}
+
+// Функция уведомлений
+function showNotification(message) {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        background: #27ae60;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 5px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 9999;
+        font-weight: 500;
+        max-width: 370px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    notification.innerHTML = `
+        <i class="fas fa-check-circle" style="margin-right: 10px;"></i>
+        ${message}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Автоматическое скрытие через 3 секунды
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+    
+    // Добавляем CSS анимации
+    if (!document.querySelector('#notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+// Установка даты по умолчанию
+function setupDate() {
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('estimateDate');
+    if (dateInput) {
+        dateInput.value = today;
+    }
+}
 
         // Инициализация приложения
         document.addEventListener('DOMContentLoaded', function() {
@@ -1506,32 +1800,22 @@
             }
         });
 
-        function initializeApp() {
-            console.log('Инициализация приложения');
-            
-            // Инициализируем данные сметы
-            initializeEstimateData();
-            
-            // Рендерим все
-            renderPriceList();
-            renderEstimateTable();
-            updateTotals();
-            updateEstimateCounter();
-            
-            // Настраиваем обработчики
-            setupEventListeners();
-            setupDate();
-            
-            // Показываем первую вкладку
-            showTab('price');
-            
-            // Показываем уведомление о загрузке
-            setTimeout(() => {
-                showNotification('Сохраните мой номер и оставьте отзыв, подпишитесь на @Electric_Group!');
-            }, 1000);
-            
-            console.log('Приложение инициализировано');
-        }
+function initializeApp() {
+    console.log('Инициализация приложения');
+    
+    initializeEstimateData();
+    renderPriceList();
+    renderEstimateTable();
+    updateTotals();
+    updateEstimateCounter();
+    setupEventListeners();
+    setupDate();
+    initializeIslamicFeatures();
+    showTab('price');
+    
+
+    console.log('Приложение инициализировано');
+}
 
         function initializeEstimateData() {
             // Создаем 20 пустых строк для сметы
@@ -1621,7 +1905,7 @@
                     // Обработчик для добавления в смету
                     itemElement.addEventListener('click', function() {
                         addToEstimate(item);
-                        showTab('estimate');
+                        //showTab('estimate');
                         showNotification(`Добавлено: ${item.name.substring(0, 30)}...`);
                     });
                     
@@ -2397,138 +2681,334 @@
                     <\/script>
                 </body>
                 </html>
-            `;
-            
-            // Для iOS используем другой метод
-            if (isIOS) {
-                // Открываем в новом окне
-                const printWindow = window.open('', '_blank');
-                if (printWindow) {
-                    printWindow.document.write(printContent);
-                    printWindow.document.close();
-                    
-                    // Даем время на загрузку
-                    setTimeout(() => {
-                        printWindow.print();
-                    }, 500);
-                }
-            } else {
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(printContent);
-                printWindow.document.close();
-                printWindow.print();
-            }
+            `;  // Конец переменной printContent
             
             document.getElementById('printModal').style.display = 'none';
         }
 
+        // ========== PDF ФУНКЦИИ ==========
+        
+        // Функция сохранения прайс-листа в PDF
         function printPriceList() {
-            let printContent = '<h2>Прайс-лист электромонтажных работ ЧР</h2><style>body{font-family:Arial;padding:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #000;padding:8px;}th{background:#f0f0f0;}</style><table>';
-            
-            priceData.forEach(section => {
-                printContent += `<tr><th colspan="4">${section.section}</th></tr>`;
-                section.items.forEach(item => {
-                    printContent += `<tr>
-                        <td>${item.id}</td>
-                        <td>${item.name}</td>
-                        <td>${item.unit}</td>
-                        <td>${formatCurrency(item.price)}</td>
-                    </tr>`;
-                });
-            });
-            
-            printContent += '</table>';
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(printContent);
-            printWindow.document.close();
-            
-            if (!isIOS) {
-                printWindow.print();
-            } else {
-                // Для iOS просто показываем контент
-                setTimeout(() => {
-                    printWindow.print();
-                }, 1000);
+            // Проверяем библиотеки
+            if (typeof jspdf === 'undefined') {
+                console.error('jsPDF не загружен!');
+                alert('Библиотека jsPDF не загружена. Пожалуйста, обновите страницу.');
+                return;
             }
-        }
-
-        function saveAsPDF() {
-            // Для iOS используем печать
-            if (isIOS) {
-                alert('Для сохранения в PDF на iOS используйте функцию печати и выберите "Сохранить как PDF"');
-                showPrintModal();
+            if (typeof html2canvas === 'undefined') {
+                console.error('html2canvas не загружен!');
+                alert('Библиотека html2canvas не загружена. Пожалуйста, обновите страницу.');
                 return;
             }
             
-            showPrintModal();
-        }
-
-        // Вспомогательные функции
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('ru-RU', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            }).format(amount);
-        }
-
-        function setupDate() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('estimateDate').value = today;
-        }
-
-        function showNotification(message) {
-            // Создаем уведомление
-            const notification = document.createElement('div');
-            notification.style.cssText = `
+            // Показываем индикатор загрузки
+            const loadingDiv = document.createElement('div');
+            loadingDiv.style.cssText = `
                 position: fixed;
-                top: 20px;
+                top: 50%;
                 left: 50%;
-                transform: translateX(-50%);
-                background: #2c3e50;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.8);
                 color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                z-index: 10000;
-                font-size: 14px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                animation: slideDown 0.3s ease;
-                max-width: 80%;
-                text-align: center;
-                word-break: break-word;
+                padding: 20px 30px;
+                border-radius: 10px;
+                z-index: 9999;
+                font-size: 16px;
+            `;
+            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание PDF прайс-листа...';
+            document.body.appendChild(loadingDiv);
+            
+            // Создаем временный контейнер для генерации PDF
+            const tempContainer = document.createElement('div');
+            tempContainer.style.cssText = `
+                position: fixed;
+                left: -9999px;
+                top: -9999px;
+                width: 210mm;
+                padding: 15px;
+                background: white;
+                font-family: Arial, sans-serif;
+                font-size: 10px; /* Меньше шрифт для мобильных */
             `;
             
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideDown {
-                    from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-                    to { transform: translateX(-50%) translateY(0); opacity: 1; }
-                }
-                @keyframes fadeOut {
-                    from { opacity: 1; }
-                    to { opacity: 0; }
-                }
+            let priceContent = `
+                <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">
+                    <h1 style="margin: 0 0 5px 0; font-size: 14px;">Прайс-лист электромонтажных работ</h1>
+                    <div style="font-size: 12px;">Electric_Group</div>
+                    <div style="margin-top: 5px; font-size: 10px;">Дата: ${new Date().toLocaleDateString('ru-RU')}</div>
+                </div>
             `;
-            document.head.appendChild(style);
             
-            notification.textContent = message;
-            document.body.appendChild(notification);
+            // Ограничиваем количество секций для мобильных
+            const sectionsToShow = priceData.slice(0, 4); // Только первые 4 раздела
             
+            sectionsToShow.forEach(section => {
+                priceContent += `
+                    <h2 style="background: #2c3e50; color: white; padding: 8px; margin: 10px 0; border-radius: 3px; font-size: 11px;">
+                        ${section.section}
+                    </h2>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 9px;">
+                        <thead>
+                            <tr>
+                                <th style="border: 1px solid #000; padding: 4px; width: 8%;">Код</th>
+                                <th style="border: 1px solid #000; padding: 4px; width: 62%;">Наименование работ</th>
+                                <th style="border: 1px solid #000; padding: 4px; width: 10%;">Ед. изм.</th>
+                                <th style="border: 1px solid #000; padding: 4px; width: 20%;">Цена, руб.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                section.items.forEach(item => {
+                    priceContent += `
+                        <tr>
+                            <td style="border: 1px solid #000; padding: 4px;">${item.id}</td>
+                            <td style="border: 1px solid #000; padding: 4px; font-size: 8px;">${item.name}</td>
+                            <td style="border: 1px solid #000; padding: 4px;">${item.unit}</td>
+                            <td style="border: 1px solid #000; padding: 4px;">${formatCurrency(item.price)}</td>
+                        </tr>
+                    `;
+                });
+                
+                priceContent += `</tbody></table>`;
+            });
+            
+            tempContainer.innerHTML = priceContent;
+            document.body.appendChild(tempContainer);
+            
+            // Для мобильных используем setTimeout для асинхронности
             setTimeout(() => {
-                notification.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        document.body.removeChild(notification);
-                    }
-                    if (document.head.contains(style)) {
-                        document.head.removeChild(style);
-                    }
-                }, 300);
-            }, 2000);
+                try {
+                    // Генерируем PDF с меньшим качеством для экономии памяти
+                    html2canvas(tempContainer, {
+                        scale: 1,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: '#ffffff'
+                    }).then(canvas => {
+                        const imgData = canvas.toDataURL('image/jpeg', 0.7);
+                        const pdf = new jspdf.jsPDF({
+                            orientation: 'portrait',
+                            unit: 'mm',
+                            format: 'a4',
+                            compress: true
+                        });
+                        
+                        const imgWidth = 190;
+                        const pageHeight = 280;
+                        const imgHeight = canvas.height * imgWidth / canvas.width;
+                        
+                        // Добавляем изображение
+                        pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
+                        
+                        // Удаляем временные элементы
+                        document.body.removeChild(tempContainer);
+                        document.body.removeChild(loadingDiv);
+                        
+                        // Сохраняем файл
+                        const today = new Date().toLocaleDateString('ru-RU').replace(/\//g, '-');
+                        pdf.save(`Прайс-лист_${today}.pdf`);
+                        
+                        showNotification('Прайс-лист сохранен в PDF!');
+                    }).catch(error => {
+                        console.error('Ошибка html2canvas:', error);
+                        document.body.removeChild(tempContainer);
+                        document.body.removeChild(loadingDiv);
+                        showNotification('Ошибка генерации. Попробуйте снова.');
+                    });
+                } catch (error) {
+                    console.error('Ошибка при создании PDF:', error);
+                    document.body.removeChild(loadingDiv);
+                    showNotification('Ошибка: ' + error.message);
+                }
+            }, 100);
         }
 
-        // Для отладки
-        console.log('Скрипт загружен');
+        // Функция для проверки загрузки библиотек
+        function checkPDFLibraries() {
+            if (typeof jspdf === 'undefined') {
+                console.error('jsPDF не загружен!');
+                alert('Библиотека jsPDF не загружена. Пожалуйста, обновите страницу.');
+                return false;
+            }
+            if (typeof html2canvas === 'undefined') {
+                console.error('html2canvas не загружен!');
+                alert('Библиотека html2canvas не загружена. Пожалуйста, обновите страницу.');
+                return false;
+            }
+            return true;
+        }
+
+        // Функция сохранения сметы в PDF
+        function saveAsPDF() {
+            // Проверяем загрузку библиотек
+            if (!checkPDFLibraries()) {
+                return;
+            }
+            
+            // Показываем модальное окно для ввода данных
+            showPrintModal();
+            
+            // Изменяем кнопку в модальном окне
+            document.getElementById('generatePrint').innerHTML = '<i class="fas fa-file-pdf"></i> Сохранить PDF';
+            document.getElementById('generatePrint').onclick = function() {
+                generatePDFFromModal();
+            };
+        }
+
+        // Функция для генерации PDF из модального окна
+        function generatePDFFromModal() {
+            const clientName = document.getElementById('clientName').value || 'Клиент не указан';
+            const estimateNumber = document.getElementById('estimateNumber').value;
+            const estimateDate = document.getElementById('estimateDate').value;
+            const notes = document.getElementById('notes').value;
+            
+            const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
+            
+            if (filledRows.length === 0) {
+                alert('Смета пуста! Добавьте позиции перед сохранением.');
+                return;
+            }
+            
+            // Закрываем модальное окно
+            document.getElementById('printModal').style.display = 'none';
+            
+            // Для мобильных устройств создаем более простой PDF
+            createMobilePDF(clientName, estimateNumber, estimateDate, notes, filledRows);
+        }
+
+        // Функция создания PDF для мобильных устройств
+function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filledRows) {
+    // Показываем индикатор загрузки
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 10px;
+        z-index: 9999;
+        font-size: 16px;
+    `;
+    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание PDF...';
+    document.body.appendChild(loadingDiv);
+    
+    // Создаем временный контейнер для PDF
+    const tempContainer = document.createElement('div');
+    tempContainer.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: -9999px;
+        width: 210mm;
+        padding: 15mm;
+        background: white;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+    `;
+    
+    // Формируем содержимое
+    let pdfContent = `
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;">
+            <h1 style="margin: 0 0 10px 0; font-size: 24px;">СМЕТА № ${estimateNumber}</h1>
+            <div style="font-size: 16px;"><strong>Клиент:</strong> ${clientName}</div>
+            <div style="font-size: 14px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
+        </div>
+        <table style="width: 110%; margin-left: -30px; border-collapse: collapse; font-size: 10px;">
+            <thead>
+                <tr style="background: #f0f0f0; height: 20px;">  <!-- ← добавили height -->
+                    <th style="border: 1px solid #000; padding: 6px; width: 5%; text-align: center;">Код</th>
+                    <th style="border: 1px solid #000; padding: 6px;">Наименование</th>
+                    <th style="border: 1px solid #000; padding: 6px; width: 7%; text-align: center;">Ед.</th>
+                    <th style="border: 1px solid #000; padding: 6px; width: 12%;">Цена, руб.</th>
+                    <th style="border: 1px solid #000; padding: 6px; width: 8%;">Кол</th>
+                    <th style="border: 1px solid #000; padding: 6px; width: 12%;">Сумма, руб.</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    filledRows.forEach((row, index) => {
+        pdfContent += `
+            <tr>
+                <td style="border: 1px solid #000; padding: 6px; text-align: center;">${row.priceId || ''}</td>
+                <td style="border: 1px solid #000; padding: 6px;">${row.name || ''}</td>
+                <td style="border: 1px solid #000; padding: 6px; text-align: center;">${row.unit || ''}</td>
+                <td style="border: 1px solid #000; padding: 6px; text-align: right;">${formatCurrency(row.price)}</td>
+                <td style="border: 1px solid #000; padding: 6px; text-align: center;">${row.quantity}</td>
+                <td style="border: 1px solid #000; padding: 6px; text-align: right;">${formatCurrency(row.total)}</td>
+            </tr>
+        `;
+    });
+    
+    const totalAmount = filledRows.reduce((sum, row) => sum + row.total, 0);
+    
+    pdfContent += `
+            </tbody>
+        </table>
+        <div style="text-align: right; font-size: 18px; font-weight: bold; margin-top: 20px; padding-top: 10px; border-top: 2px solid #000;">
+            Итого: ${formatCurrency(totalAmount)} руб.
+        </div>
+    `;
+    
+    if (notes) {
+        pdfContent += `
+            <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-left: 4px solid #3498db;">
+                <strong>Примечания:</strong><br>
+                ${notes.replace(/\n/g, '<br>')}
+            </div>
+        `;
+    }
+    
+    pdfContent += `
+        <div style="margin-top: 50px; font-size: 10px; color: #666; text-align: center;">
+            Смета составлена с использованием приложения "ЭлектроСмета"<br>
+            Дата формирования: ${new Date().toLocaleString('ru-RU')}
+        </div>
+    `;
+    
+    tempContainer.innerHTML = pdfContent;
+    document.body.appendChild(tempContainer);
+    
+    // Используем setTimeout для асинхронности (особенно важно для iOS)
+    setTimeout(() => {
+        html2canvas(tempContainer, {
+            scale: 2, // Увеличиваем качество для печати
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jspdf.jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const imgWidth = 190;
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+            
+            pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+            
+            // Очистка
+            document.body.removeChild(tempContainer);
+            document.body.removeChild(loadingDiv);
+            
+            // Сохранение
+            pdf.save(`Смета_${estimateNumber}_${clientName.replace(/\s+/g, '_')}.pdf`);
+            
+            showNotification('PDF успешно сохранен!');
+        }).catch(error => {
+            console.error('Ошибка при создании PDF:', error);
+            document.body.removeChild(loadingDiv);
+            showNotification('Ошибка: ' + error.message);
+        });
+    }, 500);
+}
+
     </script>
 </body>
 </html>
