@@ -2677,7 +2677,6 @@ function showPrintDialog() {
                 <table>
                     <thead>
                         <tr>
-                            <th>№</th>
                             <th>Код</th>
                             <th>Наименование</th>
                             <th>Ед.</th>
@@ -2689,7 +2688,6 @@ function showPrintDialog() {
                     <tbody>
                         ${filledRows.map((row, index) => `
                             <tr>
-                                <td>${index + 1}</td>
                                 <td><strong>${row.priceId || ''}</strong></td>
                                 <td>${row.name || ''}</td>
                                 <td>${row.unit || ''}</td>
