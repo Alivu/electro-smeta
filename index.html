@@ -1287,7 +1287,7 @@ window.addEventListener('message', function(event) {
 });
 // Новая функция для создания PDF прайс-листа
 
-		function createPricePDF() {
+function createPricePDF() {
     // Проверяем библиотеки
     if (!checkPDFLibraries()) return;
     
@@ -1313,14 +1313,16 @@ window.addEventListener('message', function(event) {
     const hijri = getHijriDate();
     
     // Создаем массив страниц
+    const sectionsPerPage = 3; // Увеличили до 3 разделов на страницу
     const pages = [];
     let currentPage = [];
     let currentPageHeight = 0;
-    const maxPageHeight = 280;
+    const maxPageHeight = 270; // Почти вся страница A4 (297мм - 15мм отступы)
     
     // Разбиваем на страницы
     priceData.forEach((section, index) => {
-        const sectionHeight = 12 + (section.items.length * 2.7);
+        // Примерная высота раздела (более плотная)
+        const sectionHeight = 8 + (section.items.length * 2.2);
         
         if (currentPageHeight + sectionHeight > maxPageHeight && currentPage.length > 0) {
             pages.push([...currentPage]);
@@ -1331,6 +1333,7 @@ window.addEventListener('message', function(event) {
             currentPageHeight += sectionHeight;
         }
         
+        // Если это последний раздел, добавляем оставшуюся страницу
         if (index === priceData.length - 1 && currentPage.length > 0) {
             pages.push([...currentPage]);
         }
@@ -1345,14 +1348,6 @@ window.addEventListener('message', function(event) {
         format: 'a4'
     });
     
-    // Настройки шрифтов
-    const fontSize = {
-        header: 11,
-        section: 10,
-        table: 9,
-        small: 8
-    };
-    
     // Создаем контейнер для каждой страницы
     let pageIndex = 0;
     
@@ -1363,35 +1358,26 @@ window.addEventListener('message', function(event) {
                 position: fixed;
                 left: -9999px;
                 top: -9999px;
-                width: 180mm;
-                padding: 5mm 0 9mm 0; /* Уменьшен верхний отступ */
+                width: 180mm; // Уже на 30мм (по 15мм с каждой стороны)
+                padding: 8mm 0; // Минимальные отступы сверху/снизу
                 background: white;
-                font-family: 'Arial', sans-serif;
-                font-size: ${fontSize.table}px;
-                line-height: 1.1;
+                font-family: Arial, sans-serif;
+                font-size: 8px; // Меньший базовый шрифт
+                line-height: 1;
             `;
             
             // Генерируем контент для страницы
             let pdfContent = '';
             
-            // Шапка (только на первой странице)
-            if (pageNum === 1) {
-                pdfContent += `
-                    <div style="text-align: center; margin-bottom: 6px;">
-                        <div style="font-size: ${fontSize.header}px; font-weight: bold; color: #2c3e50; margin-bottom: 2px;">
-                            ПРАЙС-ЛИСТ ЭЛЕКТРОМОНТАЖНЫХ РАБОТ
-                        </div>
-                        <div style="font-size: ${fontSize.small}px; color: #666; line-height: 1;">
-                            Electric_Group | ${today} | ${hijri.day} ${hijri.month} ${hijri.year} г.х.
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Номер страницы
+            // Компактная шапка на всех страницах
             pdfContent += `
-                <div style="text-align: right; font-size: ${fontSize.small}px; color: #666; margin-bottom: 4px;">
-                    стр. ${pageNum}/${totalPages}
+                <div style="text-align: center; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #ccc;">
+                    <div style="font-size: 12px; font-weight: bold; color: #2c3e50; margin-bottom: 2px;">
+                        ${pageNum === 1 ? 'ПРАЙС-ЛИСТ ЭЛЕКТРОМОНТАЖНЫХ РАБОТ' : 'ПРАЙС-ЛИСТ (продолжение)'}
+                    </div>
+                    <div style="font-size: 8px; color: #666;">
+                        ${today} | Electric_Group | Страница ${pageNum} из ${totalPages}
+                    </div>
                 </div>
             `;
             
@@ -1399,25 +1385,25 @@ window.addEventListener('message', function(event) {
             pageSections.forEach(section => {
                 pdfContent += `
                     <div style="margin-bottom: 6px;">
-                        <div style="background: #2c3e50; color: white; padding: 3px 6px; margin: 0 0 3px 0; font-size: ${fontSize.section}px; font-weight: bold; border-radius: 2px; line-height: 1;">
+                        <div style="background: #2c3e50; color: white; padding: 3px 6px; margin: 0 0 3px 0; font-size: 9px; font-weight: bold; border-radius: 2px;">
                             ${section.section}
                         </div>
-                        <table style="width: 100%; border-collapse: collapse; font-size: ${fontSize.table}px; line-height: 1.1;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 7.5px; line-height: 1;">
                             <thead>
-                                <tr style="background: #f8f9fa;">
-                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 7%; text-align: center; font-size: ${fontSize.table}px; height: 14px;">Код</th>
-                                    <th style="border: 1px solid #bbb; padding: 2px 4px; width: 70%; font-size: ${fontSize.table}px; height: 14px;">Наименование работ</th>
-                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 8%; text-align: center; font-size: ${fontSize.table}px; height: 14px;">Ед. изм.</th>
-                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 15%; text-align: right; font-size: ${fontSize.table}px; height: 14px;">Цена, руб.</th>
+                                <tr style="background: #f5f5f5;">
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 5%; text-align: center; font-size: 7px;">Код</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 3px; width: 72%; font-size: 7px;">Наименование работ</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 6%; text-align: center; font-size: 7px;">Ед.</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 12%; text-align: right; font-size: 7px;">Цена, руб.</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${section.items.map(item => `
-                                    <tr style="height: 16px;">
-                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: center; font-weight: bold; color: #3498db; font-size: ${fontSize.table}px; vertical-align: middle;">${item.id}</td>
-                                        <td style="border: 1px solid #ddd; padding: 2px 4px; font-size: ${fontSize.table}px; line-height: 1.1; vertical-align: middle;">${item.name}</td>
-                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: center; font-size: ${fontSize.table}px; vertical-align: middle;">${item.unit}</td>
-                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: right; font-weight: bold; color: #27ae60; font-size: ${fontSize.table}px; vertical-align: middle;">${formatCurrency(item.price)}</td>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 2px 0; text-align: center; font-weight: bold; color: #3498db; font-size: 7px;">${item.id}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 3px; font-size: 7px; line-height: 1.05;">${item.name}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 0; text-align: center; font-size: 7px;">${item.unit}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: right; font-weight: bold; color: #27ae60; font-size: 7px;">${formatCurrency(item.price)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -1429,19 +1415,20 @@ window.addEventListener('message', function(event) {
             // Добавляем футер только на последней странице
             if (pageNum === totalPages) {
                 pdfContent += `
-                    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #ddd; font-size: ${fontSize.small}px; color: #666; text-align: center; line-height: 1;">
-                        <div>
+                    <div style="margin-top: 8px; padding-top: 4px; border-top: 1px solid #ddd; font-size: 6.5px; color: #666; text-align: center;">
+                        <div style="margin-bottom: 1px;">
                             <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
                         </div>
                         <div>
-                            Сформировано: ${new Date().toLocaleString('ru-RU')}
+                            Прайс-лист сформирован в приложении "ЭлектроСмета" | Дата: ${new Date().toLocaleString('ru-RU')}
                         </div>
                     </div>
                 `;
             } else if (pageNum < totalPages) {
+                // На промежуточных страницах добавляем мини-разделитель
                 pdfContent += `
-                    <div style="margin-top: 6px; text-align: center; font-size: ${fontSize.small}px; color: #999;">
-                        ...
+                    <div style="margin-top: 4px; text-align: center; font-size: 7px; color: #999;">
+                        --- продолжение ---
                     </div>
                 `;
             }
@@ -1458,17 +1445,20 @@ window.addEventListener('message', function(event) {
                     backgroundColor: '#ffffff'
                 }).then(canvas => {
                     const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                    const imgWidth = 180;
+                    const imgWidth = 180; // Ширина равна ширине контейнера
                     const imgHeight = canvas.height * imgWidth / canvas.width;
                     
+                    // Если это не первая страница, добавляем новую
                     if (pageNum > 1) {
                         pdf.addPage();
                     }
                     
-                    // Ключевое изменение: верхний отступ 15 мм (1.5 см)
-                    pdf.addImage(imgData, 'JPEG', 15, 15, imgWidth, imgHeight);
+                    // Добавляем изображение на страницу с минимальными отступами
+                    pdf.addImage(imgData, 'JPEG', 15, 8, imgWidth, imgHeight); // Отступы по 15мм слева/справа
                     
+                    // Удаляем временный контейнер
                     document.body.removeChild(tempContainer);
+                    
                     resolve();
                 }).catch(error => {
                     console.error('Ошибка при создании страницы PDF:', error);
@@ -1502,21 +1492,6 @@ window.addEventListener('message', function(event) {
         document.body.removeChild(loadingDiv);
         showNotification('Ошибка при создании PDF прайс-листа');
     });
-}
-
-		// Проверяем загрузку библиотек PDF
-function checkPDFLibraries() {
-    if (typeof jspdf === 'undefined') {
-        console.error('jsPDF не загружен!');
-        alert('Библиотека jsPDF не загружена. Пожалуйста, обновите страницу.');
-        return false;
-    }
-    if (typeof html2canvas === 'undefined') {
-        console.error('html2canvas не загружен!');
-        alert('Библиотека html2canvas не загружена. Пожалуйста, обновите страницу.');
-        return false;
-    }
-    return true;
 }
         function createPricePDF() {
     if (!checkPDFLibraries()) return;
