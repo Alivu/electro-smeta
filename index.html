@@ -1320,7 +1320,7 @@ function createPricePDF() {
     // Разбиваем на страницы (высота строк уменьшена на 10%)
     priceData.forEach((section, index) => {
         // Высота раздела (строки уменьшены на 10%)
-        const sectionHeight = 11 + (section.items.length * 2.7); // Было 12 + (n * 3)
+        const sectionHeight = 12 + (section.items.length * 2.7); // Было 12 + (n * 3)
         
         if (currentPageHeight + sectionHeight > maxPageHeight && currentPage.length > 0) {
             pages.push([...currentPage]);
@@ -1348,10 +1348,10 @@ function createPricePDF() {
     
     // Настройки шрифтов (сжатые на 10%)
     const fontSize = {
-        header: 10,     // 11px → 10px (-10%)
-        section: 9,     // 10px → 9px (-10%)
-        table: 8,       // 9px → 8px (-10%)
-        small: 7        // 8px → 7px (-10%)
+        header: 11,     // 11px → 10px (-10%)
+        section: 10,     // 10px → 9px (-10%)
+        table: 9,       // 9px → 8px (-10%)
+        small: 8        // 8px → 7px (-10%)
     };
     
     // Создаем контейнер для каждой страницы
@@ -1365,7 +1365,7 @@ function createPricePDF() {
                 left: -9999px;
                 top: -9999px;
                 width: 180mm;
-                padding: 8mm 0; // Уменьшили отступы сверху/снизу (10mm → 8mm)
+                padding: 9mm 0; // Уменьшили отступы сверху/снизу (10mm → 8mm)
                 background: white;
                 font-family: 'Arial', sans-serif;
                 font-size: ${fontSize.table}px;
