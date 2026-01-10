@@ -1255,6 +1255,24 @@
     <script>
         // Проверяем iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+		// Обработчик для кнопки "Скачать PDF" в окне печати
+window.addEventListener('message', function(event) {
+    if (event.data.action === 'savePDFFromPrint') {
+        // Заполняем поля в модальном окне PDF
+        document.getElementById('clientName').value = event.data.data.clientName;
+        document.getElementById('estimateNumber').value = event.data.data.estimateNumber;
+        document.getElementById('estimateDate').value = event.data.data.estimateDate;
+        document.getElementById('notes').value = event.data.data.notes;
+        
+        // Закрываем окно печати
+        if (event.source) event.source.close();
+        
+        // Открываем PDF модальное окно
+        setTimeout(() => {
+            saveAsPDF();
+        }, 300);
+    }
+});
 		// Проверяем загрузку библиотек PDF
 function checkPDFLibraries() {
     if (typeof jspdf === 'undefined') {
