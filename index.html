@@ -1287,6 +1287,223 @@ window.addEventListener('message', function(event) {
 });
 // Новая функция для создания PDF прайс-листа
 
+		function createPricePDF() {
+    // Проверяем библиотеки
+    if (!checkPDFLibraries()) return;
+    
+    // Показываем индикатор загрузки
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 10px;
+        z-index: 9999;
+        font-size: 16px;
+    `;
+    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание PDF прайс-листа...';
+    document.body.appendChild(loadingDiv);
+    
+    // Получаем дату
+    const today = new Date().toLocaleDateString('ru-RU');
+    const hijri = getHijriDate();
+    
+    // Создаем массив страниц
+    const pages = [];
+    let currentPage = [];
+    let currentPageHeight = 0;
+    const maxPageHeight = 280;
+    
+    // Разбиваем на страницы
+    priceData.forEach((section, index) => {
+        const sectionHeight = 12 + (section.items.length * 2.7);
+        
+        if (currentPageHeight + sectionHeight > maxPageHeight && currentPage.length > 0) {
+            pages.push([...currentPage]);
+            currentPage = [section];
+            currentPageHeight = sectionHeight;
+        } else {
+            currentPage.push(section);
+            currentPageHeight += sectionHeight;
+        }
+        
+        if (index === priceData.length - 1 && currentPage.length > 0) {
+            pages.push([...currentPage]);
+        }
+    });
+    
+    console.log(`Создано ${pages.length} страниц PDF`);
+    
+    // Создаем PDF документ
+    const pdf = new jspdf.jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+    });
+    
+    // Настройки шрифтов
+    const fontSize = {
+        header: 11,
+        section: 10,
+        table: 9,
+        small: 8
+    };
+    
+    // Создаем контейнер для каждой страницы
+    let pageIndex = 0;
+    
+    function renderPage(pageSections, pageNum, totalPages) {
+        return new Promise((resolve) => {
+            const tempContainer = document.createElement('div');
+            tempContainer.style.cssText = `
+                position: fixed;
+                left: -9999px;
+                top: -9999px;
+                width: 180mm;
+                padding: 5mm 0 9mm 0; /* Уменьшен верхний отступ */
+                background: white;
+                font-family: 'Arial', sans-serif;
+                font-size: ${fontSize.table}px;
+                line-height: 1.1;
+            `;
+            
+            // Генерируем контент для страницы
+            let pdfContent = '';
+            
+            // Шапка (только на первой странице)
+            if (pageNum === 1) {
+                pdfContent += `
+                    <div style="text-align: center; margin-bottom: 6px;">
+                        <div style="font-size: ${fontSize.header}px; font-weight: bold; color: #2c3e50; margin-bottom: 2px;">
+                            ПРАЙС-ЛИСТ ЭЛЕКТРОМОНТАЖНЫХ РАБОТ
+                        </div>
+                        <div style="font-size: ${fontSize.small}px; color: #666; line-height: 1;">
+                            Electric_Group | ${today} | ${hijri.day} ${hijri.month} ${hijri.year} г.х.
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Номер страницы
+            pdfContent += `
+                <div style="text-align: right; font-size: ${fontSize.small}px; color: #666; margin-bottom: 4px;">
+                    стр. ${pageNum}/${totalPages}
+                </div>
+            `;
+            
+            // Добавляем разделы для этой страницы
+            pageSections.forEach(section => {
+                pdfContent += `
+                    <div style="margin-bottom: 6px;">
+                        <div style="background: #2c3e50; color: white; padding: 3px 6px; margin: 0 0 3px 0; font-size: ${fontSize.section}px; font-weight: bold; border-radius: 2px; line-height: 1;">
+                            ${section.section}
+                        </div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: ${fontSize.table}px; line-height: 1.1;">
+                            <thead>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 7%; text-align: center; font-size: ${fontSize.table}px; height: 14px;">Код</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 4px; width: 70%; font-size: ${fontSize.table}px; height: 14px;">Наименование работ</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 8%; text-align: center; font-size: ${fontSize.table}px; height: 14px;">Ед. изм.</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 15%; text-align: right; font-size: ${fontSize.table}px; height: 14px;">Цена, руб.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${section.items.map(item => `
+                                    <tr style="height: 16px;">
+                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: center; font-weight: bold; color: #3498db; font-size: ${fontSize.table}px; vertical-align: middle;">${item.id}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 4px; font-size: ${fontSize.table}px; line-height: 1.1; vertical-align: middle;">${item.name}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: center; font-size: ${fontSize.table}px; vertical-align: middle;">${item.unit}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: right; font-weight: bold; color: #27ae60; font-size: ${fontSize.table}px; vertical-align: middle;">${formatCurrency(item.price)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+            
+            // Добавляем футер только на последней странице
+            if (pageNum === totalPages) {
+                pdfContent += `
+                    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #ddd; font-size: ${fontSize.small}px; color: #666; text-align: center; line-height: 1;">
+                        <div>
+                            <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
+                        </div>
+                        <div>
+                            Сформировано: ${new Date().toLocaleString('ru-RU')}
+                        </div>
+                    </div>
+                `;
+            } else if (pageNum < totalPages) {
+                pdfContent += `
+                    <div style="margin-top: 6px; text-align: center; font-size: ${fontSize.small}px; color: #999;">
+                        ...
+                    </div>
+                `;
+            }
+            
+            tempContainer.innerHTML = pdfContent;
+            document.body.appendChild(tempContainer);
+            
+            // Даем время на рендеринг
+            setTimeout(() => {
+                html2canvas(tempContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                    const imgWidth = 180;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    
+                    if (pageNum > 1) {
+                        pdf.addPage();
+                    }
+                    
+                    // Ключевое изменение: верхний отступ 15 мм (1.5 см)
+                    pdf.addImage(imgData, 'JPEG', 15, 15, imgWidth, imgHeight);
+                    
+                    document.body.removeChild(tempContainer);
+                    resolve();
+                }).catch(error => {
+                    console.error('Ошибка при создании страницы PDF:', error);
+                    document.body.removeChild(tempContainer);
+                    resolve();
+                });
+            }, 100);
+        });
+    }
+    
+    // Рендерим все страницы последовательно
+    async function renderAllPages() {
+        for (let i = 0; i < pages.length; i++) {
+            await renderPage(pages[i], i + 1, pages.length);
+            pageIndex++;
+        }
+        
+        // Сохранение
+        const todayStr = new Date().toLocaleDateString('ru-RU').replace(/\//g, '-');
+        pdf.save(`Прайс-лист_${todayStr}.pdf`);
+        
+        // Очистка
+        document.body.removeChild(loadingDiv);
+        
+        showNotification(`PDF прайс-листа сохранен! (${pages.length} стр.)`);
+    }
+    
+    // Запускаем рендеринг
+    renderAllPages().catch(error => {
+        console.error('Ошибка при создании PDF:', error);
+        document.body.removeChild(loadingDiv);
+        showNotification('Ошибка при создании PDF прайс-листа');
+    });
+}
+
 		// Проверяем загрузку библиотек PDF
 function checkPDFLibraries() {
     if (typeof jspdf === 'undefined') {
