@@ -2587,167 +2587,140 @@ function initializeApp() {
             document.getElementById('printModal').style.display = 'flex';
         }
 
-// Новая функция, которая показывает HTML для печати И предлагает PDF
-function showPrintDialog() {
-    const clientName = document.getElementById('clientName').value || 'Клиент не указан';
-    const estimateNumber = document.getElementById('estimateNumber').value;
-    const estimateDate = document.getElementById('estimateDate').value;
-    const notes = document.getElementById('notes').value;
-    
-    const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
-    
-    if (filledRows.length === 0) {
-        alert('Смета пуста! Добавьте позиции перед печатью.');
-        return;
-    }
-    
-    const totalAmount = filledRows.reduce((sum, row) => sum + row.total, 0);
-    
-    // Создаем HTML с выбором: Печать ИЛИ PDF
-    const printContent = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>Смета ${estimateNumber}</title>
-            <style>
-                body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-                .print-container { 
-                    max-width: 800px; 
-                    margin: 0 auto; 
-                    background: white; 
-                    padding: 30px; 
-                    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-                }
-                .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #3498db; padding-bottom: 20px; }
-                table { width: 100%; border-collapse: collapse; margin: 25px 0; }
-                th, td { border: 1px solid #ddd; padding: 10px; }
-                th { background: #2c3e50; color: white; }
-                .total { text-align: right; font-size: 18px; font-weight: bold; margin: 25px 0; color: #27ae60; }
-                .controls {
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    display: flex;
-                    gap: 10px;
-                    z-index: 1000;
-                }
-                .btn {
-                    padding: 12px 25px;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    transition: 0.3s;
-                }
-                .btn:hover { opacity: 0.9; transform: translateY(-2px); }
-                .btn-print { background: #3498db; color: white; }
-                .btn-pdf { background: #27ae60; color: white; }
-                .btn-close { background: #e74c3c; color: white; }
-                @media print {
-                    .controls { display: none; }
-                    body { background: white; }
-                    .print-container { box-shadow: none; padding: 0; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="controls">
-                <button onclick="window.print()" class="btn btn-print">
-                    <span>🖨️</span> Печать
-                </button>
-                <button onclick="saveAsPDFFromPrint()" class="btn btn-pdf">
-                    <span>📄</span> Скачать PDF
-                </button>
-                <button onclick="window.close()" class="btn btn-close">
-                    <span>✕</span> Закрыть
-                </button>
-            </div>
+        function generatePrint() {
+            const clientName = document.getElementById('clientName').value || 'Клиент не указан';
+            const estimateNumber = document.getElementById('estimateNumber').value;
+            const estimateDate = document.getElementById('estimateDate').value;
+            const notes = document.getElementById('notes').value;
             
-            <div class="print-container">
-                <div class="header">
-                    <h1 style="color: #2c3e50;">СМЕТА № ${estimateNumber}</h1>
-                    <div style="font-size: 16px; margin: 10px 0;"><strong>Клиент:</strong> ${clientName}</div>
-                    <div style="font-size: 16px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
-                </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Код</th>
-                            <th>Наименование</th>
-                            <th>Ед.</th>
-                            <th>Цена, руб.</th>
-                            <th>Кол-во</th>
-                            <th>Сумма, руб.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${filledRows.map((row, index) => `
+            const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
+            
+            if (filledRows.length === 0) {
+                alert('Смета пуста! Добавьте позиции перед печатью.');
+                return;
+            }
+            
+            const totalAmount = filledRows.reduce((sum, row) => sum + row.total, 0);
+            
+            const printContent = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Смета ${estimateNumber}</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            padding: 20px;
+                            margin: 0;
+                            font-size: 14px;
+                        }
+                        .header {
+                            text-align: center;
+                            margin-bottom: 20px;
+                            border-bottom: 2px solid #000;
+                            padding-bottom: 10px;
+                        }
+                        h1 {
+                            margin: 0 0 10px 0;
+                            font-size: 18px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin: 20px 0;
+                        }
+                        th, td {
+                            border: 1px solid #000;
+                            padding: 8px;
+                            text-align: left;
+                            font-size: 12px;
+                        }
+                        th {
+                            background: #f0f0f0;
+                            font-weight: bold;
+                        }
+                        .total {
+                            text-align: right;
+                            font-size: 16px;
+                            font-weight: bold;
+                            margin-top: 20px;
+                            padding-top: 10px;
+                            border-top: 2px solid #000;
+                        }
+                        .notes {
+                            margin-top: 20px;
+                            padding: 10px;
+                            background: #f9f9f9;
+                            border-left: 4px solid #3498db;
+                        }
+                        @media print {
+                            body { padding: 0; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>СМЕТА № ${estimateNumber}</h1>
+                        <div>на электромонтажные работы</div>
+                        <div><strong>Клиент:</strong> ${clientName} | <strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
+                    </div>
+                    
+                    <table>
+                        <thead>
                             <tr>
-                                <td><strong>${row.priceId || ''}</strong></td>
-                                <td>${row.name || ''}</td>
-                                <td>${row.unit || ''}</td>
-                                <td>${formatCurrency(row.price)}</td>
-                                <td>${row.quantity}</td>
-                                <td><strong style="color: #27ae60;">${formatCurrency(row.total)}</strong></td>
+                                <th width="5%">№</th>
+                                <th width="10%">Код</th>
+                                <th>Наименование</th>
+                                <th width="8%">Ед.</th>
+                                <th width="12%">Цена, руб.</th>
+                                <th width="8%">Кол-во</th>
+                                <th width="12%">Сумма, руб.</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-                
-                <div class="total">
-                    ИТОГО: ${formatCurrency(totalAmount)} руб.
-                </div>
-                
-                ${notes ? `<div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0;">
-                    <strong>Примечания:</strong><br>${notes.replace(/\n/g, '<br>')}
-                </div>` : ''}
-                
-                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; text-align: center;">
-                    Смета составлена в приложении "ЭлектроСмета" от Electric_Group<br>
-                    Дата формирования: ${new Date().toLocaleString('ru-RU')}<br>
-                    Телефон: +7 (963) 598-48-46 | Telegram: @Electric_Group
-                </div>
-            </div>
+                        </thead>
+                        <tbody>
+                            ${filledRows.map((row, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${row.priceId || ''}</td>
+                                    <td>${row.name || ''}</td>
+                                    <td>${row.unit || ''}</td>
+                                    <td>${formatCurrency(row.price)}</td>
+                                    <td>${row.quantity}</td>
+                                    <td>${formatCurrency(row.total)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div class="total">
+                        Итого: ${formatCurrency(totalAmount)} руб.
+                    </div>
+                    
+                    ${notes ? `
+                    <div class="notes">
+                        <strong>Примечания:</strong><br>
+                        ${notes.replace(/\n/g, '<br>')}
+                    </div>
+                    ` : ''}
+                    
+                    <div class="notes" style="margin-top: 20px; font-size: 11px;">
+                        <strong>Примечание:</strong> Смета составлена с использованием приложения ЭлектроСмета<br>
+                        Дата формирования: ${new Date().toLocaleString('ru-RU')}
+                    </div>
+                    
+                    <script>
+                        window.onload = function() {
+                            window.print();
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `;  // Конец переменной printContent
             
-            <script>
-                // Функция для отправки данных обратно в основное окно
-                function saveAsPDFFromPrint() {
-                    window.opener.postMessage({
-                        action: 'savePDFFromPrint',
-                        data: {
-                            clientName: '${clientName}',
-                            estimateNumber: '${estimateNumber}',
-                            estimateDate: '${estimateDate}',
-                            notes: '${notes.replace(/'/g, "\\'")}'
-                        }
-                    }, '*');
-                }
-                
-                // Закрытие после печати (опционально)
-                window.onafterprint = function() {
-                    setTimeout(() => {
-                        if (confirm('Закрыть окно печати?')) {
-                            window.close();
-                        }
-                    }, 500);
-                };
-            <\/script>
-        </body>
-        </html>
-    `;
-    
-    document.getElementById('printModal').style.display = 'none';
-    
-    const printWindow = window.open('', '_blank', 'width=900,height=700');
-    printWindow.document.open();
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-}
+            document.getElementById('printModal').style.display = 'none';
+        }
 
         // ========== PDF ФУНКЦИИ ==========
         
