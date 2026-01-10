@@ -1287,180 +1287,100 @@ window.addEventListener('message', function(event) {
 });
 // Новая функция для создания PDF прайс-листа
 function createPricePDF() {
-    // Проверяем библиотеки
-    if (!checkPDFLibraries()) return;
-    
-    // Показываем индикатор загрузки
-    const loadingDiv = document.createElement('div');
-    loadingDiv.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 20px 30px;
-        border-radius: 10px;
-        z-index: 9999;
-        font-size: 16px;
-    `;
-    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание PDF прайс-листа...';
-    document.body.appendChild(loadingDiv);
-    
-    // Получаем дату
-    const today = new Date().toLocaleDateString('ru-RU');
-    const hijri = getHijriDate();
-    
-    // Создаем массив страниц
-    const sectionsPerPage = 2; // Максимум 2 раздела на страницу
-    const pages = [];
-    let currentPage = [];
-    let currentPageHeight = 0;
-    const maxPageHeight = 250; // мм на странице A4
-    
-    // Разбиваем на страницы
-    priceData.forEach((section, index) => {
-        // Примерная высота раздела (в мм)
-        const maxPageHeight = pageNum === 1 ? 250 - pdfTop - pdfBottom : 250 - pdfTop - pdfBottom;
-        
-        if (currentPageHeight + sectionHeight > maxPageHeight && currentPage.length > 0) {
-            pages.push([...currentPage]);
-            currentPage = [section];
-            currentPageHeight = sectionHeight;
-        } else {
-            currentPage.push(section);
-            currentPageHeight += sectionHeight;
-        }
-        
-        // Если это последний раздел, добавляем оставшуюся страницу
-        if (index === priceData.length - 1 && currentPage.length > 0) {
-            pages.push([...currentPage]);
-        }
-    });
-    
-    console.log(`Создано ${pages.length} страниц PDF`);
-    
-    // Создаем PDF документ
-    const pdf = new jspdf.jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-    });
-    
-    // Создаем контейнер для каждой страницы
-    let pageIndex = 0;
-    
-function renderPage(pageSections, pageNum, totalPages) {
-    return new Promise((resolve) => {
-        // Настройки отступов
-        const pdfLeft = 5;     // боковые
-        const pdfRight = 5;
-        const pdfBottom = 15;  // нижний
-        const pdfTop = pageNum === 1 ? 30 : 15; // верхний: первая страница выше
-
-        const tempContainer = document.createElement('div');
-        tempContainer.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: -9999px;
-            width: ${210 - pdfLeft - pdfRight}mm;
-            padding: 0 ${pdfRight}mm ${pdfBottom}mm ${pdfLeft}mm;
-            background: white;
-            font-family: Arial, sans-serif;
-            font-size: 10px;
-            box-sizing: border-box;
-        `;
-
-        let html = '';
-
-        // Шапка только на первой странице
-        if (pageNum === 1) {
-            html += `
-                <div style="text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 10px;">
-                    <h1 style="margin: 0; font-size: 20px; color: #2c3e50;">ПРАЙС-ЛИСТ</h1>
-                    <div style="font-size: 14px;">электромонтажных работ</div>
-                    <div style="font-size: 12px; color: #3498db;">Electric_Group</div>
-                    <div style="font-size: 11px;">
-                        <strong>Дата:</strong> ${today}
-                        <span style="margin-left: 10px; background: #f8f9fa; padding: 2px 6px; border-radius: 2px; font-size: 10px;">
-                            <i class="fas fa-mosque"></i> ${hijri.day} ${hijri.month} ${hijri.year} г.х.
-                        </span>
-                    </div>
-                    <div style="font-size: 9px; color: #666; margin-top: 5px;">
-                        Страница ${pageNum} из ${totalPages}
-                    </div>
-                </div>
-            `;
-        } else {
-            html += `
-                <div style="text-align: center; margin-bottom: 5px; font-size: 9px; color: #666;">
-                    Страница ${pageNum} из ${totalPages}
-                </div>
-            `;
-        }
-
-        // Контент разделов
-        pageSections.forEach(section => {
-            html += `
-                <div style="margin-bottom: 5px; page-break-inside: avoid;">
-                    <h2 style="background: #2c3e50; color: white; padding: 6px 10px; margin: 0 0 4px 0; border-radius: 3px; font-size: 12px;">
-                        ${section.title}
-                    </h2>
-                    <div>
-                        ${section.items.map(item => `
-                            <div style="display: flex; justify-content: space-between; padding: 2px 4px; font-size: 10px;">
-                                <span>${item.number}</span>
-                                <span>${item.name}</span>
-                                <span>${item.unit}</span>
-                                <span>${item.price}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        });
-
-        tempContainer.innerHTML = html;
-        document.body.appendChild(tempContainer);
-
-        html2canvas(tempContainer, { scale: 2 }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const imgProps = pdf.getImageProperties(imgData);
-            const pdfWidth = 210 - pdfLeft - pdfRight;
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-            if (pageNum > 1) pdf.addPage();
-            pdf.addImage(imgData, 'PNG', pdfLeft, pdfTop, pdfWidth, pdfHeight);
-
-            document.body.removeChild(tempContainer);
-            resolve();
-        });
-    });
-}
-
-    
-    // Рендерим все страницы последовательно
-    async function renderAllPages() {
-        for (let i = 0; i < pages.length; i++) {
-            await renderPage(pages[i], i + 1, pages.length);
-            pageIndex++;
-        }
-        
-        // Сохранение
-        const todayStr = new Date().toLocaleDateString('ru-RU').replace(/\//g, '-');
-        pdf.save(`Прайс-лист_${todayStr}.pdf`);
-        
-        // Очистка
-        document.body.removeChild(loadingDiv);
-        
-        showNotification(`PDF прайс-листа сохранен! (${pages.length} стр.)`);
+     if (typeof jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+        alert('Для создания PDF нужны библиотеки jsPDF и html2canvas');
+        return;
     }
+
+    // Создаём временный контейнер для HTML прайс-листа
+    const tempContainer = document.createElement('div');
+    tempContainer.style.cssText = `
+        position: fixed; 
+        left: -9999px; 
+        top: -9999px; 
+        width: 210mm; 
+        padding: 15mm; 
+        background: white;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+    `;
     
-    // Запускаем рендеринг
-    renderAllPages().catch(error => {
-        console.error('Ошибка при создании PDF:', error);
-        document.body.removeChild(loadingDiv);
-        showNotification('Ошибка при создании PDF прайс-листа');
+    // Текущая дата
+    const today = new Date().toLocaleDateString('ru-RU');
+
+    // Формируем HTML для всех разделов
+    let html = `
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h1 style="margin: 0 0 10px 0; font-size: 24px;">Прайс-лист электромонтажных работ</h1>
+            <div style="font-size: 16px; color: #3498db;">Electric_Group</div>
+            <div style="font-size: 14px; margin-top: 5px;">Дата: ${today}</div>
+        </div>
+    `;
+
+    priceData.forEach(section => {
+        html += `
+            <div style="margin-bottom: 15px;">
+                <h2 style="background: #2c3e50; color: white; padding: 6px 10px; font-size: 14px; border-radius: 4px;">
+                    ${section.section}
+                </h2>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <thead>
+                        <tr style="background: #f0f0f0;">
+                            <th style="border: 1px solid #000; width: 50px; text-align: center;">Код</th>
+                            <th style="border: 1px solid #000; padding: 4px;">Наименование</th>
+                            <th style="border: 1px solid #000; width: 70px; text-align: center;">Ед.</th>
+                            <th style="border: 1px solid #000; width: 80px; text-align: right;">Цена, руб.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${section.items.map(item => `
+                            <tr>
+                                <td style="border: 1px solid #000; text-align: center;">${item.id}</td>
+                                <td style="border: 1px solid #000; padding: 4px;">${item.name}</td>
+                                <td style="border: 1px solid #000; text-align: center;">${item.unit}</td>
+                                <td style="border: 1px solid #000; text-align: right;">${formatCurrency(item.price)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    });
+
+    tempContainer.innerHTML = html;
+    document.body.appendChild(tempContainer);
+
+    // Генерация PDF
+    html2canvas(tempContainer, { scale: 2, useCORS: true }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const imgWidth = 190; // отступы слева/справа
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+
+        let heightLeft = imgHeight;
+        let position = 10;
+
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 10, position - (imgHeight - heightLeft), imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+        }
+
+        // Очистка
+        document.body.removeChild(tempContainer);
+
+        // Сохраняем PDF
+        const filename = `Прайс_ЭлектроСмета_${today.replace(/\./g,'-')}.pdf`;
+        pdf.save(filename);
+        showNotification(`PDF прайс-листа "${filename}" создан!`);
+    }).catch(err => {
+        document.body.removeChild(tempContainer);
+        alert('Ошибка при создании PDF: ' + err.message);
     });
 }
 		
