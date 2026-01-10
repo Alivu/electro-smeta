@@ -1293,17 +1293,18 @@ function createPricePDF() {
     }
 
     const tempContainer = document.createElement('div');
-    tempContainer.style.cssText = `
-        position: fixed;
-        left: -9999px;
-        top: -9999px;
-        width: 210mm;
-        padding: 7.5mm; /* боковые отступы уменьшены в 2 раза */
-        background: white;
-        font-family: Arial, sans-serif;
-        font-size: 10px; /* уменьшенный шрифт */
-        line-height: 1.1;
-    `;
+tempContainer.style.cssText = `
+    position: fixed;
+    left: -9999px;
+    top: -9999px;
+    width: 210mm;
+    padding: 10mm 7.5mm 10mm 7.5mm; /* верх 10мм, бок 7.5мм, низ 10мм */
+    background: white;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    line-height: 1.1;
+`;
+
 
     const today = new Date().toLocaleDateString('ru-RU');
 
