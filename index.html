@@ -1350,64 +1350,64 @@ function createPricePDF() {
     // Создаем контейнер для каждой страницы
     let pageIndex = 0;
     
-   function renderPage(pageSections, pageNum, totalPages) {
+ function renderPage(pageSections, pageNum, totalPages) {
     return new Promise((resolve) => {
 
-        // === Отступы ===
-        const marginLeft = 15;   // мм
-        const marginRight = 15;  // мм
-        const marginBottom = 15; // мм
+        // Постоянные отступы PDF
+        const pdfLeft = 15;     // мм
+        const pdfRight = 15;    // мм
+        const pdfBottom = 15;   // мм
+        const pdfTop = (pageNum === 1 ? 30 : 15); // мм
 
-        // Верх зависит от страницы
-        const marginTop = (pageNum === 1 ? 30 : 15); // мм
-
-        // === Создаём контейнер ===
+        // Контейнер для html2canvas (НЕ должен иметь верхний padding!)
         const tempContainer = document.createElement('div');
         tempContainer.style.cssText = `
             position: fixed;
             left: -9999px;
             top: -9999px;
-            width: ${210 - marginLeft - marginRight}mm;
-            padding: ${marginTop}mm ${marginRight}mm ${marginBottom}mm ${marginLeft}mm;
+            width: ${210 - pdfLeft - pdfRight}mm;
+            padding: 0 ${pdfRight}mm ${pdfBottom}mm ${pdfLeft}mm;
             background: white;
             font-family: Arial, sans-serif;
             font-size: 10px;
             box-sizing: border-box;
         `;
 
-        // === Заголовок только на первой странице ===
-        let pdfContent = "";
+        let html = "";
 
+        // Шапка только на первой странице
         if (pageNum === 1) {
-            pdfContent += `
+            html += `
                 <div style="text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;">
                     <h1 style="margin: 0 0 5px 0; font-size: 20px; color: #2c3e50;">ПРАЙС-ЛИСТ</h1>
                     <div style="font-size: 14px; margin-bottom: 3px;">электромонтажных работ</div>
                     <div style="font-size: 12px; color: #3498db; margin-bottom: 5px;">Electric_Group</div>
+
                     <div style="font-size: 11px;">
                         <strong>Дата:</strong> ${today}
                         <span style="margin-left: 10px; background: #f8f9fa; padding: 2px 6px; border-radius: 2px; font-size: 10px;">
                             <i class="fas fa-mosque"></i> ${hijri.day} ${hijri.month} ${hijri.year} г.х.
                         </span>
                     </div>
+
                     <div style="font-size: 9px; color: #666; margin-top: 5px;">
                         Страница ${pageNum} из ${totalPages}
                     </div>
                 </div>
             `;
         } else {
-            // На остальных просто номер страницы
-            pdfContent += `
+            html += `
                 <div style="text-align: center; margin-bottom: 10px; font-size: 9px; color: #666;">
                     Страница ${pageNum} из ${totalPages}
                 </div>
             `;
         }
 
-        // === Разделы ===
+        // Разделы
         pageSections.forEach(section => {
-            pdfContent += `
+            html += `
                 <div style="margin-bottom: 12px; page-break-inside: avoid;">
+
                     <h2 style="background: #2c3e50; color: white; padding: 6px 10px; margin: 0 0 6px 0; border-radius: 3px; font-size: 12px;">
                         ${section.section}
                     </h2>
@@ -1424,26 +1424,23 @@ function createPricePDF() {
 
                         <tbody>
                             ${section.items
-                                .map(
-                                    (item) => `
+                                .map(item => `
                                     <tr>
                                         <td style="border: 1px solid #ddd; padding: 3px 2px; text-align: center; font-weight: bold; color: #3498db;">${item.id}</td>
                                         <td style="border: 1px solid #ddd; padding: 3px 4px;">${item.name}</td>
                                         <td style="border: 1px solid #ddd; padding: 3px 2px; text-align: center;">${item.unit}</td>
                                         <td style="border: 1px solid #ddd; padding: 3px 2px; text-align: right; font-weight: bold; color: #27ae60;">${formatCurrency(item.price)}</td>
                                     </tr>
-                                `
-                                )
-                                .join("")}
+                                `).join("")}
                         </tbody>
                     </table>
                 </div>
             `;
         });
 
-        // === Футер только на последней странице ===
+        // Футер на последней странице
         if (pageNum === totalPages) {
-            pdfContent += `
+            html += `
                 <div style="margin-top: 15px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 8px; color: #666; text-align: center;">
                     <div style="margin-bottom: 3px;">
                         <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
@@ -1456,36 +1453,34 @@ function createPricePDF() {
             `;
         }
 
-        tempContainer.innerHTML = pdfContent;
+        tempContainer.innerHTML = html;
         document.body.appendChild(tempContainer);
 
         requestAnimationFrame(() => {
             html2canvas(tempContainer, {
                 scale: 2,
-                useCORS: true,
-                logging: false,
                 backgroundColor: "#ffffff",
-            })
-                .then((canvas) => {
-                    const imgData = canvas.toDataURL("image/jpeg", 0.85);
-                    const imgWidth = 210 - marginLeft - marginRight; // мм
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                useCORS: true
+            }).then(canvas => {
+                const imgData = canvas.toDataURL("image/jpeg", 0.85);
+                const imgWidth = 210 - pdfLeft - pdfRight;
+                const imgHeight = canvas.height * imgWidth / canvas.width;
 
-                    if (pageNum > 1) pdf.addPage();
+                if (pageNum > 1) pdf.addPage();
 
-                    pdf.addImage(imgData, "JPEG", marginLeft, marginTop, imgWidth, imgHeight);
+                // ВАЖНО: реальный отступ в PDF
+                pdf.addImage(imgData, "JPEG", pdfLeft, pdfTop, imgWidth, imgHeight);
 
-                    document.body.removeChild(tempContainer);
-                    resolve();
-                })
-                .catch((error) => {
-                    console.error("Ошибка при создании страницы PDF:", error);
-                    document.body.removeChild(tempContainer);
-                    resolve();
-                });
+                document.body.removeChild(tempContainer);
+                resolve();
+            }).catch(() => {
+                document.body.removeChild(tempContainer);
+                resolve();
+            });
         });
     });
 }
+
     
     // Рендерим все страницы последовательно
     async function renderAllPages() {
