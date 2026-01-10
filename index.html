@@ -1354,10 +1354,10 @@ function createPricePDF() {
     return new Promise((resolve) => {
 
         // Постоянные отступы PDF
-        const pdfLeft = 15;     // мм
-        const pdfRight = 15;    // мм
-        const pdfBottom = 15;   // мм
-        const pdfTop = (pageNum === 1 ? 30 : 15); // мм
+        const pdfLeft = 5;     // мм
+        const pdfRight = 5;    // мм
+        const pdfBottom = 5;   // мм
+        const pdfTop = (pageNum === 1 ? 5 : 15); // мм
 
         // Контейнер для html2canvas (НЕ должен иметь верхний padding!)
         const tempContainer = document.createElement('div');
