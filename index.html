@@ -1286,7 +1286,22 @@ window.addEventListener('message', function(event) {
     }
 });
 // Новая функция для создания PDF прайс-листа
-function createPricePDF() {
+
+		// Проверяем загрузку библиотек PDF
+function checkPDFLibraries() {
+    if (typeof jspdf === 'undefined') {
+        console.error('jsPDF не загружен!');
+        alert('Библиотека jsPDF не загружена. Пожалуйста, обновите страницу.');
+        return false;
+    }
+    if (typeof html2canvas === 'undefined') {
+        console.error('html2canvas не загружен!');
+        alert('Библиотека html2canvas не загружена. Пожалуйста, обновите страницу.');
+        return false;
+    }
+    return true;
+}
+        function createPricePDF() {
     if (!checkPDFLibraries()) return;
     
     const loadingDiv = document.createElement('div');
@@ -1308,111 +1323,37 @@ function createPricePDF() {
     const today = new Date().toLocaleDateString('ru-RU');
     const hijri = getHijriDate();
     
-    // Создаем массив страниц - ПРОСТОЙ ПОДХОД
+    // Простой разбивка на страницы как было изначально
     const pages = [];
     let currentPage = [];
-    let currentHeight = 0;
+    let currentPageHeight = 0;
+    const maxPageHeight = 280; // A4: 297мм - отступы
     
-    // Высота элементов в мм
-    const HEADER_HEIGHT = 15;    // Шапка
-    const PAGE_NUM_HEIGHT = 5;   // Номер страницы
-    const SECTION_HEADER = 8;    // Заголовок раздела
-    const ROW_HEIGHT = 5;        // Строка (0,5 см)
-    const FOOTER_HEIGHT = 15;    // Футер
-    
-    // Максимальная высота A4: 297мм - отступы
-    const FIRST_PAGE_MAX = 297 - 15 - 15; // Первая страница: 267мм
-    const OTHER_PAGE_MAX = 297 - 15 - 15; // Другие страницы: 267мм
-    
-    // Проходим по всем разделам
-    priceData.forEach((section, sectionIndex) => {
-        // Высота раздела = заголовок + строки
-        const sectionHeight = SECTION_HEADER + (section.items.length * ROW_HEIGHT);
+    priceData.forEach((section, index) => {
+        const sectionHeight = 12 + (section.items.length * 2.7);
         
-        // Если это первый раздел на странице, проверяем, поместится ли он целиком
-        if (currentPage.length === 0) {
-            // Рассчитываем доступное место
-            const availableHeight = pages.length === 0 ? 
-                FIRST_PAGE_MAX - HEADER_HEIGHT - PAGE_NUM_HEIGHT - FOOTER_HEIGHT :
-                OTHER_PAGE_MAX - PAGE_NUM_HEIGHT - FOOTER_HEIGHT;
-            
-            if (sectionHeight <= availableHeight) {
-                // Раздел помещается целиком
-                currentPage.push(section);
-                currentHeight = sectionHeight;
-            } else {
-                // Раздел не помещается - разбиваем его
-                console.warn(`Раздел "${section.section}" слишком большой, разбиваем...`);
-                
-                // Разбиваем раздел на части
-                const maxRowsPerPage = Math.floor((availableHeight - SECTION_HEADER) / ROW_HEIGHT);
-                
-                if (maxRowsPerPage <= 0) {
-                    console.error(`Не могу разместить даже одну строку на странице!`);
-                    return;
-                }
-                
-                // Разбиваем items на части
-                for (let i = 0; i < section.items.length; i += maxRowsPerPage) {
-                    const partItems = section.items.slice(i, i + maxRowsPerPage);
-                    const partSection = {
-                        section: section.section + (i > 0 ? ` (продолжение)` : ''),
-                        items: partItems
-                    };
-                    
-                    // Если это не первая часть, начинаем новую страницу
-                    if (i > 0) {
-                        pages.push([...currentPage]);
-                        currentPage = [partSection];
-                        currentHeight = SECTION_HEADER + (partItems.length * ROW_HEIGHT);
-                    } else {
-                        currentPage.push(partSection);
-                        currentHeight = SECTION_HEADER + (partItems.length * ROW_HEIGHT);
-                    }
-                    
-                    // Если это последняя часть раздела и не последний раздел в данных
-                    if (i + maxRowsPerPage >= section.items.length && sectionIndex < priceData.length - 1) {
-                        // Завершаем страницу
-                        pages.push([...currentPage]);
-                        currentPage = [];
-                        currentHeight = 0;
-                    }
-                }
-            }
+        if (currentPageHeight + sectionHeight > maxPageHeight && currentPage.length > 0) {
+            pages.push([...currentPage]);
+            currentPage = [section];
+            currentPageHeight = sectionHeight;
         } else {
-            // Уже есть разделы на странице, проверяем, поместится ли еще один
-            const availableHeight = pages.length === 0 ? 
-                FIRST_PAGE_MAX - HEADER_HEIGHT - PAGE_NUM_HEIGHT - FOOTER_HEIGHT - currentHeight :
-                OTHER_PAGE_MAX - PAGE_NUM_HEIGHT - FOOTER_HEIGHT - currentHeight;
-            
-            if (sectionHeight <= availableHeight) {
-                // Помещается - добавляем
-                currentPage.push(section);
-                currentHeight += sectionHeight;
-            } else {
-                // Не помещается - начинаем новую страницу
-                pages.push([...currentPage]);
-                currentPage = [section];
-                currentHeight = sectionHeight;
-            }
+            currentPage.push(section);
+            currentPageHeight += sectionHeight;
         }
         
-        // Если это последний раздел, добавляем оставшуюся страницу
-        if (sectionIndex === priceData.length - 1 && currentPage.length > 0) {
+        if (index === priceData.length - 1 && currentPage.length > 0) {
             pages.push([...currentPage]);
         }
     });
     
     console.log(`Создано ${pages.length} страниц PDF`);
     
-    // Создаем PDF документ
     const pdf = new jspdf.jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
     });
     
-    // Настройки шрифтов
     const fontSize = {
         header: 11,
         section: 12,
@@ -1420,21 +1361,7 @@ function createPricePDF() {
         small: 10
     };
     
-    // Рендерим все страницы
-    async function renderAllPages() {
-        for (let pageNum = 0; pageNum < pages.length; pageNum++) {
-            await renderPage(pages[pageNum], pageNum + 1, pages.length);
-        }
-        
-        // Сохранение
-        const todayStr = new Date().toLocaleDateString('ru-RU').replace(/\//g, '-');
-        pdf.save(`Прайс-лист_${todayStr}.pdf`);
-        
-        // Очистка
-        document.body.removeChild(loadingDiv);
-        
-        showNotification(`PDF прайс-листа сохранен! (${pages.length} стр.)`);
-    }
+    let pageIndex = 0;
     
     function renderPage(pageSections, pageNum, totalPages) {
         return new Promise((resolve) => {
@@ -1446,12 +1373,13 @@ function createPricePDF() {
                 width: 180mm;
                 background: white;
                 font-family: 'Calibri', 'Arial', sans-serif;
+                font-size: ${fontSize.table}px;
             `;
             
-            // Генерируем контент
-            let pdfContent = `
-                <div style="height: 15mm; display: flex; align-items: flex-end; justify-content: space-between;">
-            `;
+            let pdfContent = '';
+            
+            // ВЕРХНИЙ ОТСТУП 15мм ДЛЯ ВСЕХ СТРАНИЦ
+            pdfContent += `<div style="height: 15mm; display: flex; align-items: flex-end;">`;
             
             // Шапка только на первой странице
             if (pageNum === 1) {
@@ -1465,12 +1393,9 @@ function createPricePDF() {
                         </div>
                     </div>
                 `;
-            } else {
-                // Просто отступ 15мм на других страницах
-                pdfContent += `<div style="width: 100%;"></div>`;
             }
             
-            // Номер страницы справа
+            // Номер страницы
             pdfContent += `
                 <div style="font-size: ${fontSize.small}px; color: #666; white-space: nowrap; margin-left: 5mm;">
                     стр. ${pageNum}/${totalPages}
@@ -1482,26 +1407,26 @@ function createPricePDF() {
             // Добавляем разделы
             pageSections.forEach(section => {
                 pdfContent += `
-                    <div style="margin-bottom: 2mm;">
-                        <div style="background: #2c3e50; color: white; padding: 2mm 3mm; margin-bottom: 1mm; font-size: ${fontSize.section}px; font-weight: bold; border-radius: 1mm;">
+                    <div style="margin-bottom: 6px;">
+                        <div style="background: #2c3e50; color: white; padding: 3px 6px; margin: 0 0 3px 0; font-size: ${fontSize.section}px; font-weight: bold; border-radius: 2px;">
                             ${section.section}
                         </div>
                         <table style="width: 100%; border-collapse: collapse; font-size: ${fontSize.table}px;">
                             <thead>
-                                <tr style="background: #f8f9fa; height: 5mm;">
-                                    <th style="border: 1px solid #bbb; padding: 0.5mm 1mm; width: 8%; text-align: center;">Код</th>
-                                    <th style="border: 1px solid #bbb; padding: 0.5mm 2mm; width: 70%;">Наименование работ</th>
-                                    <th style="border: 1px solid #bbb; padding: 0.5mm 1mm; width: 7%; text-align: center;">Ед. изм.</th>
-                                    <th style="border: 1px solid #bbb; padding: 0.5mm 1mm; width: 15%; text-align: right;">Цена, руб.</th>
+                                <tr style="background: #f8f9fa;">
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 7%; text-align: center;">Код</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 4px; width: 70%;">Наименование работ</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 8%; text-align: center;">Ед. изм.</th>
+                                    <th style="border: 1px solid #bbb; padding: 2px 1px; width: 15%; text-align: right;">Цена, руб.</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${section.items.map(item => `
-                                    <tr style="height: 5mm;">
-                                        <td style="border: 1px solid #ddd; padding: 0.5mm 1mm; text-align: center; font-weight: bold; color: #3498db;">${item.id}</td>
-                                        <td style="border: 1px solid #ddd; padding: 0.5mm 2mm;">${item.name}</td>
-                                        <td style="border: 1px solid #ddd; padding: 0.5mm 1mm; text-align: center;">${item.unit}</td>
-                                        <td style="border: 1px solid #ddd; padding: 0.5mm 1mm; text-align: right; font-weight: bold; color: #27ae60;">${formatCurrency(item.price)}</td>
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: center; font-weight: bold; color: #3498db;">${item.id}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 4px;">${item.name}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: center;">${item.unit}</td>
+                                        <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: right; font-weight: bold; color: #27ae60;">${formatCurrency(item.price)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -1510,20 +1435,21 @@ function createPricePDF() {
                 `;
             });
             
-            // Футер только на последней странице
+            // НИЖНИЙ ОТСТУП 15мм ДЛЯ ВСЕХ СТРАНИЦ
             if (pageNum === totalPages) {
+                // На последней странице футер
                 pdfContent += `
-                    <div style="height: 15mm; display: flex; flex-direction: column; justify-content: flex-end; padding-top: 2mm; border-top: 1px solid #ddd;">
+                    <div style="height: 15mm; display: flex; flex-direction: column; justify-content: flex-end; padding-top: 5px; border-top: 1px solid #ddd;">
                         <div style="font-size: ${fontSize.small}px; color: #666; text-align: center;">
                             <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
                         </div>
-                        <div style="font-size: ${fontSize.small}px; color: #666; text-align: center; margin-top: 1mm;">
+                        <div style="font-size: ${fontSize.small}px; color: #666; text-align: center; margin-top: 2px;">
                             Сформировано: ${new Date().toLocaleString('ru-RU')}
                         </div>
                     </div>
                 `;
             } else {
-                // На других страницах просто отступ 15мм снизу
+                // На других страницах просто отступ
                 pdfContent += `<div style="height: 15mm;"></div>`;
             }
             
@@ -1545,13 +1471,13 @@ function createPricePDF() {
                         pdf.addPage();
                     }
                     
-                    // ВСЕГДА Y = 0, отступы уже в HTML
+                    // ВСЕГДА Y = 0
                     pdf.addImage(imgData, 'JPEG', 15, 0, imgWidth, imgHeight);
                     
                     document.body.removeChild(tempContainer);
                     resolve();
                 }).catch(error => {
-                    console.error('Ошибка при создании страницы:', error);
+                    console.error('Ошибка при создании страницы PDF:', error);
                     document.body.removeChild(tempContainer);
                     resolve();
                 });
@@ -1559,28 +1485,26 @@ function createPricePDF() {
         });
     }
     
-    // Запускаем рендеринг
+    async function renderAllPages() {
+        for (let i = 0; i < pages.length; i++) {
+            await renderPage(pages[i], i + 1, pages.length);
+            pageIndex++;
+        }
+        
+        const todayStr = new Date().toLocaleDateString('ru-RU').replace(/\//g, '-');
+        pdf.save(`Прайс-лист_${todayStr}.pdf`);
+        
+        document.body.removeChild(loadingDiv);
+        
+        showNotification(`PDF прайс-листа сохранен! (${pages.length} стр.)`);
+    }
+    
     renderAllPages().catch(error => {
         console.error('Ошибка при создании PDF:', error);
         document.body.removeChild(loadingDiv);
         showNotification('Ошибка при создании PDF прайс-листа');
     });
 }
-		// Проверяем загрузку библиотек PDF
-function checkPDFLibraries() {
-    if (typeof jspdf === 'undefined') {
-        console.error('jsPDF не загружен!');
-        alert('Библиотека jsPDF не загружена. Пожалуйста, обновите страницу.');
-        return false;
-    }
-    if (typeof html2canvas === 'undefined') {
-        console.error('html2canvas не загружен!');
-        alert('Библиотека html2canvas не загружена. Пожалуйста, обновите страницу.');
-        return false;
-    }
-    return true;
-}
-        
         // Функция для iOS - отложенная инициализация
         function initForIOS() {
             console.log('Инициализация для iOS');
