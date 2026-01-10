@@ -1352,22 +1352,27 @@ tempContainer.style.cssText = `
     html2canvas(tempContainer, { scale: 1.3, useCORS: true }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-        const pageWidth = 210;
-        const pageHeight = 297;
-        const imgWidth = 190;
-        const imgHeight = canvas.height * imgWidth / canvas.width;
+const pageWidth = 210;
+const pageHeight = 297;
+const marginLeft = 7.5; // боковые отступы
+const marginTop = 10;   // верхний отступ
+const marginBottom = 10; // нижний отступ
 
-        let heightLeft = imgHeight;
-        let position = 10;
+const imgWidth = pageWidth - marginLeft*2;
+const imgHeight = canvas.height * imgWidth / canvas.width;
 
-        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+let heightLeft = imgHeight;
+let position = marginTop;
 
-        while (heightLeft > 0) {
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 10, position - (imgHeight - heightLeft), imgWidth, imgHeight);
-            heightLeft -= pageHeight;
-        }
+pdf.addImage(imgData, 'PNG', marginLeft, position, imgWidth, imgHeight - marginBottom); // учтён нижний отступ
+heightLeft -= (pageHeight - marginTop - marginBottom);
+
+while (heightLeft > 0) {
+    pdf.addPage();
+    position = marginTop - (imgHeight - heightLeft);
+    pdf.addImage(imgData, 'PNG', marginLeft, position, imgWidth, imgHeight - marginBottom);
+    heightLeft -= (pageHeight - marginTop - marginBottom);
+}
 
         document.body.removeChild(tempContainer);
         const filename = `Прайс_ЭлектроСмета_${today.replace(/\./g,'-')}.pdf`;
