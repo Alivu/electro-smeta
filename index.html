@@ -1906,7 +1906,7 @@ function initializeApp() {
                     itemElement.addEventListener('click', function() {
                         addToEstimate(item);
                         //showTab('estimate');
-                        showNotification(`Добавлено: ${item.name.substring(0, 30)}...`);
+                        showNotification(`Добавлено: ${item.name.substring(0, 80)}...`);
                     });
                     
                     itemsContainer.appendChild(itemElement);
