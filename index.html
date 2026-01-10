@@ -1287,58 +1287,56 @@ window.addEventListener('message', function(event) {
 });
 // Новая функция для создания PDF прайс-листа
 function createPricePDF() {
-     if (typeof jspdf === 'undefined' || typeof html2canvas === 'undefined') {
+    if (typeof jspdf === 'undefined' || typeof html2canvas === 'undefined') {
         alert('Для создания PDF нужны библиотеки jsPDF и html2canvas');
         return;
     }
 
-    // Создаём временный контейнер для HTML прайс-листа
     const tempContainer = document.createElement('div');
     tempContainer.style.cssText = `
-        position: fixed; 
-        left: -9999px; 
-        top: -9999px; 
-        width: 210mm; 
-        padding: 15mm; 
+        position: fixed;
+        left: -9999px;
+        top: -9999px;
+        width: 210mm;
+        padding: 7.5mm; /* боковые отступы уменьшены в 2 раза */
         background: white;
         font-family: Arial, sans-serif;
-        font-size: 12px;
+        font-size: 10px; /* уменьшенный шрифт */
+        line-height: 1.1;
     `;
-    
-    // Текущая дата
+
     const today = new Date().toLocaleDateString('ru-RU');
 
-    // Формируем HTML для всех разделов
     let html = `
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="margin: 0 0 10px 0; font-size: 24px;">Прайс-лист электромонтажных работ</h1>
-            <div style="font-size: 16px; color: #3498db;">Electric_Group</div>
-            <div style="font-size: 14px; margin-top: 5px;">Дата: ${today}</div>
+        <div style="text-align: center; margin-bottom: 10px; padding-top: 10px;">
+            <h1 style="margin: 0 0 5px 0; font-size: 18px;">Прайс-лист электромонтажных работ</h1>
+            <div style="font-size: 14px; color: #3498db;">Electric_Group</div>
+            <div style="font-size: 12px; margin-top: 3px;">Дата: ${today}</div>
         </div>
     `;
 
     priceData.forEach(section => {
         html += `
-            <div style="margin-bottom: 15px;">
-                <h2 style="background: #2c3e50; color: white; padding: 6px 10px; font-size: 14px; border-radius: 4px;">
+            <div style="margin-bottom: 8px;">
+                <h2 style="background: #2c3e50; color: white; padding: 4px 6px; font-size: 12px; border-radius: 3px;">
                     ${section.section}
                 </h2>
                 <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
                     <thead>
-                        <tr style="background: #f0f0f0;">
-                            <th style="border: 1px solid #000; width: 50px; text-align: center;">Код</th>
-                            <th style="border: 1px solid #000; padding: 4px;">Наименование</th>
-                            <th style="border: 1px solid #000; width: 70px; text-align: center;">Ед.</th>
-                            <th style="border: 1px solid #000; width: 80px; text-align: right;">Цена, руб.</th>
+                        <tr style="background: #f0f0f0; height: 18px;">
+                            <th style="border: 1px solid #000; width: 40px; text-align: center;">Код</th>
+                            <th style="border: 1px solid #000; padding: 2px;">Наименование</th>
+                            <th style="border: 1px solid #000; width: 60px; text-align: center;">Ед.</th>
+                            <th style="border: 1px solid #000; width: 70px; text-align: right;">Цена, руб.</th>
                         </tr>
                     </thead>
                     <tbody>
                         ${section.items.map(item => `
                             <tr>
-                                <td style="border: 1px solid #000; text-align: center;">${item.id}</td>
-                                <td style="border: 1px solid #000; padding: 4px;">${item.name}</td>
-                                <td style="border: 1px solid #000; text-align: center;">${item.unit}</td>
-                                <td style="border: 1px solid #000; text-align: right;">${formatCurrency(item.price)}</td>
+                                <td style="border: 1px solid #000; text-align: center; padding: 2px;">${item.id}</td>
+                                <td style="border: 1px solid #000; padding: 2px;">${item.name}</td>
+                                <td style="border: 1px solid #000; text-align: center; padding: 2px;">${item.unit}</td>
+                                <td style="border: 1px solid #000; text-align: right; padding: 2px;">${formatCurrency(item.price)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -1350,13 +1348,12 @@ function createPricePDF() {
     tempContainer.innerHTML = html;
     document.body.appendChild(tempContainer);
 
-    // Генерация PDF
-    html2canvas(tempContainer, { scale: 2, useCORS: true }).then(canvas => {
+    html2canvas(tempContainer, { scale: 1.3, useCORS: true }).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
         const pageWidth = 210;
         const pageHeight = 297;
-        const imgWidth = 190; // отступы слева/справа
+        const imgWidth = 190;
         const imgHeight = canvas.height * imgWidth / canvas.width;
 
         let heightLeft = imgHeight;
@@ -1371,10 +1368,7 @@ function createPricePDF() {
             heightLeft -= pageHeight;
         }
 
-        // Очистка
         document.body.removeChild(tempContainer);
-
-        // Сохраняем PDF
         const filename = `Прайс_ЭлектроСмета_${today.replace(/\./g,'-')}.pdf`;
         pdf.save(filename);
         showNotification(`PDF прайс-листа "${filename}" создан!`);
@@ -1383,6 +1377,7 @@ function createPricePDF() {
         alert('Ошибка при создании PDF: ' + err.message);
     });
 }
+
 		
 		// Проверяем загрузку библиотек PDF
 function checkPDFLibraries() {
