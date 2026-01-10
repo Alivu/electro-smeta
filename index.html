@@ -1025,10 +1025,18 @@
     line-height: 24px !important;     /* Увеличиваем line-height */
     padding-top: 4px !important;
     padding-bottom: 6px !important;
+    }
 }
 
-}
-      
+        @media (max-width: 767px) {   
+    /* Колонка "Код" - уменьшенные размеры */
+    .estimate-table td.price-id-cell {
+        text-align: center;                  /* Выравнивание по центру */
+    }
+    .estimate-table th:nth-child(1),
+    .estimate-table td:nth-child(1) {
+         text-indent: -2px;  /* Сдвигает текст на 2px влево */
+ }  
     </style>
 </head>
 <body>
