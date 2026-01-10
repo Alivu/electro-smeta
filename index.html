@@ -1256,12 +1256,9 @@
         // Проверяем iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 		// Обработчик для кнопки "Скачать PDF" в окне печати
+// Обработчик для кнопки "Скачать PDF" в окне печати
 window.addEventListener('message', function(event) {
     if (event.data.action === 'savePDFFromPrint') {
-
-		if (event.data.action === 'savePriceAsPDF') {
-        // Закрываем окно печати
-        if (event.source) event.source.close();
         // Заполняем поля в модальном окне PDF
         document.getElementById('clientName').value = event.data.data.clientName;
         document.getElementById('estimateNumber').value = event.data.data.estimateNumber;
@@ -1276,8 +1273,18 @@ window.addEventListener('message', function(event) {
             saveAsPDF();
         }, 300);
     }
+    
+    // ДОБАВЬТЕ ЭТОТ БЛОК для прайс-листа:
+    if (event.data.action === 'savePriceAsPDF') {
+        // Закрываем окно печати
+        if (event.source) event.source.close();
+        
+        // Запускаем создание PDF прайс-листа
+        setTimeout(() => {
+            createPricePDF();
+        }, 300);
+    }
 });
-
 // Новая функция для создания PDF прайс-листа
 function createPricePDF() {
     // Проверяем библиотеки
