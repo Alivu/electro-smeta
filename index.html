@@ -1293,16 +1293,16 @@ function createPricePDF() {
     // Показываем индикатор загрузки
     const loadingDiv = document.createElement('div');
     loadingDiv.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 20px 30px;
-        border-radius: 10px;
-        z-index: 9999;
-        font-size: 16px;
+        position: fixed; /* Фиксированное положение на экране */
+        top: 50%; /* По вертикали на середине */
+        left: 50%; /* По горизонтали на середине */
+        transform: translate(-50%, -50%); /* Центрирование */
+        background: rgba(0,0,0,0.8); /* Полупрозрачный черный фон */
+        color: white; /* Белый цвет текста */
+        padding: 20px 30px; /* Отступы внутри: 20px сверху/снизу, 30px слева/справа */
+        border-radius: 10px; /* Скругленные углы 10px */
+        z-index: 9999; /* Поверх всех элементов */
+        font-size: 16px; /* Размер шрифта 16px */
     `;
     loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание PDF прайс-листа...';
     document.body.appendChild(loadingDiv);
@@ -1312,28 +1312,27 @@ function createPricePDF() {
     const hijri = getHijriDate();
     
     // Создаем массив страниц
-    const pages = [];
-    let currentPage = [];
-    let currentPageHeight = 0;
-    const maxPageHeight = 280; // Увеличили на 10мм для большего количества строк
+    const pages = []; /* Массив для хранения всех страниц */
+    let currentPage = []; /* Текущая страница (массив разделов) */
+    let currentPageHeight = 0; /* Текущая высота страницы в условных единицах */
+    const maxPageHeight = 280; /* Максимальная высота страницы A4: 297мм - отступы */
     
-    // Разбиваем на страницы (высота строк уменьшена на 10%)
+    // Разбиваем на страницы
     priceData.forEach((section, index) => {
-        // Высота раздела (строки уменьшены на 10%)
-        const sectionHeight = 12 + (section.items.length * 2.7); // Было 12 + (n * 3)
+        const sectionHeight = 12 + (section.items.length * 2.7); /* Высота раздела */
         
         if (currentPageHeight + sectionHeight > maxPageHeight && currentPage.length > 0) {
-            pages.push([...currentPage]);
-            currentPage = [section];
-            currentPageHeight = sectionHeight;
+            pages.push([...currentPage]); /* Сохраняем текущую страницу */
+            currentPage = [section]; /* Начинаем новую страницу */
+            currentPageHeight = sectionHeight; /* Сбрасываем высоту */
         } else {
-            currentPage.push(section);
-            currentPageHeight += sectionHeight;
+            currentPage.push(section); /* Добавляем раздел на текущую страницу */
+            currentPageHeight += sectionHeight; /* Увеличиваем высоту страницы */
         }
         
         // Если это последний раздел, добавляем оставшуюся страницу
         if (index === priceData.length - 1 && currentPage.length > 0) {
-            pages.push([...currentPage]);
+            pages.push([...currentPage]); /* Добавляем последнюю страницу */
         }
     });
     
@@ -1341,17 +1340,17 @@ function createPricePDF() {
     
     // Создаем PDF документ
     const pdf = new jspdf.jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
+        orientation: 'portrait', /* Вертикальная ориентация */
+        unit: 'mm', /* Единицы измерения - миллиметры */
+        format: 'a4' /* Формат бумаги A4 */
     });
     
-    // Настройки шрифтов (сжатые на 10%)
+    // Настройки шрифтов
     const fontSize = {
-        header: 11,     // 11px → 10px (-10%)
-        section: 10,     // 10px → 9px (-10%)
-        table: 9,       // 9px → 8px (-10%)
-        small: 8        // 8px → 7px (-10%)
+        header: 11,     /* Заголовок "ПРАЙС-ЛИСТ" */
+        section: 10,    /* Заголовки разделов */
+        table: 9,       /* Основной текст в таблице */
+        small: 8        /* Мелкий текст (даты, номера) */
     };
     
     // Создаем контейнер для каждой страницы
@@ -1361,21 +1360,21 @@ function createPricePDF() {
         return new Promise((resolve) => {
             const tempContainer = document.createElement('div');
             tempContainer.style.cssText = `
-                position: fixed;
-                left: -9999px;
-                top: -9999px;
-                width: 180mm;
-                padding: 9mm 0; // Уменьшили отступы сверху/снизу (10mm → 8mm)
-                background: white;
-                font-family: 'Arial', sans-serif;
-                font-size: ${fontSize.table}px;
-                line-height: 1.1; // Уменьшили на 10% (1.3 → 1.2 → 1.1)
+                position: fixed; /* Фиксированное положение вне экрана */
+                left: -9999px; /* Сдвигаем за пределы экрана слева */
+                top: -9999px; /* Сдвигаем за пределы экрана сверху */
+                width: 180mm; /* Ширина контейнера (A4: 210мм - отступы) */
+                padding: 9mm 0; /* Отступы сверху/снизу 9мм, слева/справа 0 */
+                background: white; /* Белый фон */
+                font-family: 'Arial', sans-serif; /* Шрифт Arial */
+                font-size: ${fontSize.table}px; /* Размер шрифта из настроек */
+                line-height: 1.1; /* Межстрочный интервал */
             `;
             
             // Генерируем контент для страницы
             let pdfContent = '';
             
-            // Шапка (только на первой странице) - компактнее
+            // Шапка (только на первой странице)
             if (pageNum === 1) {
                 pdfContent += `
                     <div style="text-align: center; margin-bottom: 8px;">
@@ -1389,7 +1388,7 @@ function createPricePDF() {
                 `;
             }
             
-            // Номер страницы (компактнее)
+            // Номер страницы
             pdfContent += `
                 <div style="text-align: right; font-size: ${fontSize.small}px; color: #666; margin-bottom: 4px;">
                     стр. ${pageNum}/${totalPages}
@@ -1399,7 +1398,7 @@ function createPricePDF() {
             // Добавляем разделы для этой страницы
             pageSections.forEach(section => {
                 pdfContent += `
-                    <div style="margin-bottom: 6px;"> <!-- Уменьшили отступ -->
+                    <div style="margin-bottom: 6px;"> <!-- Отступ между разделами 6px -->
                         <div style="background: #2c3e50; color: white; padding: 3px 6px; margin: 0 0 3px 0; font-size: ${fontSize.section}px; font-weight: bold; border-radius: 2px; line-height: 1;">
                             ${section.section}
                         </div>
@@ -1414,7 +1413,7 @@ function createPricePDF() {
                             </thead>
                             <tbody>
                                 ${section.items.map(item => `
-                                    <tr style="height: 16px;"> <!-- Фиксированная высота строк -->
+                                    <tr style="height: 16px;"> <!-- Высота строки с данными 16px -->
                                         <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: center; font-weight: bold; color: #3498db; font-size: ${fontSize.table}px; vertical-align: middle;">${item.id}</td>
                                         <td style="border: 1px solid #ddd; padding: 2px 4px; font-size: ${fontSize.table}px; line-height: 1.1; vertical-align: middle;">${item.name}</td>
                                         <td style="border: 1px solid #ddd; padding: 2px 1px; text-align: center; font-size: ${fontSize.table}px; vertical-align: middle;">${item.unit}</td>
@@ -1427,7 +1426,7 @@ function createPricePDF() {
                 `;
             });
             
-            // Добавляем футер только на последней странице (компактнее)
+            // Добавляем футер только на последней странице
             if (pageNum === totalPages) {
                 pdfContent += `
                     <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #ddd; font-size: ${fontSize.small}px; color: #666; text-align: center; line-height: 1;">
@@ -1440,7 +1439,7 @@ function createPricePDF() {
                     </div>
                 `;
             } else if (pageNum < totalPages) {
-                // На промежуточных страницах добавляем компактный разделитель
+                // На промежуточных страницах добавляем разделитель
                 pdfContent += `
                     <div style="margin-top: 6px; text-align: center; font-size: ${fontSize.small}px; color: #999;">
                         ...
@@ -1454,33 +1453,33 @@ function createPricePDF() {
             // Даем время на рендеринг
             setTimeout(() => {
                 html2canvas(tempContainer, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
+                    scale: 2, /* Увеличиваем качество в 2 раза */
+                    useCORS: true, /* Разрешаем кросс-доменные ресурсы */
+                    logging: false, /* Отключаем логирование */
+                    backgroundColor: '#ffffff' /* Белый фон */
                 }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                    const imgWidth = 180;
-                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    const imgData = canvas.toDataURL('image/jpeg', 0.9); /* Конвертируем в JPEG с качеством 90% */
+                    const imgWidth = 180; /* Ширина изображения */
+                    const imgHeight = canvas.height * imgWidth / canvas.width; /* Высота пропорционально */
                     
                     // Если это не первая страница, добавляем новую
                     if (pageNum > 1) {
-                        pdf.addPage();
+                        pdf.addPage(); /* Добавляем новую страницу в PDF */
                     }
                     
                     // Добавляем изображение на страницу
-                    pdf.addImage(imgData, 'JPEG', 15, 8, imgWidth, imgHeight);
+                    pdf.addImage(imgData, 'JPEG', 15, 8, imgWidth, imgHeight); /* x=15мм, y=8мм от левого верхнего угла */
                     
                     // Удаляем временный контейнер
                     document.body.removeChild(tempContainer);
                     
-                    resolve();
+                    resolve(); /* Завершаем Promise */
                 }).catch(error => {
                     console.error('Ошибка при создании страницы PDF:', error);
                     document.body.removeChild(tempContainer);
                     resolve();
                 });
-            }, 100);
+            }, 100); /* Задержка 100ms перед рендерингом */
         });
     }
     
