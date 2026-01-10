@@ -1277,6 +1277,147 @@ window.addEventListener('message', function(event) {
         }, 300);
     }
 });
+
+// Новая функция для создания PDF прайс-листа
+function createPricePDF() {
+    // Проверяем библиотеки
+    if (!checkPDFLibraries()) return;
+    
+    // Показываем индикатор загрузки
+    const loadingDiv = document.createElement('div');
+    loadingDiv.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 10px;
+        z-index: 9999;
+        font-size: 16px;
+    `;
+    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание PDF прайс-листа...';
+    document.body.appendChild(loadingDiv);
+    
+    // Получаем дату
+    const today = new Date().toLocaleDateString('ru-RU');
+    const hijri = getHijriDate();
+    
+    // Создаем контейнер для PDF
+    const tempContainer = document.createElement('div');
+    tempContainer.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: -9999px;
+        width: 210mm;
+        padding: 15mm;
+        background: white;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+    `;
+    
+    // Генерируем контент для PDF
+    let pdfContent = `
+        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px;">
+            <h1 style="margin: 0 0 10px 0; font-size: 22px; color: #2c3e50;">ПРАЙС-ЛИСТ</h1>
+            <div style="font-size: 16px; margin-bottom: 5px;">электромонтажных работ</div>
+            <div style="font-size: 14px; color: #3498db; margin-bottom: 10px;">Electric_Group</div>
+            <div style="font-size: 13px;">
+                <strong>Дата:</strong> ${today} 
+                <span style="margin-left: 15px; background: #f8f9fa; padding: 3px 8px; border-radius: 3px;">
+                    <i class="fas fa-mosque"></i> ${hijri.day} ${hijri.month} ${hijri.year} г.х.
+                </span>
+            </div>
+        </div>
+    `;
+    
+    // Добавляем каждый раздел
+    priceData.forEach(section => {
+        pdfContent += `
+            <div style="margin-bottom: 15px; page-break-inside: avoid;">
+                <h2 style="background: #2c3e50; color: white; padding: 8px 12px; margin: 0 0 8px 0; border-radius: 3px; font-size: 13px;">
+                    ${section.section}
+                </h2>
+                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="border: 1px solid #ddd; padding: 6px; width: 8%; text-align: center;">Код</th>
+                            <th style="border: 1px solid #ddd; padding: 6px; width: 62%;">Наименование работ</th>
+                            <th style="border: 1px solid #ddd; padding: 6px; width: 10%; text-align: center;">Ед.</th>
+                            <th style="border: 1px solid #ddd; padding: 6px; width: 20%; text-align: right;">Цена, руб.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${section.items.map(item => `
+                            <tr>
+                                <td style="border: 1px solid #ddd; padding: 5px; text-align: center; font-weight: bold; color: #3498db;">${item.id}</td>
+                                <td style="border: 1px solid #ddd; padding: 5px; font-size: 9.5px;">${item.name}</td>
+                                <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${item.unit}</td>
+                                <td style="border: 1px solid #ddd; padding: 5px; text-align: right; font-weight: bold; color: #27ae60;">${formatCurrency(item.price)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    });
+    
+    // Добавляем футер
+    pdfContent += `
+        <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 9px; color: #666; text-align: center;">
+            <div style="margin-bottom: 5px;">
+                <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
+            </div>
+            <div>
+                Прайс-лист сформирован в приложении "ЭлектроСмета"<br>
+                Дата формирования: ${new Date().toLocaleString('ru-RU')}
+            </div>
+        </div>
+    `;
+    
+    tempContainer.innerHTML = pdfContent;
+    document.body.appendChild(tempContainer);
+    
+    // Генерируем PDF
+    setTimeout(() => {
+        html2canvas(tempContainer, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+        }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jspdf.jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const imgWidth = 190;
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+            
+            pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+            
+            // Очистка
+            document.body.removeChild(tempContainer);
+            document.body.removeChild(loadingDiv);
+            
+            // Сохранение
+            const todayStr = new Date().toLocaleDateString('ru-RU').replace(/\//g, '-');
+            pdf.save(`Прайс-лист_${todayStr}.pdf`);
+            
+            showNotification('PDF прайс-листа сохранен!');
+            
+        }).catch(error => {
+            console.error('Ошибка при создании PDF:', error);
+            document.body.removeChild(tempContainer);
+            document.body.removeChild(loadingDiv);
+            showNotification('Ошибка при создании PDF прайс-листа');
+        });
+    }, 500);
+}
+		
 		// Проверяем загрузку библиотек PDF
 function checkPDFLibraries() {
     if (typeof jspdf === 'undefined') {
