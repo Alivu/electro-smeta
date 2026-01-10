@@ -1308,29 +1308,18 @@ function createPricePDF() {
     const today = new Date().toLocaleDateString('ru-RU');
     const hijri = getHijriDate();
     
-    // Очистка текста
-    priceData.forEach(section => {
-        section.items.forEach(item => {
-            item.name = item.name
-                .replace(/\s+/g, ' ')
-                .replace(/\n/g, ' ')
-                .trim();
-        });
-    });
-    
     // Создаем массив страниц
     const pages = [];
     let currentPage = [];
     let currentPageHeight = 0;
     
-    // НАСТРОЙКИ ПОД EXCEL (высота строки 0,5 см)
-    const maxPageHeight = 285; // 297мм - отступы 1.5см сверху и снизу
-    const rowHeight = 5; // 0,5 см на строку
-    const sectionHeaderHeight = 8; // Высота заголовка раздела
+    // ПРОСТЫЕ НАСТРОЙКИ
+    const maxPageHeight = 280; // Максимальная высота страницы
+    const rowHeight = 5; // 0,5 см = 5 мм на строку
     
     // Разбиваем на страницы
     priceData.forEach((section, index) => {
-        const sectionHeight = sectionHeaderHeight + (section.items.length * rowHeight);
+        const sectionHeight = 8 + (section.items.length * rowHeight);
         
         if (currentPageHeight + sectionHeight > maxPageHeight && currentPage.length > 0) {
             pages.push([...currentPage]);
@@ -1355,12 +1344,12 @@ function createPricePDF() {
         format: 'a4'
     });
     
-    // НАСТРОЙКИ ШРИФТОВ ПОД EXCEL
+    // Настройки шрифтов
     const fontSize = {
-        header: 11,        // Заголовок "ПРАЙС-ЛИСТ"
-        section: 12,       // Заголовки разделов (калибри 12)
-        table: 11,         // Основной текст (калибри 11)
-        small: 10          // Мелкий текст
+        header: 11,
+        section: 12,
+        table: 11,
+        small: 10
     };
     
     // Создаем контейнер для каждой страницы
@@ -1374,9 +1363,8 @@ function createPricePDF() {
                 left: -9999px;
                 top: -9999px;
                 width: 180mm;
-                padding: ${pageNum === 1 ? '5mm' : '15mm'} 0 15mm 0; /* Отступы 1.5см */
                 background: white;
-                font-family: 'Calibri', 'Arial', sans-serif; /* Шрифт как в Excel */
+                font-family: 'Calibri', 'Arial', sans-serif;
                 font-size: ${fontSize.table}px;
                 line-height: 1.0;
             `;
@@ -1387,7 +1375,7 @@ function createPricePDF() {
             // Шапка (только на первой странице)
             if (pageNum === 1) {
                 pdfContent += `
-                    <div style="text-align: center; margin-bottom: 8px;">
+                    <div style="margin: 15mm 0 2mm 0; text-align: center;">
                         <div style="font-size: ${fontSize.header}px; font-weight: bold; color: #2c3e50; margin-bottom: 2px;">
                             ПРАЙС-ЛИСТ ЭЛЕКТРОМОНТАЖНЫХ РАБОТ
                         </div>
@@ -1400,7 +1388,7 @@ function createPricePDF() {
             
             // Номер страницы
             pdfContent += `
-                <div style="text-align: right; font-size: ${fontSize.small}px; color: #666; margin-bottom: 6px;">
+                <div style="margin: 0 0 2mm 0; text-align: right; font-size: ${fontSize.small}px; color: #666;">
                     стр. ${pageNum}/${totalPages}
                 </div>
             `;
@@ -1408,26 +1396,26 @@ function createPricePDF() {
             // Добавляем разделы для этой страницы
             pageSections.forEach(section => {
                 pdfContent += `
-                    <div style="margin-bottom: 6px;">
-                        <div style="background: #2c3e50; color: white; padding: 4px 8px; margin: 0 0 4px 0; font-size: ${fontSize.section}px; font-weight: bold; border-radius: 2px; line-height: 1; height: ${sectionHeaderHeight}mm;">
+                    <div style="margin: 0 0 4mm 0;">
+                        <div style="background: #2c3e50; color: white; padding: 2mm 3mm; margin: 0 0 2mm 0; font-size: ${fontSize.section}px; font-weight: bold; border-radius: 1mm; line-height: 1;">
                             ${section.section}
                         </div>
                         <table style="width: 100%; border-collapse: collapse; font-size: ${fontSize.table}px; line-height: 1.0;">
                             <thead>
-                                <tr style="background: #f8f9fa; height: ${rowHeight}mm;">
-                                    <th style="border: 1px solid #bbb; padding: 1px 1px; width: 8%; text-align: center; font-size: ${fontSize.table}px;">Код</th>
-                                    <th style="border: 1px solid #bbb; padding: 1px 4px; width: 70%; font-size: ${fontSize.table}px;">Наименование работ</th>
-                                    <th style="border: 1px solid #bbb; padding: 1px 1px; width: 7%; text-align: center; font-size: ${fontSize.table}px;">Ед. изм.</th>
-                                    <th style="border: 1px solid #bbb; padding: 1px 1px; width: 15%; text-align: right; font-size: ${fontSize.table}px;">Цена, руб.</th>
+                                <tr style="background: #f8f9fa; height: 5mm;">
+                                    <th style="border: 1px solid #bbb; padding: 1mm 0.5mm; width: 8%; text-align: center; font-size: ${fontSize.table}px;">Код</th>
+                                    <th style="border: 1px solid #bbb; padding: 1mm 2mm; width: 70%; font-size: ${fontSize.table}px;">Наименование работ</th>
+                                    <th style="border: 1px solid #bbb; padding: 1mm 0.5mm; width: 7%; text-align: center; font-size: ${fontSize.table}px;">Ед. изм.</th>
+                                    <th style="border: 1px solid #bbb; padding: 1mm 0.5mm; width: 15%; text-align: right; font-size: ${fontSize.table}px;">Цена, руб.</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${section.items.map(item => `
-                                    <tr style="height: ${rowHeight}mm;">
-                                        <td style="border: 1px solid #ddd; padding: 1px 1px; text-align: center; font-weight: bold; color: #3498db; font-size: ${fontSize.table}px; vertical-align: middle;">${item.id}</td>
-                                        <td style="border: 1px solid #ddd; padding: 1px 4px; font-size: ${fontSize.table}px; line-height: 1.0; vertical-align: middle; white-space: normal; word-wrap: break-word;">${item.name}</td>
-                                        <td style="border: 1px solid #ddd; padding: 1px 1px; text-align: center; font-size: ${fontSize.table}px; vertical-align: middle;">${item.unit}</td>
-                                        <td style="border: 1px solid #ddd; padding: 1px 1px; text-align: right; font-weight: bold; color: #27ae60; font-size: ${fontSize.table}px; vertical-align: middle;">${formatCurrency(item.price)}</td>
+                                    <tr style="height: 5mm;">
+                                        <td style="border: 1px solid #ddd; padding: 1mm 0.5mm; text-align: center; font-weight: bold; color: #3498db; font-size: ${fontSize.table}px; vertical-align: middle;">${item.id}</td>
+                                        <td style="border: 1px solid #ddd; padding: 1mm 2mm; font-size: ${fontSize.table}px; line-height: 1.0; vertical-align: middle;">${item.name}</td>
+                                        <td style="border: 1px solid #ddd; padding: 1mm 0.5mm; text-align: center; font-size: ${fontSize.table}px; vertical-align: middle;">${item.unit}</td>
+                                        <td style="border: 1px solid #ddd; padding: 1mm 0.5mm; text-align: right; font-weight: bold; color: #27ae60; font-size: ${fontSize.table}px; vertical-align: middle;">${formatCurrency(item.price)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -1439,7 +1427,7 @@ function createPricePDF() {
             // Добавляем футер только на последней странице
             if (pageNum === totalPages) {
                 pdfContent += `
-                    <div style="margin-top: 10px; padding-top: 5px; border-top: 1px solid #ddd; font-size: ${fontSize.small}px; color: #666; text-align: center; line-height: 1;">
+                    <div style="margin: 10mm 0 15mm 0; padding-top: 2mm; border-top: 1px solid #ddd; font-size: ${fontSize.small}px; color: #666; text-align: center; line-height: 1;">
                         <div>
                             <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
                         </div>
@@ -1448,13 +1436,9 @@ function createPricePDF() {
                         </div>
                     </div>
                 `;
-            } else if (pageNum < totalPages) {
-                // На промежуточных страницах добавляем разделитель
-                pdfContent += `
-                    <div style="margin-top: 6px; text-align: center; font-size: ${fontSize.small}px; color: #999;">
-                        ...
-                    </div>
-                `;
+            } else {
+                // На всех остальных страницах просто нижний отступ 15мм
+                pdfContent += `<div style="height: 15mm;"></div>`;
             }
             
             tempContainer.innerHTML = pdfContent;
@@ -1477,9 +1461,9 @@ function createPricePDF() {
                         pdf.addPage();
                     }
                     
-                    // Добавляем изображение на страницу с отступом 1.5см
-                    const yOffset = pageNum === 1 ? 15 : 15; // Всегда 1.5см сверху
-                    pdf.addImage(imgData, 'JPEG', 15, yOffset, imgWidth, imgHeight);
+                    // ВСЕГДА добавляем изображение с Y = 0
+                    // Отступы уже учтены в HTML контенте
+                    pdf.addImage(imgData, 'JPEG', 15, 0, imgWidth, imgHeight);
                     
                     // Удаляем временный контейнер
                     document.body.removeChild(tempContainer);
