@@ -1596,7 +1596,7 @@ const notificationSystem = {
         const promos = [
             '📱 Подпишитесь на @Electric_Group в Telegram!',
             '⭐ Оставьте отзыв о приложении ЭлектроСмета!',
-            '☎️ Сохраните номер для консультаций',
+            '☎️ Сохраните мой +79635984846 для консультаций',
             '💡 Новые функции в разработке! Следите за обновлениями!',
             '🤝 Рекомендуйте нас коллегам-электрикам!'
         ];
@@ -1711,44 +1711,60 @@ function formatCurrency(amount) {
     return new Intl.NumberFormat('ru-RU').format(parseFloat(amount).toFixed(2));
 }
 
-// Функция уведомлений
 function showNotification(message) {
+    // Определяем мобильное устройство
+    const isMobile = window.innerWidth <= 767;
+    
     // Создаем элемент уведомления
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
-        top: 0px;
-        right: 0px;
+        ${isMobile ? 
+            'bottom: 20px; left: 15px; right: 15px;' :  // НА МОБИЛЬНЫХ: внизу, на всю ширину
+            'top: 10px; right: 10px;'                    // НА ДЕСКТОПЕ: вверху справа
+        }
         background: #27ae60;
         color: white;
-        padding: 15px 20px;
-        border-radius: 5px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        padding: ${isMobile ? '12px 15px' : '10px 15px'};
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         z-index: 9999;
         font-weight: 500;
-        max-width: 370px;
-        animation: slideIn 0.3s ease-out;
+        ${isMobile ? 
+            'max-width: calc(100vw - 30px); width: auto;' :  // НА МОБИЛЬНЫХ: адаптивная ширина
+            'max-width: 370px;'                              // НА ДЕСКТОПЕ: фиксированная ширина
+        }
+        animation: ${isMobile ? 'slideInUp 0.3s ease-out' : 'slideIn 0.3s ease-out'};
+        word-wrap: break-word;
+        word-break: break-word;  /* ВАЖНО для мобильных */
+        line-height: 1.4;
+        text-align: ${isMobile ? 'center' : 'left'};
+        font-size: ${isMobile ? '14px' : '13px'};
     `;
     
     notification.innerHTML = `
-        <i class="fas fa-check-circle" style="margin-right: 10px;"></i>
-        ${message}
+        <div style="display: flex; align-items: center; ${isMobile ? 'justify-content: center;' : ''} gap: 8px;">
+            <i class="fas fa-check-circle"></i>
+            <span>${message}</span>
+        </div>
     `;
     
     document.body.appendChild(notification);
     
-    // Автоматическое скрытие через 3 секунды
+    // Автоматическое скрытие через 4 секунды (дольше на мобильных)
     setTimeout(() => {
-        notification.style.animation = 'slideOut 0.3s ease-out';
+        notification.style.animation = isMobile ? 'slideOutDown 0.3s ease-out' : 'slideOut 0.3s ease-out';
         setTimeout(() => {
-            document.body.removeChild(notification);
+            if (notification.parentNode) {
+                document.body.removeChild(notification);
+            }
         }, 300);
-    }, 3000);
+    }, isMobile ? 4000 : 3000); // На мобильных показываем дольше
     
-    // Добавляем CSS анимации
-    if (!document.querySelector('#notification-styles')) {
+    // Добавляем CSS анимации для мобильных
+    if (!document.querySelector('#notification-animations')) {
         const style = document.createElement('style');
-        style.id = 'notification-styles';
+        style.id = 'notification-animations';
         style.textContent = `
             @keyframes slideIn {
                 from {
@@ -1767,6 +1783,26 @@ function showNotification(message) {
                 }
                 to {
                     transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+            @keyframes slideInUp {
+                from {
+                    transform: translateY(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutDown {
+                from {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateY(100%);
                     opacity: 0;
                 }
             }
