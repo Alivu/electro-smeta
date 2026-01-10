@@ -1258,6 +1258,10 @@
 		// Обработчик для кнопки "Скачать PDF" в окне печати
 window.addEventListener('message', function(event) {
     if (event.data.action === 'savePDFFromPrint') {
+
+		if (event.data.action === 'savePriceAsPDF') {
+        // Закрываем окно печати
+        if (event.source) event.source.close();
         // Заполняем поля в модальном окне PDF
         document.getElementById('clientName').value = event.data.data.clientName;
         document.getElementById('estimateNumber').value = event.data.data.estimateNumber;
@@ -2768,145 +2772,237 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
     printWindow.document.write(printContent);
     printWindow.document.close();
 }
-
-// Новая функция для создания PDF прайс-листа
-function createPricePDF() {
-    // Проверяем библиотеки
-    if (!checkPDFLibraries()) return;
+function printPriceList() {
+    console.log('Печать прайс-листа');
     
-    // Показываем индикатор загрузки
-    const loadingDiv = document.createElement('div');
-    loadingDiv.style.cssText = `
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 20px 30px;
-        border-radius: 10px;
-        z-index: 9999;
-        font-size: 16px;
-    `;
-    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание PDF прайс-листа...';
-    document.body.appendChild(loadingDiv);
-    
-    // Получаем дату
+    // Получаем сегодняшнюю дату
     const today = new Date().toLocaleDateString('ru-RU');
     const hijri = getHijriDate();
     
-    // Создаем контейнер для PDF
-    const tempContainer = document.createElement('div');
-    tempContainer.style.cssText = `
-        position: fixed;
-        left: -9999px;
-        top: -9999px;
-        width: 210mm;
-        padding: 15mm;
-        background: white;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
+    // Создаем HTML для печати прайс-листа
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Прайс-лист электромонтажных работ</title>
+            <style>
+                body { 
+                    font-family: Arial, sans-serif; 
+                    padding: 20px; 
+                    background: #f5f5f5;
+                }
+                .print-container {
+                    max-width: 1000px;
+                    margin: 0 auto;
+                    background: white;
+                    padding: 30px;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+                }
+                .header {
+                    text-align: center;
+                    margin-bottom: 30px;
+                    border-bottom: 3px solid #3498db;
+                    padding-bottom: 20px;
+                }
+                .controls {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    display: flex;
+                    gap: 10px;
+                    z-index: 1000;
+                }
+                .btn {
+                    padding: 12px 25px;
+                    border: none;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: 0.3s;
+                }
+                .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+                .btn-print { background: #3498db; color: white; }
+                .btn-pdf { background: #27ae60; color: white; }
+                .btn-close { background: #e74c3c; color: white; }
+                
+                /* Стили для таблицы прайс-листа */
+                .price-section {
+                    margin-bottom: 25px;
+                    page-break-inside: avoid;
+                }
+                .section-title {
+                    background: linear-gradient(to right, #2c3e50, #3498db);
+                    color: white;
+                    padding: 12px 15px;
+                    font-weight: bold;
+                    font-size: 16px;
+                    border-radius: 5px;
+                    margin-bottom: 10px;
+                }
+                .price-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 12px;
+                }
+                .price-table th {
+                    background: #f8f9fa;
+                    color: #2c3e50;
+                    padding: 10px 8px;
+                    text-align: left;
+                    border-bottom: 2px solid #dee2e6;
+                    font-weight: bold;
+                }
+                .price-table td {
+                    padding: 8px;
+                    border-bottom: 1px solid #eee;
+                }
+                .price-table tr:hover {
+                    background: #f8f9fa;
+                }
+                .id-cell { width: 50px; font-weight: bold; color: #3498db; }
+                .name-cell { }
+                .unit-cell { width: 80px; text-align: center; }
+                .price-cell { width: 120px; text-align: right; font-weight: bold; color: #27ae60; }
+                
+                @media print {
+                    .controls { display: none; }
+                    body { background: white; padding: 0; }
+                    .print-container { box-shadow: none; padding: 0; }
+                    .price-table { font-size: 10px; }
+                }
+                
+                .footer {
+                    margin-top: 40px;
+                    padding-top: 20px;
+                    border-top: 1px solid #ddd;
+                    font-size: 11px;
+                    color: #666;
+                    text-align: center;
+                }
+                .hijri-date {
+                    background: #f8f9fa;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    display: inline-block;
+                    margin-top: 5px;
+                    font-size: 12px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="controls">
+                <button onclick="window.print()" class="btn btn-print">
+                    <span>🖨️</span> Печать
+                </button>
+                <button onclick="savePriceAsPDF()" class="btn btn-pdf">
+                    <span>📄</span> Скачать PDF
+                </button>
+                <button onclick="window.close()" class="btn btn-close">
+                    <span>✕</span> Закрыть
+                </button>
+            </div>
+            
+            <div class="print-container">
+                <div class="header">
+                    <h1 style="color: #2c3e50; margin-bottom: 10px;">Прайс-лист электромонтажных работ</h1>
+                    <div style="font-size: 18px; color: #3498db; margin-bottom: 5px;">Electric_Group</div>
+                    <div style="font-size: 16px; margin-bottom: 10px;">
+                        <strong>Дата:</strong> ${today}
+                    </div>
+                    <div class="hijri-date">
+                        <i class="fas fa-mosque" style="color: #27ae60;"></i>
+                        ${hijri.day} ${hijri.month} ${hijri.year} г.х.
+                    </div>
+                    <div style="margin-top: 15px; font-size: 14px; color: #666;">
+                        Для профессионального расчета смет используйте приложение "ЭлектроСмета"
+                    </div>
+                </div>
+                
+                ${priceData.map(section => `
+                    <div class="price-section">
+                        <div class="section-title">${section.section}</div>
+                        <table class="price-table">
+                            <thead>
+                                <tr>
+                                    <th class="id-cell">Код</th>
+                                    <th class="name-cell">Наименование работ</th>
+                                    <th class="unit-cell">Ед. изм.</th>
+                                    <th class="price-cell">Цена, руб.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${section.items.map(item => `
+                                    <tr>
+                                        <td class="id-cell">${item.id}</td>
+                                        <td class="name-cell">${item.name}</td>
+                                        <td class="unit-cell">${item.unit}</td>
+                                        <td class="price-cell">${formatCurrency(item.price)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `).join('')}
+                
+                <div class="footer">
+                    <div style="margin-bottom: 10px;">
+                        <strong>Контакты:</strong> Телефон: +7 (963) 598-48-46 | Telegram: @Electric_Group
+                    </div>
+                    <div>
+                        Прайс-лист сформирован в приложении "ЭлектроСмета"<br>
+                        Дата формирования: ${new Date().toLocaleString('ru-RU')}
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+                // Функция для отправки запроса на создание PDF
+                function savePriceAsPDF() {
+                    window.opener.postMessage({
+                        action: 'savePriceAsPDF'
+                    }, '*');
+                }
+                
+                // Автоматическая прокрутка к началу
+                window.onload = function() {
+                    window.scrollTo(0, 0);
+                };
+                
+                // Закрытие после печати
+                window.onafterprint = function() {
+                    setTimeout(() => {
+                        if (confirm('Закрыть окно печати?')) {
+                            window.close();
+                        }
+                    }, 500);
+                };
+            <\/script>
+        </body>
+        </html>
     `;
     
-    // Генерируем контент для PDF
-    let pdfContent = `
-        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 15px;">
-            <h1 style="margin: 0 0 10px 0; font-size: 22px; color: #2c3e50;">ПРАЙС-ЛИСТ</h1>
-            <div style="font-size: 16px; margin-bottom: 5px;">электромонтажных работ</div>
-            <div style="font-size: 14px; color: #3498db; margin-bottom: 10px;">Electric_Group</div>
-            <div style="font-size: 13px;">
-                <strong>Дата:</strong> ${today} 
-                <span style="margin-left: 15px; background: #f8f9fa; padding: 3px 8px; border-radius: 3px;">
-                    <i class="fas fa-mosque"></i> ${hijri.day} ${hijri.month} ${hijri.year} г.х.
-                </span>
-            </div>
-        </div>
-    `;
-    
-    // Добавляем каждый раздел
-    priceData.forEach(section => {
-        pdfContent += `
-            <div style="margin-bottom: 15px; page-break-inside: avoid;">
-                <h2 style="background: #2c3e50; color: white; padding: 8px 12px; margin: 0 0 8px 0; border-radius: 3px; font-size: 13px;">
-                    ${section.section}
-                </h2>
-                <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
-                    <thead>
-                        <tr style="background: #f8f9fa;">
-                            <th style="border: 1px solid #ddd; padding: 6px; width: 8%; text-align: center;">Код</th>
-                            <th style="border: 1px solid #ddd; padding: 6px; width: 62%;">Наименование работ</th>
-                            <th style="border: 1px solid #ddd; padding: 6px; width: 10%; text-align: center;">Ед.</th>
-                            <th style="border: 1px solid #ddd; padding: 6px; width: 20%; text-align: right;">Цена, руб.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${section.items.map(item => `
-                            <tr>
-                                <td style="border: 1px solid #ddd; padding: 5px; text-align: center; font-weight: bold; color: #3498db;">${item.id}</td>
-                                <td style="border: 1px solid #ddd; padding: 5px; font-size: 9.5px;">${item.name}</td>
-                                <td style="border: 1px solid #ddd; padding: 5px; text-align: center;">${item.unit}</td>
-                                <td style="border: 1px solid #ddd; padding: 5px; text-align: right; font-weight: bold; color: #27ae60;">${formatCurrency(item.price)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `;
-    });
-    
-    // Добавляем футер
-    pdfContent += `
-        <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; font-size: 9px; color: #666; text-align: center;">
-            <div style="margin-bottom: 5px;">
-                <strong>Контакты:</strong> +7 (963) 598-48-46 | Telegram: @Electric_Group
-            </div>
-            <div>
-                Прайс-лист сформирован в приложении "ЭлектроСмета"<br>
-                Дата формирования: ${new Date().toLocaleString('ru-RU')}
-            </div>
-        </div>
-    `;
-    
-    tempContainer.innerHTML = pdfContent;
-    document.body.appendChild(tempContainer);
-    
-    // Генерируем PDF
-    setTimeout(() => {
-        html2canvas(tempContainer, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff'
-        }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jspdf.jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
-            
-            const imgWidth = 190;
-            const imgHeight = canvas.height * imgWidth / canvas.width;
-            
-            pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-            
-            // Очистка
-            document.body.removeChild(tempContainer);
-            document.body.removeChild(loadingDiv);
-            
-            // Сохранение
-            const todayStr = new Date().toLocaleDateString('ru-RU').replace(/\//g, '-');
-            pdf.save(`Прайс-лист_${todayStr}.pdf`);
-            
-            showNotification('PDF прайс-листа сохранен!');
-            
-        }).catch(error => {
-            console.error('Ошибка при создании PDF:', error);
-            document.body.removeChild(tempContainer);
-            document.body.removeChild(loadingDiv);
-            showNotification('Ошибка при создании PDF прайс-листа');
-        });
-    }, 500);
+    try {
+        // Открываем окно печати
+        const printWindow = window.open('', '_blank', 'width=1100,height=700,scrollbars=yes');
+        if (!printWindow) {
+            alert('Браузер заблокировал всплывающее окно. Разрешите всплывающие окна для этого сайта.');
+            return;
+        }
+        
+        printWindow.document.open();
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+        
+        console.log('Окно печати прайс-листа открыто');
+        
+    } catch (error) {
+        console.error('Ошибка при открытии окна:', error);
+        alert('Ошибка при открытии окна печати: ' + error.message);
+    }
 }
 
         // Функция для проверки загрузки библиотек
