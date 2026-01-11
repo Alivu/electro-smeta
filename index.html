@@ -3123,21 +3123,17 @@ function printPriceList() {
                 </button>
             </div>
             
-            <div class="print-container">
-                <div class="header">
-                    <h1 style="color: #2c3e50; margin-bottom: 10px;">Прайс-лист Электрика 29.12.2026г</h1>
-                    <div style="font-size: 18px; color: #3498db; margin-bottom: 5px;">Братство Электриков ЧР</div>
-                    <div style="font-size: 16px; margin-bottom: 10px;">
-                        <strong>Дата:</strong> ${today}
-                    </div>
-                    <div class="hijri-date">
-                        <i class="fas fa-mosque" style="color: #27ae60;"></i>
-                        ${hijri.day} ${hijri.month} ${hijri.year} г.х.
-                    </div>
-                    <div style="margin-top: 15px; font-size: 14px; color: #666;">
-                        Для профессионального расчета смет используйте приложение "ЭлектроСмета"
-                    </div>
-                </div>
+ <div class="print-container">
+    <div class="header">
+        <h1 style="color: #2c3e50; margin-bottom: 10px;">Прайс-лист Электрика 29.12.2026г</h1>
+        <div style="font-size: 18px; color: #3498db; margin-bottom: 5px;">Братство Электриков ЧР</div>
+        <div style="font-size: 16px; margin-bottom: 10px;">
+            <strong>Дата:</strong> ${today} | ${hijri.day} ${hijri.month} ${hijri.year} г.х.
+        </div>
+        <div style="margin-top: 15px; font-size: 14px; color: #666;">
+            Для профессионального расчета смет используйте приложение "ЭлектроСмета"
+        </div>
+    </div>
                 
                 ${priceData.map(section => `
                     <div class="price-section">
