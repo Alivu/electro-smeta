@@ -3162,6 +3162,86 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
     }, 500);
 }
 
+function createPricePDF() {
+    if (typeof jspdf === 'undefined' || typeof jspdf.autoTable === 'undefined') {
+        alert('Для создания PDF нужны библиотеки jsPDF и jsPDF-AutoTable');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = 210;
+    const pageHeight = 297;
+
+    const leftMargin = 10;   // боковые отступы
+    const rightMargin = 10;
+    const topMargin = 15;    // верхний отступ
+    const bottomMargin = 15; // нижний отступ
+
+    let y = topMargin;
+
+    // Заголовок на первой странице
+    const headerFontSize = 16;  // меньше, чем раньше
+    doc.setFontSize(headerFontSize);
+    doc.setFont('helvetica', 'bold');
+    const title = "Прайс-лист электромонтажных работ";
+    const titleWidth = doc.getTextWidth(title);
+    doc.text(title, (pageWidth - titleWidth) / 2, y);
+    y += 10;
+
+    const subTitle = "Electric_Group";
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    const subWidth = doc.getTextWidth(subTitle);
+    doc.text(subTitle, (pageWidth - subWidth) / 2, y);
+    y += 8;
+
+    const today = new Date().toLocaleDateString('ru-RU');
+    doc.setFontSize(10);
+    doc.text("Дата: " + today, leftMargin, y);
+    y += 6;
+
+    // Функция для добавления таблицы одной секции
+    function addSection(section) {
+        const columns = [
+            { header: 'Код', dataKey: 'id' },
+            { header: 'Наименование', dataKey: 'name' },
+            { header: 'Ед.', dataKey: 'unit' },
+            { header: 'Цена, руб.', dataKey: 'price' }
+        ];
+
+        const rows = section.items.map(i => ({
+            id: i.id,
+            name: i.name,
+            unit: i.unit,
+            price: i.price.toLocaleString('ru-RU', { minimumFractionDigits: 2 })
+        }));
+
+        doc.autoTable({
+            startY: y,
+            head: [columns.map(c => c.header)],
+            body: rows.map(r => columns.map(c => r[c.dataKey])),
+            margin: { left: leftMargin, right: rightMargin },
+            styles: { fontSize: 10, cellPadding: 2 },
+            headStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold' },
+            bodyStyles: { textColor: 0 },
+            theme: 'grid',
+            showHead: 'everyPage',
+            didDrawPage: (data) => {
+                y = data.cursor.y + 5; // обновляем y после каждой таблицы
+            }
+        });
+    }
+
+    // Проходим по всем секциям
+    priceData.forEach(section => addSection(section));
+
+    // Сохраняем PDF
+    const filename = `Прайс_ЭлектроСмета_${today.replace(/\./g,'-')}.pdf`;
+    doc.save(filename);
+    showNotification(`PDF прайс-листа "${filename}" создан!`);
+}
+
     </script>
 </body>
 </html>
