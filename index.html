@@ -1873,6 +1873,10 @@ function setupDate() {
 function initializeApp() {
     console.log('Инициализация приложения');
     
+    // 1. Сначала показываем вкладку (чтобы элементы точно были в DOM)
+    showTab('price');
+    
+    // 2. Инициализируем данные
     initializeEstimateData();
     renderPriceList();
     renderEstimateTable();
@@ -1881,9 +1885,7 @@ function initializeApp() {
     setupEventListeners();
     setupDate();
     initializeIslamicFeatures();
-    showTab('price');
     
-
     console.log('Приложение инициализировано');
 }
 
@@ -1903,31 +1905,39 @@ function initializeApp() {
         }
 
         // Функции для вкладок
-        function showTab(tabName) {
-            // Скрываем все вкладки
-            document.querySelectorAll('.tab-content').forEach(tab => {
+ function showTab(tabName) {
+    try {
+        // Скрываем все вкладки (безопасно)
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            if (tab) {
                 tab.style.display = 'none';
                 tab.classList.remove('active');
-            });
-            
-            // Убираем активный класс со всех кнопок
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Показываем нужную вкладку
-            const tabContent = document.getElementById(`${tabName}-tab`);
-            const tabBtn = document.getElementById(`${tabName}TabBtn`);
-            
-            if (tabContent) {
-                tabContent.style.display = 'block';
-                tabContent.classList.add('active');
             }
-            
-            if (tabBtn) {
-                tabBtn.classList.add('active');
-            }
+        });
+        
+        // Убираем активный класс со всех кнопок (безопасно)
+        document.querySelectorAll('.tab').forEach(tab => {
+            if (tab) tab.classList.remove('active');
+        });
+        
+        // Показываем нужную вкладку (с проверкой)
+        const tabContent = document.getElementById(`${tabName}-tab`);
+        const tabBtn = document.getElementById(`${tabName}TabBtn`);
+        
+        if (tabContent) {
+            tabContent.style.display = 'block';
+            tabContent.classList.add('active');
         }
+        
+        if (tabBtn) {
+            tabBtn.classList.add('active');
+        }
+        
+        console.log(`Переключились на вкладку: ${tabName}`);
+    } catch (error) {
+        console.error('Ошибка при переключении вкладки:', error);
+    }
+}
 
         // Рендеринг прайс-листа
         function renderPriceList() {
