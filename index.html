@@ -2982,7 +2982,6 @@ function printPriceList() {
             </div>
             
             <script>
-<script>
 function createPricePDF() {
     if (typeof jspdf === 'undefined' || typeof jspdf.autoTable === 'undefined') {
         alert('Для создания PDF нужны библиотеки jsPDF и jsPDF-AutoTable');
@@ -3062,7 +3061,6 @@ function createPricePDF() {
     doc.save(filename);
     showNotification(`PDF прайс-листа "${filename}" создан!`);
 }
-</script>
 
         // Функция для проверки загрузки библиотек
         function checkPDFLibraries() {
