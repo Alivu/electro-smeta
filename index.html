@@ -2982,6 +2982,7 @@ function printPriceList() {
             </div>
             
             <script>
+<script>
 function createPricePDF() {
     if (typeof jspdf === 'undefined' || typeof jspdf.autoTable === 'undefined') {
         alert('Для создания PDF нужны библиотеки jsPDF и jsPDF-AutoTable');
@@ -3061,44 +3062,7 @@ function createPricePDF() {
     doc.save(filename);
     showNotification(`PDF прайс-листа "${filename}" создан!`);
 }
-                
-                // Автоматическая прокрутка к началу
-                window.onload = function() {
-                    window.scrollTo(0, 0);
-                };
-                
-                // Закрытие после печати
-                window.onafterprint = function() {
-                    setTimeout(() => {
-                        if (confirm('Закрыть окно печати?')) {
-                            window.close();
-                        }
-                    }, 500);
-                };
-            <\/script>
-        </body>
-        </html>
-    `;
-    
-    try {
-        // Открываем окно печати
-        const printWindow = window.open('', '_blank', 'width=1100,height=700,scrollbars=yes');
-        if (!printWindow) {
-            alert('Браузер заблокировал всплывающее окно. Разрешите всплывающие окна для этого сайта.');
-            return;
-        }
-        
-        printWindow.document.open();
-        printWindow.document.write(printContent);
-        printWindow.document.close();
-        
-        console.log('Окно печати прайс-листа открыто');
-        
-    } catch (error) {
-        console.error('Ошибка при открытии окна:', error);
-        alert('Ошибка при открытии окна печати: ' + error.message);
-    }
-}
+</script>
 
         // Функция для проверки загрузки библиотек
         function checkPDFLibraries() {
