@@ -1879,13 +1879,21 @@ function displayHijriDate() {
         border: 1px solid #dee2e6;
     `;
     
-    hijriElement.innerHTML = `
-        <i class="fas fa-mosque" style="color: #27ae60; margin-right: 5px;"></i>
-        ${hijri.day} ${hijri.month} ${hijri.year} г.х.
-        <small style="color: #6c757d; margin-left: 8px;">
-            (по Хиджре)
-        </small>
-    `;
+   // Сначала определим день недели
+const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+const today = new Date();
+const dayOfWeek = daysOfWeek[today.getDay()];
+
+hijriElement.innerHTML = `
+    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 5px;"></i>
+    ${dayOfWeek} ${today.toLocaleDateString('ru-RU')}
+    <span style="margin: 0 8px; color: #ddd;">|</span>
+    <i class="fas fa-mosque" style="color: #27ae60; margin-right: 5px;"></i>
+    ${hijri.day} ${hijri.month} ${hijri.year} г.х.
+    <small style="color: #6c757d; margin-left: 8px;">
+        (по Хиджре)
+    </small>
+`;
     
     const header = document.querySelector('.header');
     if (header && header.parentNode) {
