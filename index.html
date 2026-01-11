@@ -1905,12 +1905,50 @@ function adaptHijriDateForMobile() {
     const hijriElement = document.getElementById('hijri-date');
     if (!hijriElement) return;
     
+    const today = new Date();
+    const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+    const hijri = getHijriDate();
+    
     if (window.innerWidth <= 767) {
-        hijriElement.style.fontSize = '0.8rem';
-        hijriElement.style.padding = '3px';
+        // Для мобильных - компактный вариант
+        hijriElement.style.fontSize = '0.85rem';
+        hijriElement.style.padding = '6px';
         hijriElement.innerHTML = `
-            <i class="fas fa-mosque" style="color: #27ae60;"></i>
-            ${getHijriDate().day} ${getHijriDate().month} ${getHijriDate().year} г.х.
+            <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; white-space: nowrap;">
+                    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 4px; font-size: 0.9em;"></i>
+                    <span>${daysOfWeek[today.getDay()].substring(0, 3)} ${today.getDate()}.${today.getMonth() + 1}</span>
+                </div>
+                
+                <span style="color: #ddd; font-size: 0.9em;">•</span>
+                
+                <div style="display: flex; align-items: center; white-space: nowrap;">
+                    <i class="fas fa-mosque" style="color: #27ae60; margin-right: 4px; font-size: 0.9em;"></i>
+                    <span>${hijri.day} ${hijri.month.substring(0, 3)} ${hijri.year}</span>
+                </div>
+            </div>
+        `;
+    } else {
+        // Для десктопа - полный вариант
+        hijriElement.style.fontSize = '0.9rem';
+        hijriElement.style.padding = '5px';
+        hijriElement.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 6px;"></i>
+                    ${daysOfWeek[today.getDay()]} ${today.toLocaleDateString('ru-RU')}
+                </div>
+                
+                <span style="color: #ddd; margin: 0 5px;">|</span>
+                
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-mosque" style="color: #27ae60; margin-right: 6px;"></i>
+                    ${hijri.day} ${hijri.month} ${hijri.year} г.х.
+                    <small style="color: #6c757d; margin-left: 8px;">
+                        (по Хиджре)
+                    </small>
+                </div>
+            </div>
         `;
     }
 }
