@@ -449,6 +449,36 @@
     font-size: 0.85rem;
 }
 
+		/* Классы для адаптации */
+.mobile-view .control-text {
+    display: none !important;
+}
+
+.desktop-view .control-text {
+    display: inline !important;
+}
+
+/* Медиа-запросы для адаптивного меню */
+@media (max-width: 767px) {
+    .dropdown-menu {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 50px !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: calc(100% - 20px) !important;
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        z-index: 10000 !important;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
+    }
+    
+    .dropdown-menu.show {
+        display: block !important;
+    }
+}
+
         /* ========== КОЛОНКИ КАК ПОЛЯ ВВОДА ========== */
 /* 
    Стили для ячеек "Код", "Ед. изм." и "Сумма, руб." 
@@ -2637,42 +2667,186 @@ function initializeApp() {
             setupRowEventListeners();
         }
 
-        function setupEventListeners() {
-            console.log('Настройка обработчиков событий');
+function setupEventListeners() {
+    console.log('Настройка обработчиков событий');
+    
+    // Вкладки
+    document.getElementById('priceTabBtn').addEventListener('click', function() {
+        showTab('price');
+    });
+    
+    document.getElementById('estimateTabBtn').addEventListener('click', function() {
+        showTab('estimate');
+    });
+    
+    // Поиск по прайс-листу
+    const priceSearch = document.getElementById('priceSearch');
+    if (priceSearch) {
+        priceSearch.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const allItems = document.querySelectorAll('.price-item');
             
-            // Вкладки
-            document.getElementById('priceTabBtn').addEventListener('click', function() {
-                showTab('price');
+            allItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'grid';
+                    // Раскрываем родительскую секцию
+                    const section = item.closest('.price-section');
+                    if (section) {
+                        const content = section.querySelector('.section-content');
+                        content.classList.add('expanded');
+                        section.querySelector('i').className = 'fas fa-chevron-up';
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
             });
-            
-            document.getElementById('estimateTabBtn').addEventListener('click', function() {
-                showTab('estimate');
-            });
-            
-            // Поиск по прайс-листу
-            const priceSearch = document.getElementById('priceSearch');
-            if (priceSearch) {
-                priceSearch.addEventListener('input', function(e) {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const allItems = document.querySelectorAll('.price-item');
-                    
-                    allItems.forEach(item => {
-                        const text = item.textContent.toLowerCase();
-                        if (text.includes(searchTerm)) {
-                            item.style.display = 'grid';
-                            // Раскрываем родительскую секцию
-                            const section = item.closest('.price-section');
-                            if (section) {
-                                const content = section.querySelector('.section-content');
-                                content.classList.add('expanded');
-                                section.querySelector('i').className = 'fas fa-chevron-up';
-                            }
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-                });
+        });
+    }
+    
+    // Выпадающее меню управления
+    const dropdownBtn = document.getElementById('controlsDropdown');
+    const menu = document.getElementById('controlsMenu');
+    
+    if (dropdownBtn && menu) {
+        dropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            menu.classList.toggle('show');
+        });
+        
+        // Закрытие меню при клике вне его
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.nav-controls')) {
+                menu.classList.remove('show');
             }
+        });
+        
+        // Кнопки меню управления
+        document.getElementById('addRowBtn').addEventListener('click', function() {
+            addEmptyRow();
+            updateEstimateCounter();
+            menu.classList.remove('show');
+        });
+        
+        document.getElementById('addMaterialBtn').addEventListener('click', function() {
+            showMaterialModal();
+            menu.classList.remove('show');
+        });
+        
+        document.getElementById('clearEstimateBtn').addEventListener('click', function() {
+            if (confirm('Вы уверены, что хотите очистить всю смету?')) {
+                clearEstimate();
+                updateEstimateCounter();
+            }
+            menu.classList.remove('show');
+        });
+        
+        document.getElementById('saveEstimateBtn').addEventListener('click', function() {
+            saveEstimate();
+            menu.classList.remove('show');
+        });
+        
+        document.getElementById('loadEstimateBtn').addEventListener('click', function() {
+            showLoadModal();
+            menu.classList.remove('show');
+        });
+        
+        document.getElementById('saveAsPdfBtn').addEventListener('click', function() {
+            saveAsPDF();
+            menu.classList.remove('show');
+        });
+        
+        document.getElementById('printEstimateBtn').addEventListener('click', function() {
+            showPrintModal();
+            menu.classList.remove('show');
+        });
+        
+        document.getElementById('printPriceBtn').addEventListener('click', function() {
+            printPriceList();
+            menu.classList.remove('show');
+        });
+    }
+    
+    // Модальные окна
+    document.getElementById('closeMaterialModal').addEventListener('click', function() {
+        document.getElementById('materialModal').style.display = 'none';
+    });
+    
+    document.getElementById('closePrintModal').addEventListener('click', function() {
+        document.getElementById('printModal').style.display = 'none';
+    });
+    
+    document.getElementById('closeLoadModal').addEventListener('click', function() {
+        document.getElementById('loadModal').style.display = 'none';
+    });
+    
+    document.getElementById('addMaterialToEstimate').addEventListener('click', function() {
+        addMaterialFromModal();
+    });
+    
+    document.getElementById('generatePrint').addEventListener('click', function() {
+        generatePrint();
+    });
+    
+    // Закрытие модальных окон при клике на фон
+    window.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    });
+    
+    // Адаптивное поведение для меню на мобильных
+    function adaptMenuForMobile() {
+        const menu = document.getElementById('controlsMenu');
+        const dropdownBtn = document.getElementById('controlsDropdown');
+        
+        if (!menu || !dropdownBtn) return;
+        
+        if (window.innerWidth <= 767) {
+            // На мобильных - фиксированное позиционирование
+            menu.style.position = 'fixed';
+            menu.style.top = 'auto';
+            menu.style.bottom = '50px';
+            menu.style.left = '10px';
+            menu.style.right = '10px';
+            menu.style.width = 'calc(100% - 20px)';
+            menu.style.maxHeight = '60vh';
+            menu.style.overflowY = 'auto';
+            
+            // Закрытие меню при клике на пункт (повторная привязка)
+            menu.querySelectorAll('.dropdown-item').forEach(item => {
+                const newItem = item.cloneNode(true);
+                item.parentNode.replaceChild(newItem, item);
+                
+                newItem.addEventListener('click', function() {
+                    menu.classList.remove('show');
+                });
+            });
+        } else {
+            // На десктопе - обычное позиционирование
+            menu.style.position = '';
+            menu.style.top = '';
+            menu.style.bottom = '';
+            menu.style.left = '';
+            menu.style.right = '';
+            menu.style.width = '';
+            menu.style.maxHeight = '';
+        }
+    }
+    
+    // Вызываем адаптацию меню
+    adaptMenuForMobile();
+    window.addEventListener('resize', adaptMenuForMobile);
+    
+    // Закрытие меню при клике на пункт (общая привязка)
+    document.querySelectorAll('#controlsMenu .dropdown-item').forEach(item => {
+        item.addEventListener('click', function() {
+            menu.classList.remove('show');
+        });
+    });
+    
+    console.log('Обработчики событий настроены');
+}
             
             // Выпадающее меню управления
             const dropdownBtn = document.getElementById('controlsDropdown');
