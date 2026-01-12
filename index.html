@@ -1106,26 +1106,88 @@
     cursor: not-allowed;
 }
 
+/* ========== ОБНОВЛЕННЫЙ CSS ДЛЯ МОБИЛЬНЫХ ========== */
+
 @media (max-width: 767px) {
     .stats-bar {
-        flex-direction: column;
-        gap: 10px;
-        padding: 10px;
+        flex-direction: row !important; /* Все в одну строку */
+        padding: 6px 8px !important;
+        height: 40px !important; /* Фиксированная высота */
     }
     
     .stats-left {
-        width: 100%;
-        justify-content: space-between;
+        display: flex !important;
+        gap: 8px !important;
+        flex: 1 !important;
+        overflow-x: auto !important; /* Горизонтальный скролл если не помещается */
+        -webkit-overflow-scrolling: touch !important;
+        padding-right: 5px !important;
     }
     
     .stat-item {
-        font-size: 0.8rem;
+        flex-shrink: 0 !important; /* Не сжимаются */
+        font-size: 0.7rem !important; /* Еще меньше текст */
+        gap: 3px !important;
+        white-space: nowrap !important; /* Не переносится */
+    }
+    
+    .stat-item i {
+        font-size: 0.8rem !important;
+    }
+    
+    .stat-item strong {
+        font-size: 0.75rem !important;
+    }
+    
+    /* Скрываем текст в некоторых элементах на очень маленьких экранах */
+    @media (max-width: 350px) {
+        .stat-item:nth-child(1) span:not(strong),
+        .stat-item:nth-child(2) span:not(strong) {
+            display: none !important;
+        }
+        
+        .stat-item {
+            gap: 2px !important;
+        }
+    }
+    
+    /* Кнопка лайка */
+    .like-btn {
+        width: auto !important; /* Не на всю ширину */
+        padding: 4px 10px !important;
+        font-size: 0.75rem !important;
+        flex-shrink: 0 !important; /* Не сжимается */
+        margin-left: auto !important; /* Прижимаем к правому краю */
+    }
+    
+    /* Убираем кнопку обновить */
+    .stats-bar > div > button[onclick*="location.reload"] {
+        display: none !important;
+    }
+}
+
+/* Еще более компактно для очень маленьких экранов */
+@media (max-width: 480px) {
+    .stats-bar {
+        padding: 5px 6px !important;
+        height: 38px !important;
+    }
+    
+    .stats-left {
+        gap: 6px !important;
+    }
+    
+    .stat-item {
+        font-size: 0.65rem !important;
+    }
+    
+    .stat-item i {
+        font-size: 0.75rem !important;
     }
     
     .like-btn {
-        width: 100%;
-        justify-content: center;
-        padding: 10px;
+        padding: 3px 8px !important;
+        font-size: 0.7rem !important;
     }
 }
 			
@@ -3740,22 +3802,11 @@ document.addEventListener('visibilitychange', function() {
             <span>Лайков: <strong id="totalLikes">0</strong></span>
         </div>
     </div>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <button onclick="location.reload()" style="
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-        ">
-            <i class="fas fa-redo"></i> Обновить
-        </button>
-        <button class="like-btn" id="simpleLikeBtn">
-            <i class="fas fa-thumbs-up"></i> Было полезно!
-        </button>
-    </div>
+    <!-- ТОЛЬКО кнопка лайка, кнопки обновить нет -->
+    <button class="like-btn" id="simpleLikeBtn">
+        <i class="fas fa-thumbs-up"></i>
+        <span class="like-text">Было полезно!</span>
+    </button>
 </div>
 </body>
 </html>
