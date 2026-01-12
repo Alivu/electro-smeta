@@ -2075,19 +2075,16 @@ function adaptHijriDateForMobile() {
         hijriElement.style.padding = '4px';
         hijriElement.style.minHeight = '24px';
         
-        // Проверяем очень маленький экран для дополнительной оптимизации
-        const isVerySmall = window.innerWidth <= 480;
-        
         hijriElement.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; gap: ${isVerySmall ? '3px' : '6px'}; flex-wrap: nowrap; line-height: 1;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: nowrap; line-height: 1;">
                 <div style="display: flex; align-items: center; white-space: nowrap;">
-                    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: ${isVerySmall ? '3px' : '4px'}; font-size: 0.85em;"></i>
-                    <span style="font-size: 0.95em;">${isVerySmall ? daysOfWeek[today.getDay()].substring(0, 3) : daysOfWeek[today.getDay()]} ${today.toLocaleDateString('ru-RU')}</span>
+                    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 4px; font-size: 0.85em;"></i>
+                    <span style="font-size: 0.95em;">${daysOfWeek[today.getDay()]} ${today.toLocaleDateString('ru-RU')}</span>
                 </div>
-                <span style="color: #ddd; margin: 0 ${isVerySmall ? '2px' : '3px'};">|</span>
+                <span style="color: #ddd; margin: 0 3px;">|</span>
                 <div style="display: flex; align-items: center; white-space: nowrap;">
-                    <i class="fas fa-mosque" style="color: #27ae60; margin-right: ${isVerySmall ? '3px' : '4px'}; font-size: 0.85em;"></i>
-                    <span style="font-size: 0.95em;">${hijri.day} ${hijri.month} ${isVerySmall ? '' : hijri.year + ' г.х.'}</span>
+                    <i class="fas fa-mosque" style="color: #27ae60; margin-right: 4px; font-size: 0.85em;"></i>
+                    <span style="font-size: 0.95em;">${hijri.day} ${hijri.month} ${hijri.year} г.х.</span>
                 </div>
             </div>
         `;
