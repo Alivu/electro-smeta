@@ -3809,4 +3809,37 @@ document.addEventListener('visibilitychange', function() {
     </button>
 </div>
 </body>
+	<!-- ЛАЙКИ - ВСЕ ВИДЯТ ОДИНАКОВО -->
+<button onclick="addLike()">❤️ <span id="likes">0</span></button>
+
+<!-- ПОСЕЩЕНИЯ - ОБЩИЙ СЧЕТЧИК -->
+<div>Посетителей: <span id="visits">0</span></div>
+
+<script>
+// ==== НАСТРОЙТЕ ЭТО ====
+const NAMESPACE = 'alivu-electro-smeta'; // ТАК!
+// =======================
+
+// 1. Загружаем текущие данные
+fetch(`https://api.countapi.xyz/get/${NAMESPACE}/likes`)
+  .then(res => res.json())
+  .then(data => document.getElementById('likes').innerText = data.value || 0);
+
+fetch(`https://api.countapi.xyz/get/${NAMESPACE}/visits`)
+  .then(res => res.json())
+  .then(data => document.getElementById('visits').innerText = data.value || 0);
+
+// 2. Функция лайка
+function addLike() {
+  fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/likes`)
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('likes').innerText = data.value;
+      alert('Спасибо за лайк!');
+    });
+}
+
+// 3. При загрузке страницы +1 посещение
+fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/visits`);
+</script>
 </html>
