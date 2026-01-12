@@ -3491,30 +3491,26 @@ window.onload = function() {
     
     // 4. Настраиваем кнопку лайка
     const likeBtn = document.getElementById('simpleLikeBtn');
-    likeBtn.onclick = function() {
-        if (this.disabled) return;
-        
-        // Увеличиваем лайки
-        likes = parseInt(likes) + 1;
-        localStorage.setItem(SITE_ID + '_likes', likes);
-        
-        // Обновляем отображение
-        document.getElementById('totalLikes').textContent = likes;
-        
-        // Меняем кнопку
-        this.innerHTML = '<i class="fas fa-thumbs-up"></i> <span class="like-text">Спасибо!</span>';
-        this.style.backgroundColor = '#4CAF50';
-        this.disabled = true;
-        
-        // Показываем сообщение
-        showNotification('❤️ Спасибо за лайк!');
-        
-        console.log('✅ Лайк добавлен. Всего:', likes);
-    };
+likeBtn.onclick = function() {
+    if (this.disabled) return;
     
-    console.log('✅ Счетчик запущен:', visits, 'посещений,', likes, 'лайков');
+    // Увеличиваем лайки
+    likes = parseInt(likes) + 1;
+    localStorage.setItem(SITE_ID + '_likes', likes);
+    
+    // Обновляем отображение
+    document.getElementById('totalLikes').textContent = likes;
+    
+    // Меняем кнопку
+    this.innerHTML = '<i class="fas fa-thumbs-up"></i> <span class="like-text">Спасибо!</span>';
+    this.style.backgroundColor = '#4CAF50';
+    this.disabled = true;
+    
+    // Используйте переименованную функцию
+    showLikeNotification('❤️ Спасибо за лайк!');
+    
+    console.log('✅ Лайк добавлен. Всего:', likes);
 };
-
 // Функция уведомлений
 function showLikeNotification(message) {
     const notification = document.createElement('div');
