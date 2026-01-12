@@ -1039,8 +1039,7 @@
     .estimate-table td:nth-child(1) {
          text-indent: -3px;  /* Сдвигает текст на 2px влево */
  }  
-
-	/* ========== ФИНАЛЬНАЯ ПАНЕЛЬ СТАТИСТИКИ ========== */
+/* ========== ФИНАЛЬНАЯ ПАНЕЛЬ СТАТИСТИКИ ========== */
 .stats-bar {
     position: fixed;
     bottom: 0;
@@ -1102,22 +1101,11 @@
     box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
 }
 
-.like-btn:active {
-    transform: translateY(0);
-}
-
 .like-btn.liked {
     background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
     cursor: not-allowed;
 }
 
-.like-btn.liked:hover {
-    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
-    transform: none;
-    box-shadow: 0 2px 5px rgba(231, 76, 60, 0.3);
-}
-
-/* Мобильная версия */
 @media (max-width: 767px) {
     .stats-bar {
         flex-direction: column;
@@ -1128,35 +1116,16 @@
     .stats-left {
         width: 100%;
         justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 10px;
     }
     
     .stat-item {
         font-size: 0.8rem;
-        gap: 5px;
-    }
-    
-    .stat-item i {
-        font-size: 0.9rem;
     }
     
     .like-btn {
         width: 100%;
         justify-content: center;
         padding: 10px;
-    }
-}
-
-@media (max-width: 480px) {
-    .stats-left {
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .stat-item {
-        width: 100%;
-        justify-content: space-between;
     }
 }
 			
@@ -3560,153 +3529,178 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
         });
     }, 500);
 }
-// ========== ФИНАЛЬНАЯ ВЕРСИЯ СТАТИСТИКИ ==========
-// (Используйте этот код ВМЕСТО всех предыдущих)
+// ========== ФИНАЛЬНАЯ СИСТЕМА ОБЩЕЙ СТАТИСТИКИ ==========
+// ID вашей таблицы: 1l69WnNuW1AEPPtPa5mA7jG85mtjdqmqeo0tVSL8M4Ac
 
+const YOUR_SHEET_ID = '1l69WnNuW1AEPPtPa5mA7jG85mtjdqmqeo0tVSL8M4Ac';
+const STATS_API = `https://opensheet.elk.sh/${YOUR_SHEET_ID}/Sheet1`;
 const GOOGLE_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSep7wUaLRKqEZXZgvCZ2dbWYe8ZmzBt_fRHesG8kyHpqNIe3A/formResponse';
-const FIELD_ID = 'entry.1005246497';
+const FORM_FIELD = 'entry.1005246497';
 
-// Простая функция отправки
-function sendStat(action, data = {}) {
-    const payload = {
+// Глобальная статистика
+let stats = { totalVisits: 0, totalLikes: 0, todayVisits: 0 };
+
+// Загрузка статистики
+async function loadStats() {
+    try {
+        const response = await fetch(STATS_API);
+        const data = await response.json();
+        
+        let totalVisits = 0, totalLikes = 0, todayVisits = 0;
+        const today = new Date().toLocaleDateString('ru-RU');
+        
+        data.forEach(row => {
+            try {
+                const json = JSON.parse(row['Данные (JSON)'] || '{}');
+                const date = row['Дата'] || json.date;
+                
+                if (json.action === 'visit' || json.action === 'first_visit') {
+                    totalVisits++;
+                    if (date === today) todayVisits++;
+                } else if (json.action === 'like') {
+                    totalLikes++;
+                }
+            } catch(e) { /* игнорируем ошибки парсинга */ }
+        });
+        
+        stats = { totalVisits, totalLikes, todayVisits };
+        return stats;
+    } catch(error) {
+        console.log('Используем кэш:', error);
+        return stats;
+    }
+}
+
+// Отправка данных
+function sendData(action) {
+    const formData = new URLSearchParams();
+    formData.append(FORM_FIELD, JSON.stringify({
         action: action,
         timestamp: new Date().toISOString(),
-        date: new Date().toLocaleDateString('ru-RU'),
-        ...data
-    };
-    
-    const formData = new URLSearchParams();
-    formData.append(FIELD_ID, JSON.stringify(payload));
+        date: new Date().toLocaleDateString('ru-RU')
+    }));
     
     fetch(GOOGLE_FORM, {
         method: 'POST',
         mode: 'no-cors',
         body: formData
-    }).catch(() => {
-        // Запасной способ
-        const img = new Image(1,1);
-        img.src = `${GOOGLE_FORM}?${formData.toString()}`;
     });
 }
 
-// Локальная статистика
-let myStats = {
-    visits: 0,
-    likes: 0,
-    today: new Date().toDateString()
-};
+// Отображение
+function showStats() {
+    document.getElementById('totalVisits').textContent = stats.totalVisits;
+    document.getElementById('todayVisits').textContent = stats.todayVisits;
+    document.getElementById('totalLikes').textContent = stats.totalLikes;
+}
 
-// Загрузка
-function loadStats() {
-    const saved = localStorage.getItem('myStats');
-    if (saved) {
-        myStats = JSON.parse(saved);
-        if (myStats.today !== new Date().toDateString()) {
-            myStats.visits = 0;
-            myStats.today = new Date().toDateString();
+// Посещение
+async function handleVisit() {
+    const todayKey = `visit_${new Date().toDateString()}`;
+    
+    if (!localStorage.getItem(todayKey)) {
+        sendData('visit');
+        stats.totalVisits++;
+        stats.todayVisits++;
+        localStorage.setItem(todayKey, 'true');
+        showStats();
+        
+        setTimeout(async () => {
+            await loadStats();
+            showStats();
+        }, 3000);
+        
+        if (!localStorage.getItem('first_visit')) {
+            setTimeout(() => {
+                showNotification('👋 Добро пожаловать! Вы видите общую статистику');
+            }, 1500);
+            localStorage.setItem('first_visit', 'true');
         }
     }
 }
 
-// Сохранение
-function saveStats() {
-    localStorage.setItem('myStats', JSON.stringify(myStats));
-}
-
-// Посещение
-function trackVisit() {
-    loadStats();
-    myStats.visits++;
-    saveStats();
+// Лайк
+async function handleLike() {
+    const btn = document.getElementById('simpleLikeBtn');
     
-    // Отправляем раз в день
-    const lastSent = localStorage.getItem('lastSent');
-    const today = new Date().toDateString();
-    
-    if (lastSent !== today) {
-        sendStat('visit', { visits: myStats.visits });
-        localStorage.setItem('lastSent', today);
+    if (localStorage.getItem('user_liked')) {
+        showNotification('Вы уже оценили! ❤️');
+        return;
     }
     
-    showStats();
-}
-
-// Лайк
-function trackLike() {
-    const btn = document.getElementById('simpleLikeBtn');
-    if (btn.classList.contains('liked')) return;
+    sendData('like');
+    stats.totalLikes++;
+    localStorage.setItem('user_liked', 'true');
     
-    myStats.likes++;
-    saveStats();
-    
-    // Отправляем лайк
-    sendStat('like', { likes: myStats.likes });
-    
-    // Обновляем кнопку
-    btn.innerHTML = '<i class="fas fa-heart"></i><span>Спасибо!</span>';
+    btn.innerHTML = '<i class="fas fa-heart"></i> Спасибо!';
     btn.classList.add('liked');
     btn.disabled = true;
     
     showStats();
-    showNotification('❤️ Спасибо за оценку!');
-}
-
-// Показать статистику
-function showStats() {
-    document.getElementById('totalVisits').textContent = myStats.visits;
-    document.getElementById('todayVisits').textContent = myStats.visits;
-    document.getElementById('totalLikes').textContent = myStats.likes;
+    showNotification(`❤️ Спасибо! Всего лайков: ${stats.totalLikes}`);
+    
+    setTimeout(async () => {
+        await loadStats();
+        showStats();
+    }, 3000);
 }
 
 // Инициализация
-function init() {
-    loadStats();
-    trackVisit();
+async function init() {
+    console.log('🚀 Запуск системы статистики...');
+    
+    document.getElementById('totalVisits').textContent = '...';
+    document.getElementById('todayVisits').textContent = '...';
+    document.getElementById('totalLikes').textContent = '...';
+    
+    await loadStats();
+    showStats();
+    
+    setTimeout(handleVisit, 1000);
     
     const likeBtn = document.getElementById('simpleLikeBtn');
     if (likeBtn) {
-        likeBtn.addEventListener('click', trackLike);
-        
-        // Если уже лайкали
-        if (myStats.likes > 0) {
-            likeBtn.innerHTML = '<i class="fas fa-heart"></i><span>Уже оценено!</span>';
+        if (localStorage.getItem('user_liked')) {
+            likeBtn.innerHTML = '<i class="fas fa-heart"></i> Уже оценено!';
             likeBtn.classList.add('liked');
             likeBtn.disabled = true;
+        } else {
+            likeBtn.addEventListener('click', handleLike);
         }
     }
     
-    // Приветствие
-    if (myStats.visits === 1) {
-        setTimeout(() => {
-            showNotification('👋 Добро пожаловать! Ваш визит записан в статистику.');
-        }, 1500);
-    }
+    setInterval(async () => {
+        await loadStats();
+        showStats();
+    }, 60000);
+    
+    console.log('✅ Система запущена');
 }
 
 // Запуск
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(init, 1000);
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(init, 800);
 });
     </script>
-	<!-- ФИНАЛЬНАЯ ПАНЕЛЬ СТАТИСТИКИ -->
+<!-- ========== ПАНЕЛЬ ОБЩЕЙ СТАТИСТИКИ ========== -->
 <div class="stats-bar">
     <div class="stats-left">
         <div class="stat-item">
-            <i class="fas fa-user-clock"></i>
-            <span>Посещений: <strong id="totalVisits">0</strong></span>
+            <i class="fas fa-globe"></i>
+            <span>Всего посетителей: <strong id="totalVisits">0</strong></span>
         </div>
         <div class="stat-item">
-            <i class="fas fa-calendar-check"></i>
+            <i class="fas fa-calendar-day"></i>
             <span>Сегодня: <strong id="todayVisits">0</strong></span>
         </div>
         <div class="stat-item">
             <i class="fas fa-heart"></i>
-            <span>Лайков: <strong id="totalLikes">0</strong></span>
+            <span>Всего лайков: <strong id="totalLikes">0</strong></span>
         </div>
     </div>
     <button class="like-btn" id="simpleLikeBtn">
         <i class="fas fa-thumbs-up"></i>
-        <span>Было полезно!</span>
+        Было полезно!
     </button>
 </div>
 </body>
