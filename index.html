@@ -1039,157 +1039,26 @@
     .estimate-table td:nth-child(1) {
          text-indent: -3px;  /* Сдвигает текст на 2px влево */
  }  
-/* ========== ФИНАЛЬНАЯ ПАНЕЛЬ СТАТИСТИКИ ========== */
-.stats-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
-    color: white;
-    padding: 10px 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
-    z-index: 9999;
-    border-top: 3px solid #3498db;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-}
-
-.stats-left {
-    display: flex;
-    gap: 20px;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-}
-
-.stat-item i {
-    color: #3498db;
-    font-size: 1rem;
-}
-
-.stat-item strong {
-    color: #f1c40f;
-    font-weight: 700;
-}
-
-.like-btn {
-    background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.3s;
-    box-shadow: 0 2px 5px rgba(39, 174, 96, 0.3);
-}
-
-.like-btn:hover {
-    background: linear-gradient(90deg, #219653 0%, #27ae60 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
-}
-
-.like-btn.liked {
-    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
-    cursor: not-allowed;
-}
-
-/* ========== ОБНОВЛЕННЫЙ CSS ДЛЯ МОБИЛЬНЫХ ========== */
-
-@media (max-width: 767px) {
-    .stats-bar {
-        flex-direction: row !important; /* Все в одну строку */
-        padding: 6px 8px !important;
-        height: 40px !important; /* Фиксированная высота */
-    }
-    
-    .stats-left {
-        display: flex !important;
-        gap: 8px !important;
-        flex: 1 !important;
-        overflow-x: auto !important; /* Горизонтальный скролл если не помещается */
-        -webkit-overflow-scrolling: touch !important;
-        padding-right: 5px !important;
-    }
-    
-    .stat-item {
-        flex-shrink: 0 !important; /* Не сжимаются */
-        font-size: 0.7rem !important; /* Еще меньше текст */
-        gap: 3px !important;
-        white-space: nowrap !important; /* Не переносится */
-    }
-    
-    .stat-item i {
-        font-size: 0.8rem !important;
-    }
-    
-    .stat-item strong {
-        font-size: 0.75rem !important;
-    }
-    
-    /* Скрываем текст в некоторых элементах на очень маленьких экранах */
-    @media (max-width: 350px) {
-        .stat-item:nth-child(1) span:not(strong),
-        .stat-item:nth-child(2) span:not(strong) {
-            display: none !important;
-        }
-        
-        .stat-item {
-            gap: 2px !important;
-        }
-    }
-    
-    /* Кнопка лайка */
-    .like-btn {
-        width: auto !important; /* Не на всю ширину */
-        padding: 4px 10px !important;
-        font-size: 0.75rem !important;
-        flex-shrink: 0 !important; /* Не сжимается */
-        margin-left: auto !important; /* Прижимаем к правому краю */
-    }
-    
-    /* Убираем кнопку обновить */
-    .stats-bar > div > button[onclick*="location.reload"] {
-        display: none !important;
-    }
-}
-
-/* Еще более компактно для очень маленьких экранов */
-@media (max-width: 480px) {
-    .stats-bar {
-        padding: 5px 6px !important;
-        height: 38px !important;
-    }
-    
-    .stats-left {
-        gap: 6px !important;
-    }
-    
-    .stat-item {
-        font-size: 0.65rem !important;
-    }
-    
-    .stat-item i {
-        font-size: 0.75rem !important;
-    }
-    
-    .like-btn {
-        padding: 3px 8px !important;
-        font-size: 0.7rem !important;
-    }
-}
+<div class="stats-bar">
+    <div class="stats-left">
+        <div class="stat-item">
+            <i class="fas fa-users"></i>
+            <span>Всего: <strong id="totalVisits">0</strong></span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-calendar-day"></i>
+            <span>Сегодня: <strong id="todayVisits">0</strong></span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-heart"></i>
+            <span>Лайков: <strong id="totalLikes">0</strong></span>
+        </div>
+    </div>
+    <button class="like-btn" id="simpleLikeBtn">
+        <i class="fas fa-thumbs-up"></i>
+        <span class="like-text">Было полезно!</span>
+    </button>
+</div>
 			
     </style>
 </head>
@@ -3591,8 +3460,8 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
         });
     }, 500);
 }
-</script>
-<script>
+</script> вставил после этого
+<script>вставил как ты и сказал этот код
 const NAMESPACE = 'alivu-electro-smeta';
 
 // 1. Проверка API
@@ -3653,6 +3522,6 @@ fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/visits`);
 loadDebug();
 
 console.log('🚀 Счетчик запущен!');
-</script>	
-</body>
+</script>	вставил код как ты и дал
+</body>вставил до закрытия как ты и сказал
 </html>
