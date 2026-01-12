@@ -2704,68 +2704,105 @@ function setupEventListeners() {
         });
     }
     
-    // Выпадающее меню управления
-    const dropdownBtn = document.getElementById('controlsDropdown');
-    const menu = document.getElementById('controlsMenu');
-    
-    if (dropdownBtn && menu) {
-        dropdownBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            menu.classList.toggle('show');
-        });
+// Выпадающее меню управления
+const dropdownBtn = document.getElementById('controlsDropdown');
+const menu = document.getElementById('controlsMenu');
+
+if (dropdownBtn && menu) {
+    // Адаптивное поведение для меню на мобильных
+    function adaptMenuForMobile() {
+        if (!menu || !dropdownBtn) return;
         
-        // Закрытие меню при клике вне его
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.nav-controls')) {
-                menu.classList.remove('show');
-            }
-        });
-        
-        // Кнопки меню управления
-        document.getElementById('addRowBtn').addEventListener('click', function() {
-            addEmptyRow();
-            updateEstimateCounter();
-            menu.classList.remove('show');
-        });
-        
-        document.getElementById('addMaterialBtn').addEventListener('click', function() {
-            showMaterialModal();
-            menu.classList.remove('show');
-        });
-        
-        document.getElementById('clearEstimateBtn').addEventListener('click', function() {
-            if (confirm('Вы уверены, что хотите очистить всю смету?')) {
-                clearEstimate();
-                updateEstimateCounter();
-            }
-            menu.classList.remove('show');
-        });
-        
-        document.getElementById('saveEstimateBtn').addEventListener('click', function() {
-            saveEstimate();
-            menu.classList.remove('show');
-        });
-        
-        document.getElementById('loadEstimateBtn').addEventListener('click', function() {
-            showLoadModal();
-            menu.classList.remove('show');
-        });
-        
-        document.getElementById('saveAsPdfBtn').addEventListener('click', function() {
-            saveAsPDF();
-            menu.classList.remove('show');
-        });
-        
-        document.getElementById('printEstimateBtn').addEventListener('click', function() {
-            showPrintModal();
-            menu.classList.remove('show');
-        });
-        
-        document.getElementById('printPriceBtn').addEventListener('click', function() {
-            printPriceList();
-            menu.classList.remove('show');
-        });
+        if (window.innerWidth <= 767) {
+            // На мобильных - фиксированное позиционирование
+            menu.style.position = 'fixed';
+            menu.style.top = 'auto';
+            menu.style.bottom = '50px';
+            menu.style.left = '10px';
+            menu.style.right = '10px';
+            menu.style.width = 'calc(100% - 20px)';
+            menu.style.maxHeight = '60vh';
+            menu.style.overflowY = 'auto';
+        } else {
+            // На десктопе - обычное позиционирование
+            menu.style.position = '';
+            menu.style.top = '';
+            menu.style.bottom = '';
+            menu.style.left = '';
+            menu.style.right = '';
+            menu.style.width = '';
+            menu.style.maxHeight = '';
+        }
     }
+    
+    // Вызываем адаптацию меню
+    adaptMenuForMobile();
+    window.addEventListener('resize', adaptMenuForMobile);
+    
+    dropdownBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('show');
+    });
+    
+    // Закрытие меню при клике вне его - ИСПРАВЛЕН СЕЛЕКТОР
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.nav-controls')) {
+            menu.classList.remove('show');
+        }
+    });
+    
+    // Кнопки меню
+    document.getElementById('addRowBtn').addEventListener('click', function() {
+        addEmptyRow();
+        updateEstimateCounter();
+        menu.classList.remove('show');
+    });
+    
+    document.getElementById('addMaterialBtn').addEventListener('click', function() {
+        showMaterialModal();
+        menu.classList.remove('show');
+    });
+    
+    document.getElementById('clearEstimateBtn').addEventListener('click', function() {
+        if (confirm('Вы уверены, что хотите очистить всю смету?')) {
+            clearEstimate();
+            updateEstimateCounter();
+        }
+        menu.classList.remove('show');
+    });
+    
+    document.getElementById('saveEstimateBtn').addEventListener('click', function() {
+        saveEstimate();
+        menu.classList.remove('show');
+    });
+    
+    document.getElementById('loadEstimateBtn').addEventListener('click', function() {
+        showLoadModal();
+        menu.classList.remove('show');
+    });
+    
+    document.getElementById('printEstimateBtn').addEventListener('click', function() {
+        showPrintModal();
+        menu.classList.remove('show');
+    });
+    
+    document.getElementById('saveAsPdfBtn').addEventListener('click', function() {
+        saveAsPDF();
+        menu.classList.remove('show');
+    });
+    
+    document.getElementById('printPriceBtn').addEventListener('click', function() {
+        printPriceList();
+        menu.classList.remove('show');
+    });
+    
+    // Закрытие меню при клике на любой пункт
+    document.querySelectorAll('#controlsMenu .dropdown-item').forEach(item => {
+        item.addEventListener('click', function() {
+            menu.classList.remove('show');
+        });
+    });
+}
     
     // Модальные окна
     document.getElementById('closeMaterialModal').addEventListener('click', function() {
@@ -2860,7 +2897,7 @@ function setupEventListeners() {
                 
                 // Закрытие меню при клике вне его
                 document.addEventListener('click', function(e) {
-                    if (!e.target.closest('.dropdown-controls')) {
+                    if (!e.target.closest('.nav-controls')) {
                         menu.classList.remove('show');
                     }
                 });
