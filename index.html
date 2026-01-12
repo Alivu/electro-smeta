@@ -3530,64 +3530,82 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
     }, 500);
 }
 // ========== ИСПРАВЛЕННАЯ СИСТЕМА СТАТИСТИКИ ==========
-// ========== ТОЛЬКО ОТПРАВКА В GOOGLE FORMS ==========
-// Никакого чтения, только запись!
+// ========== ПРОСТОЙ API ЗАПРОС ==========
+// Без защиты от накрутки, просто загружает данные
 
-const GOOGLE_FORM = 'https://docs.google.com/forms/d/e/1FAIpQLSep7wUaLRKqEZXZgvCZ2dbWYe8ZmzBt_fRHesG8kyHpqNIe3A/formResponse';
-const FORM_FIELD = 'entry.1005246497';
+const SHEET_ID = '1l69WnNuW1AEPPtPa5mA7jG85mtjdqmqeo0tVSL8M4Ac';
+const API_URL = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
 
-// Простая отправка
-function sendStat(action) {
+// Загрузка статистики
+async function loadStats() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        let visits = 0;
+        let likes = 0;
+        
+        // Простой подсчет
+        data.forEach(row => {
+            try {
+                const json = JSON.parse(row['Данные (JSON)'] || '{}');
+                if (json.action === 'visit' || json.action === 'first_visit') {
+                    visits++;
+                } else if (json.action === 'like') {
+                    likes++;
+                }
+            } catch(e) {
+                // Если не JSON, считаем строку как посещение
+                if (row['Данные (JSON)']) visits++;
+            }
+        });
+        
+        return { visits, likes };
+    } catch(error) {
+        console.log('Ошибка загрузки:', error);
+        return { visits: 0, likes: 0 };
+    }
+}
+
+// Отправка в форму (при каждом обновлении!)
+function sendVisit() {
+    const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSep7wUaLRKqEZXZgvCZ2dbWYe8ZmzBt_fRHesG8kyHpqNIe3A/formResponse';
+    const FIELD_ID = 'entry.1005246497';
+    
     const data = {
-        action: action,
+        action: 'visit',
         timestamp: new Date().toISOString(),
-        date: new Date().toLocaleDateString('ru-RU'),
-        time: new Date().toLocaleTimeString('ru-RU')
+        date: new Date().toLocaleDateString('ru-RU')
     };
     
     const formData = new URLSearchParams();
-    formData.append(FORM_FIELD, JSON.stringify(data));
+    formData.append(FIELD_ID, JSON.stringify(data));
     
-    fetch(GOOGLE_FORM, {
+    fetch(FORM_URL, {
         method: 'POST',
         mode: 'no-cors',
         body: formData
     });
 }
 
-// Посещение
-function trackVisit() {
-    const todayKey = `visit_${new Date().toDateString()}`;
-    if (!localStorage.getItem(todayKey)) {
-        sendStat('visit');
-        localStorage.setItem(todayKey, 'true');
-    }
-}
-
-// Лайк
-function trackLike() {
-    if (!localStorage.getItem('user_liked')) {
-        sendStat('like');
-        localStorage.setItem('user_liked', 'true');
-        
-        const btn = document.getElementById('simpleLikeBtn');
-        btn.innerHTML = '<i class="fas fa-heart"></i> Спасибо!';
-        btn.classList.add('liked');
-        btn.disabled = true;
-        
-        showNotification('❤️ Спасибо за оценку!');
-    }
-}
-
 // Инициализация
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(trackVisit, 1000);
+async function init() {
+    // 1. Сразу отправляем посещение (каждый раз при обновлении!)
+    sendVisit();
     
-    const likeBtn = document.getElementById('simpleLikeBtn');
-    if (likeBtn && !localStorage.getItem('user_liked')) {
-        likeBtn.addEventListener('click', trackLike);
-    }
-});
+    // 2. Загружаем статистику
+    const stats = await loadStats();
+    
+    // 3. Показываем
+    document.getElementById('totalVisits').textContent = stats.visits;
+    document.getElementById('totalLikes').textContent = stats.likes;
+    document.getElementById('todayVisits').textContent = stats.visits;
+    
+    console.log('Статистика:', stats);
+}
+
+// Запуск
+document.addEventListener('DOMContentLoaded', init);
     </script>
 	<!-- Добавьте этот скрытый блок для отладки -->
 <div class="stats-bar">
