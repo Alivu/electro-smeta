@@ -3787,38 +3787,67 @@ document.addEventListener('visibilitychange', function() {
     }
 });
     </script>
-	<!-- ЛАЙКИ - ВСЕ ВИДЯТ ОДИНАКОВО -->
-<button onclick="addLike()">❤️ <span id="likes">0</span></button>
+const NAMESPACE = 'alivu-electro-smeta';
 
-<!-- ПОСЕЩЕНИЯ - ОБЩИЙ СЧЕТЧИК -->
-<div>Посетителей: <span id="visits">0</span></div>
+// 1. Проверка API (откройте в браузере)
+console.log('Проверьте API:');
+console.log('Посещения:', `https://api.countapi.xyz/get/${NAMESPACE}/visits`);
+console.log('Лайки:', `https://api.countapi.xyz/get/${NAMESPACE}/likes`);
 
-<script>
-// ==== НАСТРОЙТЕ ЭТО ====
-const NAMESPACE = 'alivu-electro-smeta'; // ТАК!
-// =======================
+// 2. Грубый счетчик в углу экрана
+document.body.innerHTML += `
+  <div style="
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: #000;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    z-index: 9999;
+  ">
+    <div>Посетителей: <span id="debugVisits">0</span></div>
+    <div>Лайков: <span id="debugLikes">0</span></div>
+    <button onclick="debugLike()" style="margin-top:5px; padding:5px;">
+      ❤️ Лайкнуть
+    </button>
+  </div>
+`;
 
-// 1. Загружаем текущие данные
-fetch(`https://api.countapi.xyz/get/${NAMESPACE}/likes`)
-  .then(res => res.json())
-  .then(data => document.getElementById('likes').innerText = data.value || 0);
-
-fetch(`https://api.countapi.xyz/get/${NAMESPACE}/visits`)
-  .then(res => res.json())
-  .then(data => document.getElementById('visits').innerText = data.value || 0);
-
-// 2. Функция лайка
-function addLike() {
-  fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/likes`)
-    .then(res => res.json())
-    .then(data => {
-      document.getElementById('likes').innerText = data.value;
-      alert('Спасибо за лайк!');
-    });
+// 3. Загружаем цифры
+async function loadDebug() {
+  try {
+    const visitsRes = await fetch(`https://api.countapi.xyz/get/${NAMESPACE}/visits`);
+    const visitsData = await visitsRes.json();
+    document.getElementById('debugVisits').textContent = visitsData.value;
+    
+    const likesRes = await fetch(`https://api.countapi.xyz/get/${NAMESPACE}/likes`);
+    const likesData = await likesRes.json();
+    document.getElementById('debugLikes').textContent = likesData.value;
+    
+    console.log('✅ Цифры загружены:', visitsData.value, '/', likesData.value);
+  } catch (error) {
+    console.error('❌ Ошибка:', error);
+  }
 }
 
-// 3. При загрузке страницы +1 посещение
+// 4. Добавляем лайк
+async function debugLike() {
+  const res = await fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/likes`);
+  const data = await res.json();
+  document.getElementById('debugLikes').textContent = data.value;
+  alert('Лайк добавлен! Обновите страницу - увидите +1');
+}
+
+// 5. Добавляем посещение
 fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/visits`);
+
+// 6. Загружаем цифры
+loadDebug();
+
+console.log('🚀 Счетчик запущен! Проверьте цифры в черном окошке внизу справа');
+</script>
 </body>
 
 </script>
