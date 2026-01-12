@@ -3567,172 +3567,69 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
 </div>
 
 <script>
-// ==== COUNTAPI СЧЕТЧИК ====
-const COUNTAPI_NAMESPACE = 'electro-smeta-alex'; // Можно изменить на любое имя
-const COUNTAPI_KEY_VISITS = 'total-visits';
-const COUNTAPI_KEY_LIKES = 'total-likes';
+// ==== Настройки репозитория ====
+const OWNER = "alivu";        // твой GitHub username
+const REPO = "electro-smeta";     // имя репозитория
+const FILE = "stats.json";         // путь к файлу stats.json в репо
 
-// Проверяем и создаем счетчики если их нет
-async function initializeCountAPI() {
+// Получаем текущую статистику
+async function getStats() {
     try {
-        console.log('🔧 Инициализация CountAPI...');
-        
-        // Проверяем счетчик посещений
-        const checkVisits = await fetch(`https://api.countapi.xyz/get/${COUNTAPI_NAMESPACE}/${COUNTAPI_KEY_VISITS}`);
-        
-        if (checkVisits.status === 404) {
-            // Счетчика нет, создаем со стартовым значением 137
-            await fetch(`https://api.countapi.xyz/create?namespace=${COUNTAPI_NAMESPACE}&key=${COUNTAPI_KEY_VISITS}&value=137`);
-            console.log('✅ Создан счетчик посещений (137)');
-        } else {
-            const data = await checkVisits.json();
-            console.log('📊 Счетчик посещений существует:', data.value);
-        }
-        
-        // Проверяем счетчик лайков
-        const checkLikes = await fetch(`https://api.countapi.xyz/get/${COUNTAPI_NAMESPACE}/${COUNTAPI_KEY_LIKES}`);
-        
-        if (checkLikes.status === 404) {
-            // Счетчика нет, создаем со стартовым значением 15
-            await fetch(`https://api.countapi.xyz/create?namespace=${COUNTAPI_NAMESPACE}&key=${COUNTAPI_KEY_LIKES}&value=15`);
-            console.log('✅ Создан счетчик лайков (15)');
-        } else {
-            const data = await checkLikes.json();
-            console.log('📊 Счетчик лайков существует:', data.value);
-        }
-        
-        return true;
-    } catch (error) {
-        console.error('❌ Ошибка инициализации CountAPI:', error);
-        return false;
+        const res = await fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${FILE}`);
+        const data = await res.json();
+        return data;
+    } catch (e) {
+        console.error("Ошибка получения stats.json:", e);
+        return { visits: 0, likes: 0 };
     }
 }
 
-// Обновляем счетчики на странице
-async function updateCounter() {
+// Отправляем статистику в workflow (repository_dispatch)
+async function sendStats(visits, likes) {
     try {
-        // Сначала инициализируем
-        await initializeCountAPI();
-        
-        // 1. Увеличиваем счетчик посещений (hit - увеличивает на 1)
-        const visitsResponse = await fetch(`https://api.countapi.xyz/hit/${COUNTAPI_NAMESPACE}/${COUNTAPI_KEY_VISITS}`);
-        const visitsData = await visitsResponse.json();
-        
-        // 2. Получаем текущие лайки (get - только получает значение)
-        const likesResponse = await fetch(`https://api.countapi.xyz/get/${COUNTAPI_NAMESPACE}/${COUNTAPI_KEY_LIKES}`);
-        const likesData = await likesResponse.json();
-        
-        // 3. Показываем на странице
-        document.getElementById('totalVisits').textContent = visitsData.value;
-        document.getElementById('todayVisits').textContent = visitsData.value;
-        document.getElementById('totalLikes').textContent = likesData.value || 0;
-        
-        console.log('🎯 CountAPI обновлен:', visitsData.value, 'посещений,', likesData.value, 'лайков');
-        
-        return { visits: visitsData.value, likes: likesData.value };
-    } catch (error) {
-        console.error('❌ Ошибка CountAPI, переходим на localStorage:', error);
-        return updateLocalStorage(); // Резервный вариант
+        await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/dispatches`, {
+            method: "POST",
+            headers: {
+                "Accept": "application/vnd.github+json",
+            },
+            body: JSON.stringify({
+                event_type: "update_stats",
+                client_payload: { visits, likes }
+            })
+        });
+    } catch (e) {
+        console.error("Ошибка отправки данных в workflow:", e);
     }
 }
 
-// Резервный вариант на localStorage
-function updateLocalStorage() {
-    console.log('⚠️ Используем localStorage как запасной вариант');
-    
-    const SITE_ID = 'electro-smeta-local-backup';
-    let visits = localStorage.getItem(SITE_ID + '_visits');
-    let likes = localStorage.getItem(SITE_ID + '_likes');
-    
-    if (!visits) visits = 137; // Начальное значение
-    if (!likes) likes = 15; // Начальное значение
-    
-    visits = parseInt(visits) + 1;
-    localStorage.setItem(SITE_ID + '_visits', visits);
-    
-    document.getElementById('totalVisits').textContent = visits;
-    document.getElementById('todayVisits').textContent = visits;
-    document.getElementById('totalLikes').textContent = likes;
-    
-    return { visits, likes };
+// Обновление счётчиков на странице
+async function updateCounters(addLike = false) {
+    const stats = await getStats();
+    stats.visits += 1;
+    if (addLike) stats.likes += 1;
+
+    // обновляем на странице
+    document.getElementById("totalVisits").textContent = stats.visits;
+    document.getElementById("totalLikes").textContent = stats.likes;
+
+    // отправляем на workflow для записи в GitHub
+    sendStats(stats.visits, stats.likes);
 }
 
-// Обработчик лайка
-async function handleLike() {
-    const likeBtn = document.getElementById('simpleLikeBtn');
-    
-    if (likeBtn.disabled) return;
-    
-    try {
-        // Увеличиваем счетчик лайков в CountAPI
-        const response = await fetch(`https://api.countapi.xyz/hit/${COUNTAPI_NAMESPACE}/${COUNTAPI_KEY_LIKES}`);
-        const data = await response.json();
-        
-        // Обновляем отображение
-        document.getElementById('totalLikes').textContent = data.value;
-        
-        // Меняем кнопку
-        likeBtn.innerHTML = '<i class="fas fa-thumbs-up"></i> <span class="like-text">Спасибо!</span>';
-        likeBtn.style.backgroundColor = '#4CAF50';
-        likeBtn.disabled = true;
-        
-        // Показываем уведомление
-        showNotification('❤️ Спасибо за лайк!');
-        
-        console.log('✅ Лайк добавлен через CountAPI:', data.value);
-    } catch (error) {
-        console.error('❌ Ошибка CountAPI при лайке:', error);
-        
-        // Резервный вариант на localStorage
-        const SITE_ID = 'electro-smeta-local-backup';
-        let likes = localStorage.getItem(SITE_ID + '_likes') || 15;
-        likes = parseInt(likes) + 1;
-        localStorage.setItem(SITE_ID + '_likes', likes);
-        
-        document.getElementById('totalLikes').textContent = likes;
-        likeBtn.innerHTML = '<i class="fas fa-thumbs-up"></i> <span class="like-text">Спасибо!</span>';
-        likeBtn.style.backgroundColor = '#4CAF50';
-        likeBtn.disabled = true;
-        
-        showNotification('❤️ Спасибо за лайк! (локально)');
+// Кнопка лайка
+document.addEventListener("DOMContentLoaded", () => {
+    // обновляем посещение
+    updateCounters();
+
+    // обрабатываем лайк
+    const likeBtn = document.getElementById("simpleLikeBtn");
+    if (likeBtn) {
+        likeBtn.onclick = () => {
+            updateCounters(true);
+            likeBtn.disabled = true;
+            likeBtn.textContent = "Спасибо!";
+        };
     }
-}
-
-// Функция уведомлений
-function showNotification(message) {
-    const notification = document.createElement('div');
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 5px;
-        z-index: 9999;
-        font-size: 14px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
-}
-
-// Запускаем при загрузке страницы
-window.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Запускаем счетчик CountAPI...');
-    
-    // Обновляем счетчики
-    updateCounter();
-    
-    // Настраиваем кнопку лайка
-    const likeBtn = document.getElementById('simpleLikeBtn');
-    likeBtn.onclick = handleLike;
-    
-    // Тестируем (можно удалить после проверки)
-    console.log('Для теста CountAPI выполните в консоли:');
-    console.log('fetch("https://api.countapi.xyz/get/electro-smeta-alex/total-visits").then(r => r.json()).then(d => console.log("Посещения:", d.value))');
-    console.log('fetch("https://api.countapi.xyz/get/electro-smeta-alex/total-likes").then(r => r.json()).then(d => console.log("Лайки:", d.value))');
 });
 </script>
 </body>
