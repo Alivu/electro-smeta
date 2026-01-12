@@ -1287,7 +1287,7 @@
             </div>
         </div>
         
- <!-- Панель навигации -->
+<!-- Панель навигации -->
 <div class="nav-panel">
     <!-- Вкладки -->
     <div class="tabs">
@@ -1309,58 +1309,39 @@
     
     <!-- Управление -->
     <div class="estimate-controls">
-        <!-- Кнопка печати прайса -->
-        <button class="btn btn-info" id="printPriceBtn">
-            <i class="fas fa-print"></i> Печать прайса
-        </button>
-        
-        <!-- Меню управления сметой (с исправленным кодом выше) -->
+        <!-- Меню управления сметой -->
         <div class="dropdown-controls">
-            <!-- ... ваш исправленный код меню управления ... -->
-        </div>
-    </div>
-</div>
-                
-<!-- Меню управления сметой -->
-<div class="dropdown-controls">
-    <button class="btn btn-success dropdown-toggle" id="controlsDropdown">
-        <i class="fas fa-bars"></i> Управление
-        <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
-    </button>
-    <div class="dropdown-menu" id="controlsMenu">
-        <button class="dropdown-item" id="addRowBtn"><i class="fas fa-plus"></i> Добавить строку</button>
-        <button class="dropdown-item" id="addMaterialBtn"><i class="fas fa-box"></i> Добавить материал</button>
-        <button class="dropdown-item" id="clearEstimateBtn"><i class="fas fa-broom"></i> Очистить смету</button>
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item" id="saveEstimateBtn"><i class="fas fa-save"></i> Сохранить смету</button>
-        <button class="dropdown-item" id="loadEstimateBtn"><i class="fas fa-folder-open"></i> Загрузить смету</button>
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item" id="saveAsPdfBtn"><i class="fas fa-file-pdf"></i> Сохранить в PDF</button>
-        <button class="dropdown-item" id="printEstimateBtn"><i class="fas fa-print"></i> Печать сметы</button>
-        
-        <!-- Прайс-Лист с подменю -->
-        <div class="dropdown-submenu">
-            <button class="dropdown-item dropdown-toggle-submenu">
-                <i class="fas fa-file-pdf"></i> Прайс-Лист PDF
-                <i class="fas fa-chevron-right" style="float: right;"></i>
+            <button class="btn btn-success dropdown-toggle" id="controlsDropdown">
+                <i class="fas fa-bars"></i> Управление
+                <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
             </button>
-            <div class="dropdown-submenu-menu">
-                <button class="dropdown-item" onclick="window.open('https://github.com/Alivu/electro-smeta/raw/main/Price_Electric_GrouP.pdf', '_blank')">
-                    <i class="fas fa-eye"></i> Открыть PDF
-                </button>
+            <div class="dropdown-menu" id="controlsMenu">
+                <button class="dropdown-item" id="addRowBtn"><i class="fas fa-plus"></i> Добавить строку</button>
+                <button class="dropdown-item" id="addMaterialBtn"><i class="fas fa-box"></i> Добавить материал</button>
+                <button class="dropdown-item" id="clearEstimateBtn"><i class="fas fa-broom"></i> Очистить смету</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" id="saveEstimateBtn"><i class="fas fa-save"></i> Сохранить смету</button>
+                <button class="dropdown-item" id="loadEstimateBtn"><i class="fas fa-folder-open"></i> Загрузить смету</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" id="saveAsPdfBtn"><i class="fas fa-file-pdf"></i> Сохранить в PDF</button>
+                <button class="dropdown-item" id="printEstimateBtn"><i class="fas fa-print"></i> Печать сметы</button>
+                <div class="dropdown-divider"></div>
+                <!-- Кнопка для скачивания прайс-листа -->
                 <button class="dropdown-item" onclick="window.location.href='https://github.com/Alivu/electro-smeta/raw/main/Price_Electric_GrouP.pdf'">
-                    <i class="fas fa-download"></i> Скачать PDF
+                    <i class="fas fa-file-pdf"></i> Скачать Прайс-Лист PDF
+                </button>
+                <!-- Кнопка для открытия прайс-листа -->
+                <button class="dropdown-item" onclick="window.open('https://github.com/Alivu/electro-smeta/raw/main/Price_Electric_GrouP.pdf', '_blank')">
+                    <i class="fas fa-eye"></i> Открыть Прайс-Лист
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="window.open('https://alivu.github.io/Electric_Group/', '_blank')">
+                    <i class="fas fa-home"></i> Вернуться в Electric_Group
                 </button>
             </div>
         </div>
-        
-        <div class="dropdown-divider"></div>
-        <button class="dropdown-item" onclick="window.open('https://alivu.github.io/Electric_Group/', '_blank')">
-            <i class="fas fa-home"></i> Вернуться в Electric_Group
-        </button>
     </div>
 </div>
-
         <!-- Вкладка 1: Прайс-лист -->
         <div class="tab-content active" id="price-tab">
             <div class="price-header">
