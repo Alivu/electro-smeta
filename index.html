@@ -1258,32 +1258,39 @@
             </div>
         </div>
         
-        <!-- Панель навигации -->
-        <div class="nav-panel">
-            <!-- Вкладки -->
-            <div class="tabs">
-                <button class="tab active" id="priceTabBtn">
-                    <i class="fas fa-file-invoice-dollar"></i> Прайс-лист
-                </button>
-                <button class="tab" id="estimateTabBtn">
-                    <i class="fas fa-calculator"></i> Смета
-                    <span id="estimateCounter" style="
-                        background: #6c757d; 
-                        color: white; 
-                        padding: 2px 6px; 
-                        border-radius: 10px; 
-                        font-size: 0.75rem; 
-                        margin-left: 5px;
-                    ">0</span>
-                </button>
-            </div>
-            
-            <!-- Управление -->
-            <div class="estimate-controls">
-                <!-- Кнопка печати прайса -->
-                <button class="btn btn-info" id="printPriceBtn">
-                    <i class="fas fa-print"></i> Печать прайса
-                </button>
+ <!-- Панель навигации -->
+<div class="nav-panel">
+    <!-- Вкладки -->
+    <div class="tabs">
+        <button class="tab active" id="priceTabBtn">
+            <i class="fas fa-file-invoice-dollar"></i> Прайс-лист
+        </button>
+        <button class="tab" id="estimateTabBtn">
+            <i class="fas fa-calculator"></i> Смета
+            <span id="estimateCounter" style="
+                background: #6c757d; 
+                color: white; 
+                padding: 2px 6px; 
+                border-radius: 10px; 
+                font-size: 0.75rem; 
+                margin-left: 5px;
+            ">0</span>
+        </button>
+    </div>
+    
+    <!-- Управление -->
+    <div class="estimate-controls">
+        <!-- Кнопка печати прайса -->
+        <button class="btn btn-info" id="printPriceBtn">
+            <i class="fas fa-print"></i> Печать прайса
+        </button>
+        
+        <!-- Меню управления сметой (с исправленным кодом выше) -->
+        <div class="dropdown-controls">
+            <!-- ... ваш исправленный код меню управления ... -->
+        </div>
+    </div>
+</div>
                 
 <!-- Меню управления сметой -->
 <div class="dropdown-controls">
@@ -1301,14 +1308,11 @@
         <div class="dropdown-divider"></div>
         <button class="dropdown-item" id="saveAsPdfBtn"><i class="fas fa-file-pdf"></i> Сохранить в PDF</button>
         <button class="dropdown-item" id="printEstimateBtn"><i class="fas fa-print"></i> Печать сметы</button>
-        <button class="dropdown-item" onclick="window.open('https://alivu.github.io/Electric_Group/', '_blank')">
-            <i class="fas fa-home"></i> Вернуться в Electric_Group
-        </button>
-
+        
         <!-- Прайс-Лист с подменю -->
         <div class="dropdown-submenu">
-            <button class="dropdown-item dropdown-toggle">
-                <i class="fas fa-file-pdf"></i> Прайс-Лист
+            <button class="dropdown-item dropdown-toggle-submenu">
+                <i class="fas fa-file-pdf"></i> Прайс-Лист PDF
                 <i class="fas fa-chevron-right" style="float: right;"></i>
             </button>
             <div class="dropdown-submenu-menu">
@@ -1320,7 +1324,11 @@
                 </button>
             </div>
         </div>
-
+        
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" onclick="window.open('https://alivu.github.io/Electric_Group/', '_blank')">
+            <i class="fas fa-home"></i> Вернуться в Electric_Group
+        </button>
     </div>
 </div>
 
@@ -3676,24 +3684,34 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
     }, 500);
 }
     </script>
-<!-- Уже есть какой-то скрипт -->
-<script>
-  console.log('Привет, это первый скрипт');
-</script>
-
-<!-- Новый скрипт для подменю -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.dropdown-submenu .dropdown-toggle').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            const submenu = btn.nextElementSibling;
-            submenu.style.display = (submenu.style.display === 'block') ? 'none' : 'block';
-        });
+// Добавьте этот код в функцию setupEventListeners() или отдельно
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчик для подменю "Прайс-Лист PDF"
+    document.querySelectorAll('.dropdown-submenu').forEach(submenu => {
+        const toggle = submenu.querySelector('.dropdown-toggle-submenu');
+        const menu = submenu.querySelector('.dropdown-submenu-menu');
+        
+        if (toggle && menu) {
+            toggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                
+                // Закрываем все другие подменю
+                document.querySelectorAll('.dropdown-submenu-menu').forEach(m => {
+                    if (m !== menu) m.style.display = 'none';
+                });
+                
+                // Переключаем текущее
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        }
     });
-
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown-submenu-menu').forEach(menu => menu.style.display = 'none');
+    
+    // Закрытие подменю при клике в другом месте
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.dropdown-submenu-menu').forEach(menu => {
+            menu.style.display = 'none';
+        });
     });
 });
 </script>
