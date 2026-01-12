@@ -1038,28 +1038,7 @@
     .estimate-table th:nth-child(1),
     .estimate-table td:nth-child(1) {
          text-indent: -3px;  /* Сдвигает текст на 2px влево */
- }  
-<div class="stats-bar">
-    <div class="stats-left">
-        <div class="stat-item">
-            <i class="fas fa-users"></i>
-            <span>Всего: <strong id="totalVisits">0</strong></span>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-calendar-day"></i>
-            <span>Сегодня: <strong id="todayVisits">0</strong></span>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-heart"></i>
-            <span>Лайков: <strong id="totalLikes">0</strong></span>
-        </div>
-    </div>
-    <button class="like-btn" id="simpleLikeBtn">
-        <i class="fas fa-thumbs-up"></i>
-        <span class="like-text">Было полезно!</span>
-    </button>
-</div>
-			
+ }  	
     </style>
 </head>
 <body>
@@ -1273,6 +1252,95 @@
         </div>
     </div>
 
+<!-- 1. Блок статистики (вставьте там, где хотите его видеть) -->
+<div class="stats-bar">
+    <div class="stats-left">
+        <div class="stat-item">
+            <i class="fas fa-users"></i>
+            <span>Всего: <strong id="totalVisits">0</strong></span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-calendar-day"></i>
+            <span>Сегодня: <strong id="todayVisits">0</strong></span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-heart"></i>
+            <span>Лайков: <strong id="totalLikes">0</strong></span>
+        </div>
+    </div>
+    <button class="like-btn" id="simpleLikeBtn">
+        <i class="fas fa-thumbs-up"></i>
+        <span class="like-text">Было полезно!</span>
+    </button>
+</div>
+
+<!-- 2. JavaScript код (вставьте в конец, перед </body>) -->
+<script>
+const NAMESPACE = 'alivu-electro-smeta';
+
+// Загружаем статистику
+async function loadStats() {
+    try {
+        // Загружаем посещения
+        const visitsRes = await fetch(`https://api.countapi.xyz/get/${NAMESPACE}/visits`);
+        const visitsData = await visitsRes.json();
+        
+        // Загружаем лайки
+        const likesRes = await fetch(`https://api.countapi.xyz/get/${NAMESPACE}/likes`);
+        const likesData = await likesRes.json();
+        
+        // Вставляем цифры
+        document.getElementById('totalVisits').textContent = visitsData.value || 0;
+        document.getElementById('todayVisits').textContent = visitsData.value || 0;
+        document.getElementById('totalLikes').textContent = likesData.value || 0;
+        
+        console.log('✅ Статистика загружена');
+    } catch (error) {
+        console.error('❌ Ошибка:', error);
+    }
+}
+
+// Функция лайка
+async function addLike() {
+    const btn = document.getElementById('simpleLikeBtn');
+    
+    // Проверяем, не лайкал ли уже
+    if (btn.disabled) return;
+    
+    try {
+        // Отправляем лайк
+        const res = await fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/likes`);
+        const data = await res.json();
+        
+        // Обновляем цифру
+        document.getElementById('totalLikes').textContent = data.value;
+        
+        // Меняем кнопку
+        btn.innerHTML = '<i class="fas fa-thumbs-up"></i> <span class="like-text">Спасибо!</span>';
+        btn.style.backgroundColor = '#4CAF50';
+        btn.disabled = true;
+        
+        alert('Спасибо за лайк!');
+    } catch (error) {
+        console.error('❌ Ошибка:', error);
+    }
+}
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем посещение
+    fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/visits`);
+    
+    // Загружаем статистику
+    loadStats();
+    
+    // Вешаем обработчик на кнопку
+    document.getElementById('simpleLikeBtn').onclick = addLike;
+    
+    console.log('🚀 Счетчик запущен!');
+});
+
+	
     <script>
         // Проверяем iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
