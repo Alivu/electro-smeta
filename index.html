@@ -1869,11 +1869,11 @@ function displayHijriDate() {
     hijriElement.id = 'hijri-date';
     hijriElement.style.cssText = `
         text-align: center;
-        margin: 5px 0;
-        font-size: 0.9rem;
+        margin: 3px 0;
+        font-size: 0.85rem;
         color: #2c3e50;
         font-weight: 500;
-        padding: 5px;
+        padding: 2px 5px;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border-radius: 5px;
         border: 1px solid #dee2e6;
@@ -1885,14 +1885,12 @@ const today = new Date();
 const dayOfWeek = daysOfWeek[today.getDay()];
 
 hijriElement.innerHTML = `
-    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 5px;"></i>
+    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 3px; font-size: 0.85em;"></i>
     ${dayOfWeek} ${today.toLocaleDateString('ru-RU')}
-    <span style="margin: 0 8px; color: #ddd;">|</span>
-    <i class="fas fa-mosque" style="color: #27ae60; margin-right: 5px;"></i>
+    <span style="margin: 0 4px; color: #ddd;">|</span>
+    <i class="fas fa-mosque" style="color: #27ae60; margin-right: 3px;" font-size: 0.85em;"></i>
     ${hijri.day} ${hijri.month} ${hijri.year} г.х.
-    <small style="color: #6c757d; margin-left: 8px;">
-        (по Хиджре)
-    </small>
+    <small style="color: #6c757d; margin-left: 4px; font-size: 0.75em;">(по Хиджре)</small>
 `;
     
     const header = document.querySelector('.header');
@@ -1927,17 +1925,17 @@ function adaptHijriDateForMobile() {
         `;
     } else {
         // Для десктопа (ширина > 767px)
-        hijriElement.style.fontSize = '0.9rem';
-        hijriElement.style.padding = '5px';
+        hijriElement.style.fontSize = '0.75rem';
+        hijriElement.style.padding = '2px 3px';
         hijriElement.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
                 <div style="display: flex; align-items: center;">
-                    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 6px;"></i>
+                    <i class="fas fa-calendar-alt" style="color: #3498db; margin-right: 2px; font-size: 0.8em;"></i>
                     <span>${daysOfWeek[today.getDay()]} ${today.toLocaleDateString('ru-RU')}</span>
                 </div>
-                <span style="color: #ddd; margin: 0 5px;">|</span>
+                <span style="color: #ddd; margin: 0 2px;">|</span>
                 <div style="display: flex; align-items: center;">
-                    <i class="fas fa-mosque" style="color: #27ae60; margin-right: 6px;"></i>
+                    <i class="fas fa-mosque" style="color: #27ae60; margin-right: 2px; font-size: 0.8em;"></i>
                     <span>${hijri.day} ${hijri.month} ${hijri.year} г.х.</span>
                 </div>
             </div>
