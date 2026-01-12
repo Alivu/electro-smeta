@@ -1038,7 +1038,61 @@
     .estimate-table th:nth-child(1),
     .estimate-table td:nth-child(1) {
          text-indent: -3px;  /* Сдвигает текст на 2px влево */
- }  
+ }
+
+
+			/* Простая панель статистики */
+.stats-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #2c3e50;
+    color: white;
+    padding: 8px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    z-index: 999;
+    border-top: 2px solid #3498db;
+}
+
+.stats-left {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.stat-item i {
+    color: #3498db;
+}
+
+.like-btn {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.8rem;
+}
+
+.like-btn:hover {
+    background: #219653;
+}
+
+.like-btn.liked {
+    background: #e74c3c;
+}
     </style>
 </head>
 <body>
@@ -2887,7 +2941,7 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
         <head>
             <meta charset="UTF-8">
             <title>Смета ${estimateNumber}</title>
-            <style>
+            
                 body { font-family: Arial; padding: 20px; background: #f5f5f5; }
                 .print-container { 
                     max-width: 800px; 
@@ -3439,7 +3493,127 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
         });
     }, 500);
 }
+// ========== ПРОСТАЯ СИСТЕМА СТАТИСТИКИ ==========
 
+// Загружаем статистику
+function loadStats() {
+    const defaultStats = {
+        totalVisits: 0,
+        todayVisits: 0,
+        totalLikes: 0,
+        lastVisitDate: null,
+        todayDate: new Date().toDateString()
+    };
+    
+    const saved = localStorage.getItem('siteStats');
+    if (!saved) return defaultStats;
+    
+    const stats = JSON.parse(saved);
+    
+    // Сбрасываем счетчик сегодняшних посещений, если день сменился
+    if (stats.todayDate !== new Date().toDateString()) {
+        stats.todayVisits = 0;
+        stats.todayDate = new Date().toDateString();
+    }
+    
+    return stats;
+}
+
+// Сохраняем статистику
+function saveStats(stats) {
+    localStorage.setItem('siteStats', JSON.stringify(stats));
+}
+
+// Увеличиваем счетчик посещений
+function countVisit() {
+    const stats = loadStats();
+    stats.totalVisits++;
+    stats.todayVisits++;
+    stats.lastVisitDate = new Date().toISOString();
+    saveStats(stats);
+    updateStatsDisplay();
+}
+
+// Обработка лайка
+function handleLike() {
+    const stats = loadStats();
+    const btn = document.getElementById('simpleLikeBtn');
+    
+    if (btn.classList.contains('liked')) {
+        // Уже лайкнули - убираем лайк
+        stats.totalLikes--;
+        btn.classList.remove('liked');
+        btn.innerHTML = '<i class="fas fa-thumbs-up"></i> Было полезно!';
+    } else {
+        // Ставим лайк
+        stats.totalLikes++;
+        btn.classList.add('liked');
+        btn.innerHTML = '<i class="fas fa-heart"></i> Спасибо!';
+        
+        // Показываем уведомление
+        const likes = stats.totalLikes;
+        let message = 'Спасибо за оценку!';
+        if (likes === 5) message = '5 человек уже оценили! Спасибо!';
+        if (likes === 10) message = '10 оценок! Вы лучшие!';
+        showNotification(message);
+    }
+    
+    saveStats(stats);
+    updateStatsDisplay();
+}
+
+// Обновляем отображение
+function updateStatsDisplay() {
+    const stats = loadStats();
+    
+    document.getElementById('totalVisits').textContent = stats.totalVisits;
+    document.getElementById('todayVisits').textContent = stats.todayVisits;
+    document.getElementById('totalLikes').textContent = stats.totalLikes;
+}
+
+// Инициализация
+function initSimpleStats() {
+    countVisit(); // Считаем текущее посещение
+    updateStatsDisplay();
+    
+    // Назначаем обработчик кнопке
+    document.getElementById('simpleLikeBtn').addEventListener('click', handleLike);
+    
+    // Показываем приветствие для новых пользователей
+    const stats = loadStats();
+    if (stats.totalVisits === 1) {
+        setTimeout(() => {
+            showNotification('Добро пожаловать! Это ваш первый визит! 👋');
+        }, 1000);
+    }
+}
+
+// Запускаем при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initSimpleStats, 500);
+});
     </script>
+<!-- Простая панель статистики -->
+<div class="stats-bar">
+    <div class="stats-left">
+        <div class="stat-item">
+            <i class="fas fa-users"></i>
+            <span>Всего: <strong id="totalVisits">0</strong></span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-calendar-day"></i>
+            <span>Сегодня: <strong id="todayVisits">0</strong></span>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-thumbs-up"></i>
+            <span>Полезно: <strong id="totalLikes">0</strong></span>
+        </div>
+    </div>
+    <button class="like-btn" id="simpleLikeBtn">
+        <i class="fas fa-thumbs-up"></i>
+        Было полезно!
+    </button>
+</div>
+	
 </body>
 </html>
