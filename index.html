@@ -850,28 +850,58 @@
         /* Адаптивность для мобильных */
         @media (max-width: 767px) {
             .container {
-                padding: 10px;
+                padding: 5px 8px; /* СНИЖАЕМ ВЕРХНИЙ И НИЖНИЙ ОТСТУП С 10px ДО 5px */
             }
             
             .header {
+				min-height: 30px !important; /* ЗАДАЕМ МИНИМАЛЬНУЮ ВЫСОТУ 30px ВМЕСТО СТАНДАРТНОЙ */
+				padding: 5px 0; /* УБИРАЕМ ЛИШНИЕ ВЕРТИКАЛЬНЫЕ ОТСТУПЫ */
+				margin-bottom: 2px; /* УМЕНЬШАЕМ ОТСТУП ПОД ШАПКОЙ С 5px ДО 2px */
                 flex-direction: column;
                 gap: 10px;
                 text-align: center;
             }
-            
+
+		 		/* УМЕНЬШАЕМ ЛОГОТИП "ЭлектроСмета от @Electric_Group" */
+    		.logo {
+        		transform: scale(0.85); /* УМЕНЬШАЕМ ВЕСЬ ЛОГОТИП НА 15% */
+        		transform-origin: left center; /* УМЕНЬШАЕМ ОТ ЛЕВОГО КРАЯ */
+    		}
+    
+   				 /* УМЕНЬШАЕМ ИКОНКУ МОЛНИИ В ЛОГОТИПЕ */
+    		.logo-icon {
+        		font-size: 1rem; /* БЫЛО 1.3rem - УМЕНЬШАЕМ НА 23% */
+    		}
+    
+    			/* УМЕНЬШАЕМ ТЕКСТ В ЛОГОТИПЕ */
+    		.logo-text {
+       			 font-size: 0.95rem; /* БЫЛО 1.1rem - УМЕНЬШАЕМ НА 14% */
+   			 }
+				/* УМЕНЬШАЕМ ПАНЕЛЬ С ВКЛАДКАМИ (Прайс-лист / Смета) */
             .nav-panel {
                 flex-direction: column;
-                padding: 8px;
+                padding: 3px 4px !important; /* БЫЛО 5px - МЕНЬШЕ ВНУТРЕННИХ ОТСТУПОВ */
+				margin-bottom: 2px !important; /* МЕНЬШЕ ОТСТУП ПОД ПАНЕЛЬЮ */
             }
-            
+
+			
+			
             .tabs {
                 width: 100%;
+				height: 32px !important; /* БЫЛО 40px - УМЕНЬШАЕМ ВЫСОТУ НА 20% */
             }
             
             .tab {
-                padding: 10px 12px;
-                font-size: 0.9rem;
-            }
+                padding: 6px 8px !important; /* БЫЛО 12px - УБИРАЕМ ЛИШНИЕ ОТСТУПЫ */
+                font-size: 0.8rem !important; /* МЕЛЧЕ ТЕКСТ НА ВКЛАДКАХ */
+            
+			}
+ 			/* УМЕНЬШАЕМ ВСЕ КНОПКИ УПРАВЛЕНИЯ (Печать, Управление и т.д.) */
+    		.btn {
+       		 padding: 6px 10px !important; /* БЫЛО 10px 15px - МЕНЬШЕ РАЗМЕР */
+        	font-size: 0.8rem !important; /* МЕЛЧЕ ТЕКСТ НА КНОПКАХ */
+    		}
+			
             
             .estimate-controls {
                 width: 100%;
@@ -969,8 +999,8 @@
             }
             
             .btn {
-                padding: 8px 12px;
-                font-size: 0.85rem;
+                padding: 6px 10px;
+                font-size: 0.8rem;
             }
         }
 
