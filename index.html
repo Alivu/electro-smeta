@@ -3439,6 +3439,10 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
         });
     }, 500);
 }
+showNotification('Ошибка: ' + error.message);
+        });
+    }, 500);
+}
 <!-- УДАЛИТЕ ВСЕ СТАРОЕ И ВСТАВЬТЕ ЭТОТ БЛОК -->
 <div class="stats-bar">
     <div class="stats-left">
@@ -3460,9 +3464,10 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
         <span class="like-text">Было полезно!</span>
     </button>
 </div>
-</script>
 
-	// ==== ПРОСТОЙ РАБОЧИЙ СЧЕТЧИК ====
+<!-- ДОБАВЬТЕ ОТКРЫВАЮЩИЙ ТЕГ <script> -->
+<script>
+// ==== ПРОСТОЙ РАБОЧИЙ СЧЕТЧИК ====
 const NAMESPACE = 'alivu-electro-smeta';
 
 console.log('=== ЗАПУСК СЧЕТЧИКА ===');
@@ -3573,6 +3578,6 @@ window.addEventListener('load', function() {
 console.log('Ручная проверка (откройте в новой вкладке):');
 console.log('- https://api.countapi.xyz/get/' + NAMESPACE + '/visits');
 console.log('- https://api.countapi.xyz/get/' + NAMESPACE + '/likes');
-	
+</script>
 </body>
 </html>
