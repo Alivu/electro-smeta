@@ -145,6 +145,29 @@
             gap: 5px;
         }
 
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    min-width: 180px;
+    z-index: 1000;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.dropdown-submenu:hover .submenu {
+    display: block;
+}
+
+		
+
         @media (min-width: 768px) {
             .price-header {
                 flex-direction: row;
