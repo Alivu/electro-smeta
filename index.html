@@ -3787,28 +3787,6 @@ document.addEventListener('visibilitychange', function() {
     }
 });
     </script>
-<div class="stats-bar">
-    <div class="stats-left">
-        <div class="stat-item">
-            <i class="fas fa-users"></i>
-            <span>Всего: <strong id="totalVisits">0</strong></span>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-calendar-day"></i>
-            <span>Сегодня: <strong id="todayVisits">0</strong></span>
-        </div>
-        <div class="stat-item">
-            <i class="fas fa-heart"></i>
-            <span>Лайков: <strong id="totalLikes">0</strong></span>
-        </div>
-    </div>
-    <!-- ТОЛЬКО кнопка лайка, кнопки обновить нет -->
-    <button class="like-btn" id="simpleLikeBtn">
-        <i class="fas fa-thumbs-up"></i>
-        <span class="like-text">Было полезно!</span>
-    </button>
-</div>
-</body>
 	<!-- ЛАЙКИ - ВСЕ ВИДЯТ ОДИНАКОВО -->
 <button onclick="addLike()">❤️ <span id="likes">0</span></button>
 
@@ -3841,5 +3819,7 @@ function addLike() {
 
 // 3. При загрузке страницы +1 посещение
 fetch(`https://api.countapi.xyz/hit/${NAMESPACE}/visits`);
+</body>
+
 </script>
 </html>
