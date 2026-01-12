@@ -3569,8 +3569,8 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
 <script>
 // ==== Настройки репозитория ====
 const OWNER = "alivu";        // твой GitHub username
-const REPO = "electro-smeta";     // имя репозитория
-const FILE = "stats.json";         // путь к файлу stats.json в репо
+const REPO = "electro-smeta";    // имя репозитория
+const FILE = "stats.json";        // путь к stats.json в репо
 
 // Получаем текущую статистику
 async function getStats() {
@@ -3580,11 +3580,11 @@ async function getStats() {
         return data;
     } catch (e) {
         console.error("Ошибка получения stats.json:", e);
-        return { visits: 0, likes: 0 };
+        return { visits: 0, likes: 0, today: {} };
     }
 }
 
-// Отправляем статистику в workflow (repository_dispatch)
+// Отправляем данные в workflow (repository_dispatch)
 async function sendStats(visits, likes) {
     try {
         await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/dispatches`, {
@@ -3602,17 +3602,22 @@ async function sendStats(visits, likes) {
     }
 }
 
-// Обновление счётчиков на странице
+// Обновление счётчиков на странице и отправка на GitHub
 async function updateCounters(addLike = false) {
     const stats = await getStats();
+
+    stats.visits = stats.visits || 0;
+    stats.likes = stats.likes || 0;
+
     stats.visits += 1;
     if (addLike) stats.likes += 1;
 
-    // обновляем на странице
+    // обновляем цифры на странице
     document.getElementById("totalVisits").textContent = stats.visits;
+    document.getElementById("todayVisits").textContent = stats.visits; // можно сделать реальный подсчёт по дате
     document.getElementById("totalLikes").textContent = stats.likes;
 
-    // отправляем на workflow для записи в GitHub
+    // отправляем данные в workflow
     sendStats(stats.visits, stats.likes);
 }
 
@@ -3621,12 +3626,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // обновляем посещение
     updateCounters();
 
-    // обрабатываем лайк
+    // лайк
     const likeBtn = document.getElementById("simpleLikeBtn");
     if (likeBtn) {
         likeBtn.onclick = () => {
             updateCounters(true);
             likeBtn.disabled = true;
+            likeBtn.style.backgroundColor = "#4CAF50";
             likeBtn.textContent = "Спасибо!";
         };
     }
