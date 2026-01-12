@@ -3547,9 +3547,8 @@ showNotification('Ошибка: ' + error.message);
         });
     }, 500);
 }
-
-	
-	<!-- Панель статистики -->
+		
+<!-- Панель статистики -->
 <div class="stats-bar">
     <div class="stats-left">
         <div class="stat-item">
@@ -3569,16 +3568,14 @@ showNotification('Ошибка: ' + error.message);
         <i class="fas fa-thumbs-up"></i>
         <span class="like-text">Было полезно!</span>
     </button>
-		
-</script>
+</div>
 
-
-		
+<script>
 // ==== ЛОКАЛЬНЫЙ СЧЕТЧИК (точно работает) ====
 const SITE_ID = 'electro-smeta-alex';
 
 // Инициализация при загрузке
-window.onload = function() {
+window.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Запускаем счетчик...');
     
     // 1. Увеличиваем счетчик посещений
@@ -3598,45 +3595,48 @@ window.onload = function() {
     
     // 4. Настраиваем кнопку лайка
     const likeBtn = document.getElementById('simpleLikeBtn');
-likeBtn.onclick = function() {
-    if (this.disabled) return;
+    likeBtn.onclick = function() {
+        if (this.disabled) return;
+        
+        // Увеличиваем лайки
+        likes = parseInt(likes) + 1;
+        localStorage.setItem(SITE_ID + '_likes', likes);
+        
+        // Обновляем отображение
+        document.getElementById('totalLikes').textContent = likes;
+        
+        // Меняем кнопку
+        this.innerHTML = '<i class="fas fa-thumbs-up"></i> <span class="like-text">Спасибо!</span>';
+        this.style.backgroundColor = '#4CAF50';
+        this.disabled = true;
+        
+        // Используйте переименованную функцию
+        showLikeNotification('❤️ Спасибо за лайк!');
+        
+        console.log('✅ Лайк добавлен. Всего:', likes);
+    };
     
-    // Увеличиваем лайки
-    likes = parseInt(likes) + 1;
-    localStorage.setItem(SITE_ID + '_likes', likes);
-    
-    // Обновляем отображение
-    document.getElementById('totalLikes').textContent = likes;
-    
-    // Меняем кнопку
-    this.innerHTML = '<i class="fas fa-thumbs-up"></i> <span class="like-text">Спасибо!</span>';
-    this.style.backgroundColor = '#4CAF50';
-    this.disabled = true;
-    
-    // Используйте переименованную функцию
-    showLikeNotification('❤️ Спасибо за лайк!');
-    
-    console.log('✅ Лайк добавлен. Всего:', likes);
-};
-// Функция уведомлений
-function showLikeNotification(message) {
-    const notification = document.createElement('div');
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #4CAF50;
-        color: white;
-        padding: 12px 20px;
-        border-radius: 5px;
-        z-index: 9999;
-        font-size: 14px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    `;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 3000);
-}
-</div>
+    // Функция уведомлений
+    function showLikeNotification(message) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            z-index: 9999;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        `;
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
+    }
+});
+</script>
+
 </body>
 </html>
