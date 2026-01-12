@@ -149,54 +149,6 @@
     position: relative;
 }
 
-/* Подменю для Прайс-Лист PDF */
-.dropdown-submenu {
-    position: relative;
-}
-
-.dropdown-submenu-menu {
-    display: none;
-    position: absolute;
-    left: 100%;
-    top: 0;
-    min-width: 180px;
-    z-index: 1000;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-.dropdown-submenu:hover .dropdown-submenu-menu {
-    display: block;
-}
-
-/* Стиль для кнопки подменю */
-.dropdown-toggle-submenu {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    text-align: left;
-}
-
-/* Чтобы кнопка "Прайс-Лист PDF" выглядела как обычный dropdown-item */
-.dropdown-toggle-submenu {
-    background: none;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    color: #333;
-    font-size: 0.9rem;
-    text-decoration: none;
-}
-
-.dropdown-toggle-submenu:hover {
-    background: #f5f5f5;
-}
-
-		
-
         @media (min-width: 768px) {
             .price-header {
                 flex-direction: row;
@@ -3693,38 +3645,8 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
         });
     }, 500);
 }
-    </script>
-	<script>
-// Добавьте этот код в функцию setupEventListeners() или отдельно
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработчик для подменю "Прайс-Лист PDF"
-    document.querySelectorAll('.dropdown-submenu').forEach(submenu => {
-        const toggle = submenu.querySelector('.dropdown-toggle-submenu');
-        const menu = submenu.querySelector('.dropdown-submenu-menu');
-        
-        if (toggle && menu) {
-            toggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                e.preventDefault();
-                
-                // Закрываем все другие подменю
-                document.querySelectorAll('.dropdown-submenu-menu').forEach(m => {
-                    if (m !== menu) m.style.display = 'none';
-                });
-                
-                // Переключаем текущее
-                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-            });
-        }
-    });
-    
-    // Закрытие подменю при клике в другом месте
-    document.addEventListener('click', function() {
-        document.querySelectorAll('.dropdown-submenu-menu').forEach(menu => {
-            menu.style.display = 'none';
-        });
-    });
-});
+ 
+
 </script>
 		
 </body>
