@@ -4007,7 +4007,9 @@ async function saveToDrive() {
             totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
         }
     };
-    
+    // Перед сохранением, добавьте:
+console.log('Сохраняемые данные:', currentEstimate);
+console.log('Количество позиций:', currentEstimate.data.length);
     try {
         // 1. Сохраняем в Google Drive
         const fileResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
@@ -4056,7 +4058,6 @@ async function saveToDrive() {
         showNotification('⚠️ Google Drive не доступен. Смета сохранена только локально.');
     }
 }
-// Загрузить из Drive
 async function loadFromDrive() {
     if (!googleToken && !localStorage.getItem('google_token')) {
         googleLogin();
@@ -4067,14 +4068,14 @@ async function loadFromDrive() {
     
     try {
         // Получаем список файлов
-        const listResponse = await fetch('https://www.googleapis.com/drive/v3/files?q=mimeType="application/json"&orderBy=modifiedTime desc', {
+        const listResponse = await fetch('https://www.googleapis.com/drive/v3/files?q=mimeType="application/json" and name contains "Смета"&orderBy=modifiedTime desc', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
         const files = await listResponse.json();
         
         if (files.files && files.files.length > 0) {
-            const fileList = files.files.map((f, i) => `${i+1}. ${f.name}`).join('\n');
+            const fileList = files.files.map((f, i) => `${i+1}. ${f.name} (${new Date(f.modifiedTime).toLocaleDateString('ru-RU')})`).join('\n');
             const choice = prompt(`Выберите файл:\n\n${fileList}`, '1');
             const index = parseInt(choice) - 1;
             
@@ -4088,16 +4089,56 @@ async function loadFromDrive() {
                 
                 const data = await fileResponse.json();
                 
-                // Здесь добавьте код для загрузки данных в смету
-                showNotification(`✅ Загружено: ${files.files[index].name}`);
+                // Загружаем данные в смету
+                if (data && data.data) {
+                    // Очищаем текущую смету
+                    estimateData = Array(20).fill().map((_, i) => ({
+                        id: i + 1,
+                        priceId: "",
+                        name: "",
+                        unit: "",
+                        price: 0,
+                        quantity: 1,
+                        total: 0,
+                        notes: "",
+                        isMaterial: false
+                    }));
+                    
+                    // Заполняем данными
+                    data.data.forEach((row, i) => {
+                        if (i < 20) {
+                            estimateData[i] = {
+                                id: i + 1,
+                                priceId: row.priceId || "",
+                                name: row.name || "",
+                                unit: row.unit || "",
+                                price: row.price || 0,
+                                quantity: row.quantity || 1,
+                                total: row.total || 0,
+                                notes: row.notes || "",
+                                isMaterial: row.isMaterial || false
+                            };
+                        }
+                    });
+                    
+                    // Обновляем интерфейс
+                    renderEstimateTable();
+                    updateTotals();
+                    updateEstimateCounter();
+                    showTab('estimate');
+                    
+                    showNotification(`✅ Загружена смета: "${files.files[index].name}"`);
+                } else {
+                    showNotification('❌ Ошибка: неверный формат файла');
+                }
             }
         } else {
             showNotification('📁 В вашем Drive нет файлов смет');
         }
         
     } catch (error) {
-        console.error('Ошибка:', error);
-        showNotification('❌ Ошибка загрузки');
+        console.error('Ошибка загрузки:', error);
+        showNotification('❌ Ошибка загрузки из Google Drive');
     }
 }
 
