@@ -3987,6 +3987,10 @@ function saveEstimateLocally(estimate) {
 }
 // Сохранить смету в Drive И локально
 async function saveToDrive() {
+	   // === ДОБАВЬТЕ ЭТО ===
+    console.log('Все данные estimateData:', estimateData);
+    console.log('Фильтрованные данные:', estimateData.filter(row => row.name || row.priceId));
+    // ====================
     if (!googleToken && !localStorage.getItem('google_token')) {
         googleLogin();
         return;
@@ -3997,19 +4001,20 @@ async function saveToDrive() {
     
     if (!estimateName) return;
     
-    // Получаем текущие данные сметы
-    const currentEstimate = {
-        id: Date.now(),
-        name: estimateName,
-        date: new Date().toISOString(),
-        data: estimateData.filter(row => row.name || row.priceId),
-        totals: {
-            totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
-        }
-    };
-    // Перед сохранением, добавьте:
+   // Получаем текущие данные сметы
+const currentEstimate = {
+    id: Date.now(),
+    name: estimateName,
+    date: new Date().toISOString(),
+    data: JSON.parse(JSON.stringify(estimateData)), // ← Сохраняем ВСЕ
+    totals: {
+        totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
+    }
+};
+
 console.log('Сохраняемые данные:', currentEstimate);
 console.log('Количество позиций:', currentEstimate.data.length);
+console.log('Первые 3 строки:', currentEstimate.data.slice(0, 3));
     try {
         // 1. Сохраняем в Google Drive
         const fileResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
