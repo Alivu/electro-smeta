@@ -4116,6 +4116,43 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveToDriveBtn').onclick = saveToDrive;
     document.getElementById('loadFromDriveBtn').onclick = loadFromDrive;
 });
+
+// ========== УПРАВЛЕНИЕ КНОПКАМИ GOOGLE DRIVE ==========
+
+// 1. Проверяем токен при загрузке
+function checkGoogleAuth() {
+    const hash = window.location.hash;
+    if (hash.includes('access_token')) {
+        const token = hash.split('access_token=')[1].split('&')[0];
+        localStorage.setItem('google_token', token);
+        
+        // Показываем кнопки Drive
+        document.getElementById('saveToDriveBtn').style.display = 'flex';
+        document.getElementById('loadFromDriveBtn').style.display = 'flex';
+        
+        // Убираем токен из URL
+        history.replaceState(null, null, ' ');
+        
+        showNotification('✅ Успешный вход Google!');
+    }
+}
+
+// 2. Проверяем есть ли сохраненный токен
+function checkSavedToken() {
+    const token = localStorage.getItem('google_token');
+    if (token) {
+        document.getElementById('saveToDriveBtn').style.display = 'flex';
+        document.getElementById('loadFromDriveBtn').style.display = 'flex';
+        return token;
+    }
+    return null;
+}
+
+// 5. Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    checkGoogleAuth();
+    checkSavedToken();
+});
 		
     </script>
 </body>
