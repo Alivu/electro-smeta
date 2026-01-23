@@ -3964,8 +3964,18 @@ function checkGoogleToken() {
         showNotification('✅ Успешный вход через Google!');
     }
 }
-
-// Сохранить смету в Drive
+// Функция сохранения локально
+function saveEstimateLocally(estimate) {
+    // Получаем существующие локальные сметы
+    let savedEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
+    
+    // Добавляем новую смету
+    savedEstimates.push(estimate);
+    
+    // Сохраняем обратно в localStorage
+    localStorage.setItem('electroEstimates', JSON.stringify(savedEstimates));
+}
+// Сохранить смету в Drive И локально
 async function saveToDrive() {
     if (!googleToken && !localStorage.getItem('google_token')) {
         googleLogin();
@@ -3977,14 +3987,19 @@ async function saveToDrive() {
     
     if (!estimateName) return;
     
-    const estimateData = {
-        items: estimateData.filter(row => row.name || row.priceId),
-        total: document.getElementById('totalAmount').textContent,
-        date: new Date().toISOString()
+    // Получаем текущие данные сметы
+    const currentEstimate = {
+        id: Date.now(),
+        name: estimateName,
+        date: new Date().toISOString(),
+        data: estimateData.filter(row => row.name || row.priceId),
+        totals: {
+            totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
+        }
     };
     
     try {
-        // Создаем файл
+        // 1. Сохраняем в Google Drive
         const fileResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
             method: 'POST',
             headers: {
@@ -3999,24 +4014,38 @@ async function saveToDrive() {
         
         const file = await fileResponse.json();
         
-        // Загружаем данные
         await fetch(`https://www.googleapis.com/upload/drive/v3/files/${file.id}?uploadType=media`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(estimateData)
+            body: JSON.stringify(currentEstimate)
         });
         
-        showNotification('✅ Смета сохранена в Google Drive!');
+        // 2. Сохраняем ЛОКАЛЬНО
+        // Получаем существующие локальные сметы
+        let savedEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
+        
+        // Добавляем новую смету
+        savedEstimates.push(currentEstimate);
+        
+        // Сохраняем обратно в localStorage
+        localStorage.setItem('electroEstimates', JSON.stringify(savedEstimates));
+        
+        showNotification('✅ Смета сохранена в Google Drive и локально!');
         
     } catch (error) {
-        console.error('Ошибка:', error);
-        showNotification('❌ Ошибка сохранения');
+        console.error('Ошибка Google Drive:', error);
+        
+        // Если Google не доступен, сохраняем только локально
+        let savedEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
+        savedEstimates.push(currentEstimate);
+        localStorage.setItem('electroEstimates', JSON.stringify(savedEstimates));
+        
+        showNotification('⚠️ Google Drive не доступен. Смета сохранена только локально.');
     }
 }
-
 // Загрузить из Drive
 async function loadFromDrive() {
     if (!googleToken && !localStorage.getItem('google_token')) {
