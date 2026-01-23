@@ -2084,7 +2084,6 @@ section: "⑧ Примечания",
         let savedEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
         let nextMaterialId = 1000;
 		
-// НОВАЯ КЕШИРОВАННАЯ ФУНКЦИЯ (вставьте ВМЕСТО старой)
 async function getHijriDate() {
     // Проверяем кэш
     const cached = localStorage.getItem('hijri_date_cache');
@@ -2105,27 +2104,120 @@ async function getHijriDate() {
         if (data.code === 200) {
             const hijri = data.data.hijri;
             
+            // Функция для очистки арабских диакритических знаков
+            function cleanArabicText(text) {
+                if (!text) return '';
+                
+                // Заменяем арабские символы на латинские аналоги
+                return text
+                    .replace(/ʿ/g, "'")  // арабский айн на апостроф
+                    .replace(/ʾ/g, "'")  // другой тип айна
+                    .replace(/ʼ/g, "'")  // ещё один тип
+                    .replace(/ˈ/g, "'")  // и ещё
+                    .replace(/ā/g, 'a')  // длинная a
+                    .replace(/ū/g, 'u')  // длинная u
+                    .replace(/ī/g, 'i')  // длинная i
+                    .replace(/ḍ/g, 'd')  // d с точкой
+                    .replace(/ḥ/g, 'h')  // h с точкой
+                    .replace(/Ḥ/g, 'H')  // H с точкой
+                    .replace(/ṣ/g, 's')  // s с точкой
+                    .replace(/Ṣ/g, 'S')  // S с точкой
+                    .replace(/ṭ/g, 't')  // t с точкой
+                    .replace(/Ṭ/g, 'T')  // T с точкой
+                    .replace(/ẓ/g, 'z')  // z с точкой
+                    .replace(/Ẓ/g, 'Z')  // Z с точкой
+                    .replace(/ḏ/g, 'd')  // d с линией
+                    .replace(/Ḏ/g, 'D')  // D с линией
+                    .trim();
+            }
+            
+            // Получаем и очищаем название месяца
+            const monthRaw = hijri.month.en;
+            const monthCleaned = cleanArabicText(monthRaw);
+            
+            console.log("Месяц исходный:", monthRaw);
+            console.log("Месяц очищенный:", monthCleaned);
+            
+            // Словарь для преобразования (после очистки)
             const hijriMonths = {
                 "Muharram": "Мухаррам",
                 "Safar": "Сафар",
                 "Rabi al-Awwal": "Раби аль-авваль",
+                "Rabi' al-Awwal": "Раби аль-авваль",
+                "Rabi al-Akhir": "Раби ас-сани",
+                "Rabi' al-Akhir": "Раби ас-сани",
                 "Rabi al-Thani": "Раби ас-сани",
+                "Rabi' al-Thani": "Раби ас-сани",
                 "Jumada al-Awwal": "Джумада аль-уля",
+                "Jumada al-Ula": "Джумада аль-уля",
+                "Jumada' al-Awwal": "Джумада аль-уля",
                 "Jumada al-Thani": "Джумада ас-сания",
+                "Jumada al-Akhira": "Джумада ас-сания",
+                "Jumada' al-Thani": "Джумада ас-сания",
                 "Rajab": "Раджаб",
+                "Sha'ban": "Шаабан",
+                "Shaaban": "Шаабан",
                 "Sha'ban": "Шаабан",
                 "Ramadan": "Рамадан",
                 "Shawwal": "Шавваль",
                 "Dhu al-Qi'dah": "Зуль-каада",
-                "Dhu al-Hijjah": "Зуль-хиджа"
+                "Dhu'l-Qi'dah": "Зуль-каада",
+                "Dhu al-Qadah": "Зуль-каада",
+                "Dhu'l-Qadah": "Зуль-каада",
+                "Dhul-Qa'dah": "Зуль-каада",
+                "Dhul-Qadah": "Зуль-каада",
+                "Dhu al-Hijjah": "Зуль-хиджа",
+                "Dhu'l-Hijjah": "Зуль-хиджа",
+                "Dhul-Hijjah": "Зуль-хиджа"
             };
+            
+            // Ищем перевод
+            let monthRu = hijriMonths[monthCleaned] || hijriMonths[monthRaw];
+            
+            // Если не нашли, пытаемся найти по частичному совпадению
+            if (!monthRu) {
+                const monthLower = monthCleaned.toLowerCase();
+                
+                // Прямой поиск по ключам
+                for (const [key, value] of Object.entries(hijriMonths)) {
+                    if (key.toLowerCase() === monthLower) {
+                        monthRu = value;
+                        break;
+                    }
+                }
+                
+                // Если все еще не нашли, ищем частичное совпадение
+                if (!monthRu) {
+                    if (monthLower.includes("sha") && monthLower.includes("ban")) {
+                        monthRu = "Шаабан";
+                    } else if (monthLower.includes("rabi") && monthLower.includes("awwal")) {
+                        monthRu = "Раби аль-авваль";
+                    } else if (monthLower.includes("rabi") && (monthLower.includes("akhir") || monthLower.includes("thani"))) {
+                        monthRu = "Раби ас-сани";
+                    } else if (monthLower.includes("jumada") && monthLower.includes("awwal")) {
+                        monthRu = "Джумада аль-уля";
+                    } else if (monthLower.includes("jumada") && (monthLower.includes("akhir") || monthLower.includes("thani"))) {
+                        monthRu = "Джумада ас-сания";
+                    } else if (monthLower.includes("dhu") && monthLower.includes("qi'dah")) {
+                        monthRu = "Зуль-каада";
+                    } else if (monthLower.includes("dhu") && monthLower.includes("hijjah")) {
+                        monthRu = "Зуль-хиджа";
+                    }
+                }
+            }
+            
+            // Если все еще не нашли, используем очищенный английский вариант
+            if (!monthRu) {
+                monthRu = monthCleaned;
+                console.warn("Не найден перевод для месяца:", monthRaw, "->", monthCleaned);
+            }
             
             const result = {
                 year: parseInt(hijri.year),
-                month: hijriMonths[hijri.month.en] || hijri.month.en,
+                month: monthRu,
                 monthIndex: parseInt(hijri.month.number),
                 day: parseInt(hijri.day),
-                display: `${hijri.day} ${hijriMonths[hijri.month.en] || hijri.month.en} ${hijri.year} г.х.`
+                display: `${hijri.day} ${monthRu} ${hijri.year} г.х.`
             };
             
             // Сохраняем в кэш
