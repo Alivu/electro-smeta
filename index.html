@@ -904,97 +904,41 @@
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
 
-@media (max-width: 767px) {
-    .container {
-        padding: 2px 2px;
-    }
+        /* Адаптивность для мобильных */
+        @media (max-width: 767px) {
+            .container {
+                padding: 2px 2px; /* СНИЖАЕМ ВЕРХНИЙ И НИЖНИЙ ОТСТУП С 10px ДО 5px */
+            }
+            
+            .header {
+				min-height: 20px !important; /* ЗАДАЕМ МИНИМАЛЬНУЮ ВЫСОТУ 30px ВМЕСТО СТАНДАРТНОЙ */
+				padding: 2px 0; /* УБИРАЕМ ЛИШНИЕ ВЕРТИКАЛЬНЫЕ ОТСТУПЫ */
+				margin-bottom: 2px; /* УМЕНЬШАЕМ ОТСТУП ПОД ШАПКОЙ С 5px ДО 2px */
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+ 			   /* УБИРАЕМ transform - он ломает центрирование */
+  		  .logo {
+      			transform: none !important; /* Убираем scale */
+        		display: flex;
+        		align-items: center;
+        		justify-content: center;
+        		gap: 2px !important;
+    		}
     
-    .header {
-        min-height: 30px !important;
-        padding: 2px 0 !important;
-        margin-bottom: 2px !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        text-align: left !important;
-        gap: 5px !important;
-    }
-
-    .logo {
-        transform: none !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 4px !important;
-        flex: 1 !important;
-        min-width: 0 !important;
-    }
-
-    .app-icon {
-        width: 22px !important;
-        height: 22px !important;
-        margin-right: 2px !important;
-        flex-shrink: 0 !important;
-    }
-
-    .logo-icon {
-        font-size: 1.1rem !important;
-        margin-right: 2px !important;
-        flex-shrink: 0 !important;
-    }
-
-    .logo-text {
-        font-size: 0.75rem !important;
-        text-align: left !important;
-        display: inline !important;
-        vertical-align: middle !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        flex: 1 !important;
-        min-width: 0 !important;
-        line-height: 1.1 !important;
-    }
-
-    /* Дополнительные медиа-запросы внутри основного */
-    @media (max-width: 400px) {
-        .logo {
-            gap: 2px !important;
-        }
-        
-        .app-icon {
-            width: 20px !important;
-            height: 20px !important;
-        }
-        
-        .logo-icon {
-            font-size: 1rem !important;
-        }
-        
-        .logo-text {
-            font-size: 0.7rem !important;
-            max-width: 180px;
-        }
-    }
+    			/* Уменьшаем иконку отдельно */
+			.logo-icon {
+        		font-size: 1.3rem !important;
+   		 	}
     
-    @media (max-width: 350px) {
-        .logo-text {
-            font-size: 0.65rem !important;
-            max-width: 150px;
-        }
-        
-        .app-icon {
-            width: 18px !important;
-            height: 18px !important;
-            margin-right: 1px !important;
-        }
-        
-        .logo-icon {
-            font-size: 0.9rem !important;
-            margin-right: 1px !important;
-        }
-    }
-    
+   			 .logo-text {
+       			 font-size: 0.8rem !important; /* Ещё меньше */
+       			 text-align: center !important; /* Центрируем текст */
+       			 display: block !important; /* Делаем блочным */
+				 vertical-align: middle !important;
+   			 }
 				/* УМЕНЬШАЕМ ПАНЕЛЬ С ВКЛАДКАМИ (Прайс-лист / Смета) */
     .nav-panel {
         flex-direction: column !important;   /* ← ОДНА НАД ДРУГОЙ */
