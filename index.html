@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -22,12 +21,50 @@
 
 
 	
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- PWA Configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-title" content="ЭлектроСмета">
+    <meta name="application-name" content="ЭлектроСмета">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-16x16.png">
+    <link rel="icon" type="image/png" sizes="48x48" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-48x48.png">
+	<link rel="icon" type="image/png" sizes="72x72" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-72x72.png">
+	<link rel="icon" type="image/png" sizes="96x96" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-96x96.png">
+	    <link rel="icon" type="image/png" sizes="144x144" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-144x144.png">
+	<link rel="icon" type="image/png" sizes="152x152" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-192x192.png">
+	    <link rel="icon" type="image/png" sizes="384x384" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-512x512.png">
+    <link rel="shortcut icon" 
+          href="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-32x32.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
     <title>ЭлектроСмета профессиональный расчет от Electric_Group для Братьев</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+	
     <style>
         /* Общие стили */
         :root {
@@ -870,7 +907,7 @@
         /* Адаптивность для мобильных */
         @media (max-width: 767px) {
             .container {
-                padding: 5px 5px; /* СНИЖАЕМ ВЕРХНИЙ И НИЖНИЙ ОТСТУП С 10px ДО 5px */
+                padding: 2px 2px; /* СНИЖАЕМ ВЕРХНИЙ И НИЖНИЙ ОТСТУП С 10px ДО 5px */
             }
             
             .header {
@@ -882,28 +919,35 @@
                 text-align: center;
             }
 
-		 		/* УМЕНЬШАЕМ ЛОГОТИП "ЭлектроСмета от @Electric_Group" */
-    		.logo {
-        		transform: scale(0.85); /* УМЕНЬШАЕМ ВЕСЬ ЛОГОТИП НА 15% */
-        		transform-origin: left center; /* УМЕНЬШАЕМ ОТ ЛЕВОГО КРАЯ */
+ 			   /* УБИРАЕМ transform - он ломает центрирование */
+  		  .logo {
+      			transform: none !important; /* Убираем scale */
+        		display: flex;
+        		align-items: center;
+        		justify-content: center;
+        		gap: 2px !important;
     		}
     
-   				 /* УМЕНЬШАЕМ ИКОНКУ МОЛНИИ В ЛОГОТИПЕ */
-    		.logo-icon {
-        		font-size: 1rem; /* БЫЛО 1.3rem - УМЕНЬШАЕМ НА 23% */
-    		}
+    			/* Уменьшаем иконку отдельно */
+			.logo-icon {
+        		font-size: 1.3rem !important;
+   		 	}
     
-    			/* УМЕНЬШАЕМ ТЕКСТ В ЛОГОТИПЕ */
-    		.logo-text {
-       			 font-size: 0.95rem; /* БЫЛО 1.1rem - УМЕНЬШАЕМ НА 14% */
+   			 .logo-text {
+       			 font-size: 0.8rem !important; /* Ещё меньше */
+       			 text-align: center !important; /* Центрируем текст */
+       			 display: block !important; /* Делаем блочным */
+				 vertical-align: middle !important;
    			 }
 				/* УМЕНЬШАЕМ ПАНЕЛЬ С ВКЛАДКАМИ (Прайс-лист / Смета) */
-            .nav-panel {
-                flex-direction: column;
-                padding: 3px 4px !important; /* БЫЛО 5px - МЕНЬШЕ ВНУТРЕННИХ ОТСТУПОВ */
-				margin-bottom: 2px !important; /* МЕНЬШЕ ОТСТУП ПОД ПАНЕЛЬЮ */
-            }
-
+    .nav-panel {
+        flex-direction: column !important;   /* ← ОДНА НАД ДРУГОЙ */
+        align-items: stretch !important;     /* ← Растянуть на всю ширину */
+        padding: 0 !important;               /* ← НИКАКИХ внутренних отступов */
+        margin: 0 !important;                /* ← НИКАКИХ внешних отступов */
+        gap: 0 !important;                   /* ← НУЛЕВОЕ расстояние между строками */
+        row-gap: 0 !important;               /* ← НУЛЕВОЙ вертикальный gap */
+    }
 			
 			
             .tabs {
@@ -921,16 +965,51 @@
        		 padding: 6px 10px !important; /* БЫЛО 10px 15px - МЕНЬШЕ РАЗМЕР */
         	font-size: 0.8rem !important; /* МЕЛЧЕ ТЕКСТ НА КНОПКАХ */
     		}
+
+
+
 			
-            
-            .estimate-controls {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .dropdown-toggle {
-                min-width: 100%;
-            }
+    .estimate-controls {
+        display: grid;
+        grid-template-columns: 50% 50%;   /* ← ДВЕ РАВНЫЕ колонки */
+        gap: 0;
+        margin-bottom: 1px;
+    }
+    
+    .estimate-controls .btn {
+        border-radius: 0;
+        margin: 0;
+        padding: 8px 2px !important;      /* ← Маленькие горизонтальные отступы */
+        white-space: nowrap !important;   /* ← Текст НЕ ПЕРЕНАСЫВАЕТСЯ! */
+        overflow: hidden !important;      /* ← Обрезать если не помещается */
+        text-overflow: ellipsis !important; /* ← "..." если длинный текст */
+        font-size: 0.75rem !important;    /* ← Ещё меньше текст */
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px !important;          /* ← Фиксированная высота */
+        min-height: 32px !important;
+        line-height: 1 !important;        /* ← Межстрочный = 1 */
+    }
+    
+    /* Особо для длинного текста "Печать прайса" */
+    #printPriceBtn {
+        font-size: 0.7rem !important;     /* ← Ещё меньше для этой кнопки */
+        padding: 8px 1px !important;      /* ← Минимальные отступы */
+    }
+    
+    /* Для иконок внутри кнопок */
+    .btn i {
+        font-size: 0.8rem !important;
+        margin-right: 3px !important;     /* ← Маленький отступ от иконки */
+    }
+    
+    .dropdown-toggle {
+        min-width: 100%;
+        justify-content: center;
+    }
+}
             
             .price-item {
                 grid-template-columns: 40px 1fr 40px 70px;
@@ -1240,6 +1319,39 @@
         font-size: 0.7rem !important;
     }
 }
+
+        /* ========== СТИЛИ ДЛЯ ИКОНКИ ПРИЛОЖЕНИЯ ========== */
+        .app-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-right: 12px;
+            vertical-align: middle;
+            transition: all 0.3s ease;
+        }
+
+        .app-icon:hover {
+            transform: scale(1.05);
+        }
+
+        /* Для мобильных */
+        @media (max-width: 767px) {
+            .app-icon {
+                width: 28px;
+                height: 28px;
+                margin-right: 8px;
+            }
+        }
+
+        /* Для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .app-icon {
+                width: 24px;
+                height: 24px;
+                margin-right: 6px;
+            }
+        }
 			
     </style>
 </head>
@@ -1247,13 +1359,18 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <div class="container">
-        <!-- Шапка -->
-        <div class="header">
-            <div class="logo">
-                <i class="fas fa-bolt logo-icon"></i>
-                <span class="logo-text">ЭлектроСмета от @Electric_Group</span>
-            </div>
-        </div>
+<!-- Шапка -->
+<div class="header">
+    <div class="logo">
+        <!-- Ваша иконка с GitHub -->
+        <img src="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-48x48.png" 
+             alt="ЭлектроСмета" 
+             class="app-icon"
+             id="appLogoIcon">
+        <i class="fas fa-bolt logo-icon" id="fallbackIcon" style="display: none;"></i>
+        <span class="logo-text">𝔼𝕝𝕖𝕜𝕥𝕣𝕠𝕊𝕞𝕖𝕥𝕒 @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡 +𝟟𝟡𝟞𝟛𝟝𝟡𝟠𝟜𝟠𝟜𝟞</span>
+    </div>
+</div>
         
 <!-- Панель навигации -->
 <div class="nav-panel">
@@ -3677,6 +3794,133 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
         });
     }, 500);
 }
+// ========== ФУНКЦИЯ ДЛЯ ИКОНКИ ==========
+function handleIconError() {
+    console.log('Иконка не загрузилась, показываем иконку по умолчанию');
+    const appIcon = document.getElementById('appLogoIcon');
+    const fallbackIcon = document.getElementById('fallbackIcon');
+    
+    if (appIcon && fallbackIcon) {
+        appIcon.style.display = 'none';
+        fallbackIcon.style.display = 'inline-block';
+    }
+}
+
+// Проверяем загрузку иконки при старте
+document.addEventListener('DOMContentLoaded', function() {
+    const appIcon = document.getElementById('appLogoIcon');
+    if (appIcon) {
+        appIcon.onerror = handleIconError;
+    }
+});
+		
+// PWA Service Worker регистрация
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('sw.js')
+                .then(function(registration) {
+                    console.log('✅ Service Worker зарегистрирован');
+                    
+                    // Проверка обновлений
+                    registration.onupdatefound = function() {
+                        const installingWorker = registration.installing;
+                        installingWorker.onstatechange = function() {
+                            if (installingWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    console.log('🔄 Доступно обновление!');
+                                    showNotification('Обновление доступно! Перезагрузите страницу.');
+                                }
+                            }
+                        };
+                    };
+                })
+                .catch(function(error) {
+                    console.log('❌ Ошибка Service Worker:', error);
+                });
+        });
+    }
+}
+
+// Создаем кнопку установки PWA
+let deferredPrompt;
+const installButton = document.createElement('button');
+
+function createInstallButton() {
+    installButton.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
+    installButton.style.cssText = `
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: linear-gradient(90deg, #27ae60, #2ecc71);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 30px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        cursor: pointer;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    `;
+    
+    installButton.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+            showNotification('Приложение установлено!');
+        }
+        
+        deferredPrompt = null;
+        installButton.style.display = 'none';
+    });
+    
+    document.body.appendChild(installButton);
+}
+
+// Отслеживаем установку PWA
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installButton.style.display = 'flex';
+    
+    setTimeout(() => {
+        installButton.style.display = 'none';
+    }, 10000);
+});
+
+// Проверяем режим PWA
+function checkDisplayMode() {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('📱 Запущено как PWA');
+        document.body.classList.add('pwa-mode');
+    }
+}
+
+// Инициализация PWA
+function initializePWA() {
+    registerServiceWorker();
+    createInstallButton();
+    checkDisplayMode();
+    
+    if (window.navigator.standalone) {
+        showNotification('Добро пожаловать в ЭлектроСмета! ⚡');
+    }
+}
+
+// Запускаем PWA при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // Ваш существующий код инициализации остается здесь
+    
+    // Добавляем эту строку в существующий DOMContentLoaded:
+    initializePWA();
+});
     </script>
 </body>
 </html>
