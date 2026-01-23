@@ -1438,6 +1438,16 @@
 				<button class="dropdown-item" onclick="window.open('https://accounts.google.com/o/oauth2/auth?client_id=10151274989-sirobiq4o2es78hs82gbotu34lkf11pb.apps.googleusercontent.com&redirect_uri=https://alivu.github.io/electro-smeta&response_type=token&scope=https://www.googleapis.com/auth/drive.file&state=electro_smeta', '_blank')">
     				<i class="fab fa-google"></i> Тест Google Login
 				</button>
+
+
+				<!-- ДОБАВЬТЕ ЭТИ ДВЕ КНОПКИ: -->
+				<button class="dropdown-item" onclick="saveToDrive()" id="saveToDriveBtn" style="display:none">
+    				<i class="fab fa-google-drive"></i> Сохранить в Drive
+				</button>
+				<button class="dropdown-item" onclick="loadFromDrive()" id="loadFromDriveBtn" style="display:none">
+    				<i class="fas fa-download"></i> Загрузить из Drive
+				</button>
+				
 				
                 <!-- Кнопка возврата -->
                 <button class="dropdown-item" 
