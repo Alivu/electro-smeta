@@ -2084,25 +2084,69 @@ section: "⑧ Примечания",
         let savedEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
         let nextMaterialId = 1000;
 		
-		// 1. Функция для расчета даты по Хиджре
-function getHijriDate() {
-    const today = new Date();
-    const hijriYear = Math.floor((today.getFullYear() - 622) * (33/32));
-    const hijriMonths = [
-        'Мухаррам', 'Сафар', 'Раби аль-авваль', 'Раби ас-сани',
-        'Джумада аль-уля', 'Джумада ас-сания', 'Раджаб', 'Шаабан',
-        'Рамадан', 'Шавваль', 'Зуль-каада', 'Зуль-хиджа'
-    ];
+// НОВАЯ КЕШИРОВАННАЯ ФУНКЦИЯ (вставьте ВМЕСТО старой)
+async function getHijriDate() {
+    // Проверяем кэш
+    const cached = localStorage.getItem('hijri_date_cache');
+    const today = new Date().toDateString();
     
-    const daysSinceHijra = Math.floor((today - new Date(622, 6, 16)) / (1000 * 60 * 60 * 24));
-    const hijriMonthIndex = Math.floor((daysSinceHijra % 354) / 29.5);
-    const hijriDay = Math.floor((daysSinceHijra % 354) % 29.5) + 1;
+    if (cached) {
+        const { date, data } = JSON.parse(cached);
+        if (date === today) {
+            return data;
+        }
+    }
     
+    try {
+        // Используем API
+        const response = await fetch('https://api.aladhan.com/v1/gToH?adjustment=0');
+        const data = await response.json();
+        
+        if (data.code === 200) {
+            const hijri = data.data.hijri;
+            
+            const hijriMonths = {
+                "Muharram": "Мухаррам",
+                "Safar": "Сафар",
+                "Rabi al-Awwal": "Раби аль-авваль",
+                "Rabi al-Thani": "Раби ас-сани",
+                "Jumada al-Awwal": "Джумада аль-уля",
+                "Jumada al-Thani": "Джумада ас-сания",
+                "Rajab": "Раджаб",
+                "Sha'ban": "Шаабан",
+                "Ramadan": "Рамадан",
+                "Shawwal": "Шавваль",
+                "Dhu al-Qi'dah": "Зуль-каада",
+                "Dhu al-Hijjah": "Зуль-хиджа"
+            };
+            
+            const result = {
+                year: parseInt(hijri.year),
+                month: hijriMonths[hijri.month.en] || hijri.month.en,
+                monthIndex: parseInt(hijri.month.number),
+                day: parseInt(hijri.day),
+                display: `${hijri.day} ${hijriMonths[hijri.month.en] || hijri.month.en} ${hijri.year} г.х.`
+            };
+            
+            // Сохраняем в кэш
+            localStorage.setItem('hijri_date_cache', JSON.stringify({
+                date: today,
+                data: result
+            }));
+            
+            return result;
+        }
+    } catch (error) {
+        console.error('Ошибка получения даты Хиджры:', error);
+    }
+    
+    // Резервный вариант для 23 января 2026
     return {
-        year: hijriYear,
-        month: hijriMonths[hijriMonthIndex],
-        day: hijriDay,
-        monthIndex: hijriMonthIndex + 1
+        year: 1447,
+        month: 'Шаабан',
+        monthIndex: 8,
+        day: 4,
+        display: '4 Шаабан 1447 г.х.'
     };
 }
 
@@ -2200,8 +2244,8 @@ const notificationSystem = {
 // ========== КОНЕЦ СИСТЕМЫ УВЕДОМЛЕНИЙ ==========
 // ========== ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ ХИДЖРЫ ==========
 
-function displayHijriDate() {
-    const hijri = getHijriDate();
+async function displayHijriDate() {
+    const hijri = await getHijriDate(); // ← ДОБАВЬТЕ await
     const hijriElement = document.createElement('div');
     hijriElement.id = 'hijri-date';
     hijriElement.style.cssText = `
@@ -2227,6 +2271,7 @@ function displayHijriDate() {
     const today = new Date();
     const dayOfWeek = daysOfWeek[today.getDay()];
 
+    // Используем hijri.display вместо ручной сборки
     hijriElement.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: nowrap; line-height: 1;">
             <div style="display: flex; align-items: center; white-space: nowrap;">
@@ -2236,7 +2281,7 @@ function displayHijriDate() {
             <span style="color: #ddd; margin: 0 5px;">|</span>
             <div style="display: flex; align-items: center; white-space: nowrap;">
                 <i class="fas fa-mosque" style="color: #27ae60; margin-right: 6px; font-size: 0.95em;"></i>
-                <span>${hijri.day} ${hijri.month} ${hijri.year} г.х.</span>
+                <span>${hijri.display}</span> <!-- ← ИСПОЛЬЗУЕМ hijri.display -->
             </div>
         </div>
     `;
@@ -2247,13 +2292,13 @@ function displayHijriDate() {
     }
 }
 
-function adaptHijriDateForMobile() {
+async function adaptHijriDateForMobile() { // ← ДОБАВЬТЕ async
     const hijriElement = document.getElementById('hijri-date');
     if (!hijriElement) return;
     
+    const hijri = await getHijriDate(); // ← ДОБАВЬТЕ await
     const today = new Date();
     const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
-    const hijri = getHijriDate();
     
     if (window.innerWidth <= 767) {
         hijriElement.style.fontSize = '0.75rem';
@@ -2269,7 +2314,7 @@ function adaptHijriDateForMobile() {
                 <span style="color: #ddd; margin: 0 3px;">|</span>
                 <div style="display: flex; align-items: center; white-space: nowrap;">
                     <i class="fas fa-mosque" style="color: #27ae60; margin-right: 4px; font-size: 0.85em;"></i>
-                    <span style="font-size: 0.95em;">${hijri.day} ${hijri.month} ${hijri.year} г.х.</span>
+                    <span style="font-size: 0.95em;">${hijri.display}</span> <!-- ← ИСПОЛЬЗУЕМ hijri.display -->
                 </div>
             </div>
         `;
@@ -2288,7 +2333,7 @@ function adaptHijriDateForMobile() {
                 <span style="color: #ddd; margin: 0 4px;">|</span>
                 <div style="display: flex; align-items: center; white-space: nowrap;">
                     <i class="fas fa-mosque" style="color: #27ae60; margin-right: 5px; font-size: 0.9em;"></i>
-                    <span>${hijri.day} ${hijri.month} ${hijri.year} г.х.</span>
+                    <span>${hijri.display}</span> <!-- ← ИСПОЛЬЗУЕМ hijri.display -->
                 </div>
             </div>
         `;
@@ -2307,23 +2352,24 @@ function adaptHijriDateForMobile() {
                 <span style="color: #ddd; margin: 0 5px;">|</span>
                 <div style="display: flex; align-items: center; white-space: nowrap;">
                     <i class="fas fa-mosque" style="color: #27ae60; margin-right: 6px; font-size: 0.95em;"></i>
-                    <span>${hijri.day} ${hijri.month} ${hijri.year} г.х.</span>
+                    <span>${hijri.display}</span> <!-- ← ИСПОЛЬЗУЕМ hijri.display -->
                 </div>
             </div>
         `;
     }
 }
+		
 
 // ========== КОНЕЦ ФУНКЦИЙ ХИДЖРЫ ==========
 // ========== ИНИЦИАЛИЗАЦИЯ ИСЛАМСКИХ ФУНКЦИЙ ==========
 
-function initializeIslamicFeatures() {
+async function initializeIslamicFeatures() { // ← ДОБАВЬТЕ async
     // 1. Отображаем дату по Хиджре
-    displayHijriDate();
+    await displayHijriDate(); // ← ДОБАВЬТЕ await
     
-    // 2. Адаптируем для мобильных
-    adaptHijriDateForMobile();
-    window.addEventListener('resize', adaptHijriDateForMobile);
+    // 2. Адаптируем для мобильных (не вызываем здесь, она уже вызвана в displayHijriDate)
+    // adaptHijriDateForMobile(); // ← УБЕРИТЕ эту строку
+    window.addEventListener('resize', () => adaptHijriDateForMobile());
     
     // 3. Первое уведомление
     setTimeout(() => {
@@ -2349,7 +2395,6 @@ function initializeIslamicFeatures() {
         }
     }, 60 * 1000);
 }
-
 // ========== КОНЕЦ ИНИЦИАЛИЗАЦИИ ==========
 		// Функция форматирования валюты
 function formatCurrency(amount) {
@@ -2482,7 +2527,7 @@ function setupDate() {
             }
         });
 
-function initializeApp() {
+async function initializeApp() { // ← ДОБАВЬТЕ async
     console.log('Инициализация приложения');
     
     initializeEstimateData();
@@ -2492,10 +2537,9 @@ function initializeApp() {
     updateEstimateCounter();
     setupEventListeners();
     setupDate();
-    initializeIslamicFeatures();
+    await initializeIslamicFeatures(); // ← ДОБАВЬТЕ await
     showTab('price');
     
-
     console.log('Приложение инициализировано');
 }
 
