@@ -2311,9 +2311,10 @@ function adaptHijriDateForMobile() {
     const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
     const hijri = getHijriDate();
     
-    if (window.innerWidth <= 767) {
+    if (window.innerWidth <= 767px) {
+        hijriElement.style.height = '24px';
+        hijriElement.style.padding = '2px 4px';
         hijriElement.style.fontSize = '0.75rem';
-        hijriElement.style.padding = '4px';
         hijriElement.style.minHeight = '24px';
         
         hijriElement.innerHTML = `
