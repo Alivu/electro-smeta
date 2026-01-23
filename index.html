@@ -912,26 +912,29 @@
     .header {
         min-height: 30px !important;
         padding: 2px 0 !important;
-        margin-bottom: 0 !important; /* ← ИЗМЕНЕНО: было 2px */
+        margin-bottom: 2px !important;
         flex-direction: row !important;
         align-items: center !important;
         justify-content: space-between !important;
+        text-align: left !important;
         gap: 5px !important;
 		
     }
 
-    /* Блок с датой */
+    /* Блок с датой - убрать верхние отступы */
     #hijri-date {
-        margin-top: 0 !important;    /* ← ИЗМЕНЕНО: было -5px */
-        padding: 2px 4px !important;  /* ← Еще меньше отступы */
-        height: 24px !important;      /* ← Фиксированная высота */
-        font-size: 0.75rem !important;
+        margin-top: -5px !important;    /* ← Поднять вверх */
+        padding-top: 2px !important;    /* ← Маленький отступ */
+        margin-bottom: 0 !important;
+        border-top: none !important;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
     }
     
-    /* Убираем ВСЕ вертикальные отступы между ними */
+    /* Убрать ВСЕ вертикальные отступы между ними */
     .header + #hijri-date {
         margin-top: 0 !important;
     }
+
 	
     .logo {
         transform: none !important;
@@ -941,7 +944,6 @@
         gap: 4px !important;
         flex: 1 !important;
         min-width: 0 !important;
-		height: 28px; /* ← Фиксированная высота логотипа */
     }
 
     .app-icon {
@@ -2261,19 +2263,19 @@ function displayHijriDate() {
     const hijriElement = document.createElement('div');
     hijriElement.id = 'hijri-date';
     hijriElement.style.cssText = `
-        margin: 0 !important;
-        padding: 4px 8px !important;
-        font-size: 0.85rem;
+        text-align: center;
+        margin: 5px 0;
+        font-size: 0.9rem;
         color: #2c3e50;
         font-weight: 500;
+        padding: 5px;
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 0 0 5px 5px;
+        border-radius: 5px;
         border: 1px solid #dee2e6;
-        border-top: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 28px;
+        min-height: 28px;
         line-height: 1;
         box-sizing: border-box;
     `;
