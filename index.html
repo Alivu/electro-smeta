@@ -2636,8 +2636,8 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
 }
 
         function initializeEstimateData() {
-            // Создаем 20 пустых строк для сметы
-            estimateData = Array(20).fill().map((_, i) => ({
+            // Создаем 30 пустых строк для сметы
+            estimateData = Array(30).fill().map((_, i) => ({
                 id: i + 1,
                 priceId: "",
                 name: "",
@@ -3099,7 +3099,7 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
         }
 
         function clearEstimate() {
-            estimateData = Array(20).fill().map((_, i) => ({
+            estimateData = Array(30).fill().map((_, i) => ({
                 id: i + 1,
                 priceId: "",
                 name: "",
@@ -3326,7 +3326,7 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
             const estimate = savedEstimates.find(e => e.id === estimateId);
             
             if (estimate) {
-                estimateData = Array(20).fill().map((_, i) => ({
+                estimateData = Array(30).fill().map((_, i) => ({
                     id: i + 1,
                     priceId: "",
                     name: "",
@@ -3339,7 +3339,7 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
                 }));
                 
                 estimate.data.forEach((item, index) => {
-                    if (index < 20) {
+                    if (index < 30) {
                         estimateData[index] = { ...item, id: index + 1 };
                     }
                 });
