@@ -2753,39 +2753,40 @@ function initializeEstimateData() {
         }
 
         // Рендеринг таблицы сметы
-        function renderEstimateTable() {
-            const tableBody = document.getElementById('estimateTable');
-            if (!tableBody) {
-                console.error('Таблица сметы не найдена!');
-                return;
-            }
-            
-            tableBody.innerHTML = '';
-            
-            estimateData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                if (row.isMaterial) {
-                    tr.classList.add('material-row');
-                }
-                
-                tr.innerHTML = `
-                    <td class="price-id-cell">${row.isMaterial ? 'МАТ' : (row.priceId || '')}</td>
-                    <td class="search-cell">
-                        <input type="text" class="search-input" 
-                               data-row="${index}" 
-                               value="${row.name}"
-                               placeholder="${row.isMaterial ? 'Материал...' : 'Начните вводить название...'}"
-                               autocomplete="off">
-                        <div class="dropdown" id="dropdown-${index}"></div>
-                    </td>
-                    <td class="unit-cell">${row.unit || ''}</td>
-                    <td class="price-cell">
-                        <input type="number" class="number-input price-input" 
-                               data-row="${index}" 
-                               value="${row.price || ''}" 
-                               min="0" step="0.01">
-                    </td>
-                    <td class="quantity-cell">
+function renderEstimateTable() {
+    const tableBody = document.getElementById('estimateTable');
+    if (!tableBody) {
+        console.error('Таблица сметы не найдена!');
+        return;
+    }
+    
+    tableBody.innerHTML = '';
+    
+    // Рендерим ВСЕ строки из estimateData (не только первые 20)
+    estimateData.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        if (row.isMaterial) {
+            tr.classList.add('material-row');
+        }
+        
+        tr.innerHTML = `
+            <td class="price-id-cell">${row.isMaterial ? 'МАТ' : (row.priceId || '')}</td>
+            <td class="search-cell">
+                <input type="text" class="search-input" 
+                       data-row="${index}" 
+                       value="${row.name}"
+                       placeholder="${row.isMaterial ? 'Материал...' : 'Начните вводить название...'}"
+                       autocomplete="off">
+                <div class="dropdown" id="dropdown-${index}"></div>
+            </td>
+            <td class="unit-cell">${row.unit || ''}</td>
+            <td class="price-cell">
+                <input type="number" class="number-input price-input" 
+                       data-row="${index}" 
+                       value="${row.price || ''}" 
+                       min="0" step="0.01">
+            </td>
+            <td class="quantity-cell">
                         <input type="number" class="number-input quantity-input" 
                                data-row="${index}" 
                                value="${row.quantity || 1}" 
@@ -2799,7 +2800,7 @@ function initializeEstimateData() {
                 tableBody.appendChild(tr);
             });
             
-            // Настраиваем обработчики событий для новых строк
+            // Настраиваем обработчики событий для всех новых строк
             setupRowEventListeners();
         }
 
@@ -3327,8 +3328,11 @@ function loadEstimate(estimateId) {
     const estimate = savedEstimates.find(e => e.id === estimateId);
     
     if (estimate) {
-        // Инициализируем 30 пустых строк
-        estimateData = Array(30).fill().map((_, i) => ({
+        // Получаем максимальное количество строк из сохраненной сметы или 30
+        const maxRows = Math.max(estimate.data.length, 30);
+        
+        // Инициализируем массив на нужное количество строк
+        estimateData = Array(maxRows).fill().map((_, i) => ({
             id: i + 1,
             priceId: "",
             name: "",
@@ -3340,9 +3344,9 @@ function loadEstimate(estimateId) {
             isMaterial: false
         }));
         
-        // Загружаем сохраненные данные (до 30 строк)
+        // Загружаем ВСЕ сохраненные данные (без ограничения в 30 строк)
         estimate.data.forEach((item, index) => {
-            if (index < 30) {
+            if (index < maxRows) {
                 estimateData[index] = { 
                     ...item, 
                     id: index + 1 
@@ -3350,14 +3354,15 @@ function loadEstimate(estimateId) {
             }
         });
         
+        // Обновляем отображение
         renderEstimateTable();
         updateTotals();
         updateEstimateCounter();
         showTab('estimate');
-        showNotification(`Загружена смета: ${estimate.name}`);
+        
+        showNotification(`Загружена смета: ${estimate.name} (${estimate.data.length} позиций)`);
     }
 }
-
         function deleteSavedEstimate(estimateId) {
             savedEstimates = savedEstimates.filter(e => e.id !== estimateId);
             localStorage.setItem('electroEstimates', JSON.stringify(savedEstimates));
@@ -4237,45 +4242,51 @@ async function loadFromDrive() {
                 const data = await fileResponse.json();
                 
                 // Загружаем данные в смету
-                if (data && data.data) {
-                    // Очищаем текущую смету
-                    estimateData = Array(20).fill().map((_, i) => ({
-                        id: i + 1,
-                        priceId: "",
-                        name: "",
-                        unit: "",
-                        price: 0,
-                        quantity: 1,
-                        total: 0,
-                        notes: "",
-                        isMaterial: false
-                    }));
-                    
-                    // Заполняем данными
-                    data.data.forEach((row, i) => {
-                        if (i < 20) {
-                            estimateData[i] = {
-                                id: i + 1,
-                                priceId: row.priceId || "",
-                                name: row.name || "",
-                                unit: row.unit || "",
-                                price: row.price || 0,
-                                quantity: row.quantity || 1,
-                                total: row.total || 0,
-                                notes: row.notes || "",
-                                isMaterial: row.isMaterial || false
-                            };
-                        }
-                    });
-                    
-                    // Обновляем интерфейс
-                    renderEstimateTable();
-                    updateTotals();
-                    updateEstimateCounter();
-                    showTab('estimate');
-                    
-                    showNotification(`✅ Загружена смета: "${files.files[index].name}"`);
-                } else {
+if (data && data.data) {
+        // Определяем максимальное количество строк
+        const maxRows = Math.max(data.data.length, 30);
+        
+        // Очищаем текущую смету с нужным количеством строк
+        estimateData = Array(maxRows).fill().map((_, i) => ({
+            id: i + 1,
+            priceId: "",
+            name: "",
+            unit: "",
+            price: 0,
+            quantity: 1,
+            total: 0,
+            notes: "",
+            isMaterial: false
+        }));
+        
+        // Заполняем данными
+        data.data.forEach((row, i) => {
+            if (i < maxRows) {
+                estimateData[i] = {
+                    id: i + 1,
+                    priceId: row.priceId || "",
+                    name: row.name || "",
+                    unit: row.unit || "",
+                    price: row.price || 0,
+                    quantity: row.quantity || 1,
+                    total: row.total || 0,
+                    notes: row.notes || "",
+                    isMaterial: row.isMaterial || false
+                };
+            }
+        });
+        
+        // Обновляем интерфейс
+        renderEstimateTable();
+        updateTotals();
+        updateEstimateCounter();
+        showTab('estimate');
+        
+        showNotification(`✅ Загружена смета: "${files.files[index].name}" (${data.data.length} позиций)`);
+    }
+				
+				
+				else {
                     showNotification('❌ Ошибка: неверный формат файла');
                 }
             }
