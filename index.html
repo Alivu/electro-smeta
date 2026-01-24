@@ -2635,20 +2635,20 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
     console.log('Приложение инициализировано');
 }
 
-        function initializeEstimateData() {
-            // Создаем 30 пустых строк для сметы
-            estimateData = Array(30).fill().map((_, i) => ({
-                id: i + 1,
-                priceId: "",
-                name: "",
-                unit: "",
-                price: 0,
-                quantity: 1,
-                total: 0,
-                notes: "",
-                isMaterial: false
-            }));
-        }
+function initializeEstimateData() {
+    // Создаем 30 пустых строк для сметы
+    estimateData = Array(30).fill().map((_, i) => ({
+        id: i + 1,
+        priceId: "",
+        name: "",
+        unit: "",
+        price: 0,
+        quantity: 1,
+        total: 0,
+        notes: "",
+        isMaterial: false
+    }));
+}
 
         // Функции для вкладок
         function showTab(tabName) {
@@ -3023,22 +3023,22 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
             updateEstimateCounter();
         }
 
-        function addEmptyRow() {
-            const newId = estimateData.length + 1;
-            estimateData.push({
-                id: newId,
-                priceId: "",
-                name: "",
-                unit: "",
-                price: 0,
-                quantity: 1,
-                total: 0,
-                notes: "",
-                isMaterial: false
-            });
-            
-            renderEstimateTable();
-        }
+  function addEmptyRow() {
+    const newId = estimateData.length + 1;
+    estimateData.push({
+        id: newId,
+        priceId: "",
+        name: "",
+        unit: "",
+        price: 0,
+        quantity: 1,
+        total: 0,
+        notes: "",
+        isMaterial: false
+    });
+    
+    renderEstimateTable();
+}
 
         function deleteRow(rowIndex) {
             if (estimateData.length <= 1) {
@@ -3098,24 +3098,26 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
             }
         }
 
-        function clearEstimate() {
-            estimateData = Array(30).fill().map((_, i) => ({
-                id: i + 1,
-                priceId: "",
-                name: "",
-                unit: "",
-                price: 0,
-                quantity: 1,
-                total: 0,
-                notes: "",
-                isMaterial: false
-            }));
-            
-            renderEstimateTable();
-            updateTotals();
-            updateEstimateCounter();
-            showNotification('Смета очищена');
-        }
+function clearEstimate() {
+    if (confirm('Вы уверены, что хотите очистить всю смету?')) {
+        estimateData = [{
+            id: 1,
+            priceId: "",
+            name: "",
+            unit: "",
+            price: 0,
+            quantity: 1,
+            total: 0,
+            notes: "",
+            isMaterial: false
+        }];
+        
+        renderEstimateTable();
+        updateTotals();
+        updateEstimateCounter();
+        showNotification('Смета очищена');
+    }
+}
 
         // Материалы
         function showMaterialModal() {
@@ -3256,28 +3258,27 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
         }
 
         // Сохранение и загрузка
-        function saveEstimate() {
-            const estimateName = prompt('Введите название для сохранения сметы:', `Смета ${new Date().toLocaleDateString()}`);
-            
-            if (estimateName) {
-                const filledData = estimateData.filter(row => row.priceId || row.name.trim() !== '');
-                
-                const estimateToSave = {
-                    id: Date.now(),
-                    name: estimateName,
-                    date: new Date().toISOString(),
-                    data: filledData,
-                    totals: {
-                        totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
-                    }
-                };
-                
-                savedEstimates.push(estimateToSave);
-                localStorage.setItem('electroEstimates', JSON.stringify(savedEstimates));
-                
-                showNotification(`Смета "${estimateName}" сохранена`);
+function saveEstimate() {
+    const estimateName = prompt('Введите название для сохранения сметы:', `Смета ${new Date().toLocaleDateString()}`);
+    
+    if (estimateName) {
+        // Сохраняем ВСЕ 30 строк (даже пустые)
+        const estimateToSave = {
+            id: Date.now(),
+            name: estimateName,
+            date: new Date().toISOString(),
+            data: estimateData.map(row => ({ ...row })), // Копируем все строки
+            totals: {
+                totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
             }
-        }
+        };
+        
+        savedEstimates.push(estimateToSave);
+        localStorage.setItem('electroEstimates', JSON.stringify(savedEstimates));
+        
+        showNotification(`Смета "${estimateName}" сохранена (${estimateData.length} строк)`);
+    }
+}
 
         function showLoadModal() {
             const listContainer = document.getElementById('savedEstimatesList');
@@ -3322,35 +3323,40 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
             document.getElementById('loadModal').style.display = 'flex';
         }
 
-        function loadEstimate(estimateId) {
-            const estimate = savedEstimates.find(e => e.id === estimateId);
-            
-            if (estimate) {
-                estimateData = Array(30).fill().map((_, i) => ({
-                    id: i + 1,
-                    priceId: "",
-                    name: "",
-                    unit: "",
-                    price: 0,
-                    quantity: 1,
-                    total: 0,
-                    notes: "",
-                    isMaterial: false
-                }));
-                
-                estimate.data.forEach((item, index) => {
-                    if (index < 30) {
-                        estimateData[index] = { ...item, id: index + 1 };
-                    }
-                });
-                
-                renderEstimateTable();
-                updateTotals();
-                updateEstimateCounter();
-                showTab('estimate');
-                showNotification(`Загружена смета: ${estimate.name}`);
+function loadEstimate(estimateId) {
+    const estimate = savedEstimates.find(e => e.id === estimateId);
+    
+    if (estimate) {
+        // Инициализируем 30 пустых строк
+        estimateData = Array(30).fill().map((_, i) => ({
+            id: i + 1,
+            priceId: "",
+            name: "",
+            unit: "",
+            price: 0,
+            quantity: 1,
+            total: 0,
+            notes: "",
+            isMaterial: false
+        }));
+        
+        // Загружаем сохраненные данные (до 30 строк)
+        estimate.data.forEach((item, index) => {
+            if (index < 30) {
+                estimateData[index] = { 
+                    ...item, 
+                    id: index + 1 
+                };
             }
-        }
+        });
+        
+        renderEstimateTable();
+        updateTotals();
+        updateEstimateCounter();
+        showTab('estimate');
+        showNotification(`Загружена смета: ${estimate.name}`);
+    }
+}
 
         function deleteSavedEstimate(estimateId) {
             savedEstimates = savedEstimates.filter(e => e.id !== estimateId);
@@ -4133,7 +4139,7 @@ async function saveToDrive() {
     
     if (!estimateName) return;
     
-    // Получаем текущие данные сметы (сохраняем ВСЕ 20 строк)
+    // Получаем текущие данные сметы (сохраняем ВСЕ 30 строк)
     const currentEstimate = {
         id: Date.now(),
         name: estimateName,
@@ -4154,7 +4160,7 @@ async function saveToDrive() {
     };
     
     console.log('Сохранение:', currentEstimate);
-    console.log('Позиций:', currentEstimate.data.length);
+    console.log('Позиций:', currentEstimate.data.length); // Должно быть 30
     
     try {
         // 1. Сохраняем в Google Drive
