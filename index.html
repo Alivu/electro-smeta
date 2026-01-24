@@ -3325,9 +3325,13 @@ function saveEstimate() {
         }
 
 function loadEstimate(estimateId) {
+    console.log('Загрузка сметы ID:', estimateId);
     const estimate = savedEstimates.find(e => e.id === estimateId);
     
     if (estimate) {
+        console.log('Найдена смета:', estimate.name);
+        console.log('Количество строк в сохраненной смете:', estimate.data.length);
+        console.log('Первые 5 строк:', estimate.data.slice(0, 5));
         // Получаем максимальное количество строк из сохраненной сметы или 30
         const maxRows = Math.max(estimate.data.length, 30);
         
