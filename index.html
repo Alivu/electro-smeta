@@ -775,6 +775,22 @@
             display: inline-block;
         }
 
+
+		<!-- Вставьте этот код в секцию управления (после закрывающего div для .estimate-controls) -->
+<button onclick="debugEstimateData()" style="
+    background: #9b59b6;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+">
+    Debug
+</button>
+		
+
         .dropdown-toggle {
             display: flex;
             align-items: center;
@@ -1038,10 +1054,17 @@
                 height: calc(100vh - 200px);
             }
             
-            .estimate-table-container {
-                height: calc(100vh - 250px);
-                padding: 10px;
-            }
+.estimate-table-container {
+    height: calc(100vh - 300px);
+    max-height: 600px; /* Увеличьте высоту */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 15px;
+}
+
+.estimate-table {
+    min-width: 1050px; /* Убедитесь, что это значение достаточно */
+}
             
             .estimate-table th,
             .estimate-table td {
