@@ -4930,76 +4930,107 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function setupEventListeners() {
-        console.log('Настройка обработчиков для МОБИЛЬНЫХ...');
+        console.log('Настройка обработчиков...');
         
-        let lastTapTime = 0;
-        let tapTimeout;
+        let isDragging = false;
+        let touchStartTime = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let dragTimeout;
         
-        // 1. ГЛАВНАЯ КНОПКА - открываем СРАЗУ при касании
+        // 1. НАЧАЛО КАСАНИЯ - запоминаем время и позицию
         widgetButton.addEventListener('touchstart', function(e) {
-            e.preventDefault();
             e.stopPropagation();
+            touchStartTime = Date.now();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isDragging = false;
             
-            const currentTime = Date.now();
-            const tapLength = currentTime - lastTapTime;
-            
-            // Отменяем предыдущий таймаут если он есть
-            if (tapTimeout) clearTimeout(tapTimeout);
-            
-            // Если двойной тап - ничего не делаем
-            if (tapLength > 0 && tapLength < 300) {
-                lastTapTime = 0;
-                return;
-            }
-            
-            // Запоминаем время тапа
-            lastTapTime = currentTime;
-            
-            // Открываем/закрываем меню сразу
-            if (widgetMenu.style.display === 'block') {
-                widgetMenu.style.display = 'none';
-                console.log('Меню закрыто (touchstart)');
-            } else {
-                widgetMenu.style.display = 'block';
-                settingsMenu.style.display = 'none';
-                console.log('Меню открыто (touchstart)');
-            }
-            
-            // Вибрация (если есть)
-            if (navigator.vibrate) navigator.vibrate(10);
-            
+            // Запускаем таймер для перетаскивания
+            dragTimeout = setTimeout(function() {
+                if (!isDragging) {
+                    isDragging = true;
+                    startDrag(e);
+                }
+            }, 300); // 300ms - время для начала перетаскивания
         }, { passive: false });
         
-        // 2. КНОПКА НАСТРОЕК - тоже touchstart
-        settingsBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            widgetMenu.style.display = 'none';
-            settingsMenu.style.display = 'block';
-            console.log('Настройки открыты (touchstart)');
-        }, { passive: false });
-        
-        // 3. КНОПКА НАЗАД - тоже touchstart
-        backBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            settingsMenu.style.display = 'none';
-            widgetMenu.style.display = 'block';
-            console.log('Возврат в главное меню (touchstart)');
-        }, { passive: false });
-        
-        // 4. ЗАКРЫТИЕ ПРИ КАСАНИИ ВНЕ МЕНЮ - с задержкой
-        document.addEventListener('touchstart', function(e) {
-            if (!floatingWidget.contains(e.target)) {
-                // Небольшая задержка, чтобы не закрывалось сразу
-                setTimeout(function() {
-                    widgetMenu.style.display = 'none';
-                    settingsMenu.style.display = 'none';
-                }, 50);
+        // 2. ДВИЖЕНИЕ ПАЛЬЦЕМ - проверяем, это перетаскивание или нет
+        widgetButton.addEventListener('touchmove', function(e) {
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const deltaX = Math.abs(currentX - touchStartX);
+            const deltaY = Math.abs(currentY - touchStartY);
+            
+            // Если переместились больше чем на 10px - это перетаскивание
+            if (deltaX > 10 || deltaY > 10) {
+                clearTimeout(dragTimeout);
+                if (!isDragging) {
+                    isDragging = true;
+                    startDrag(e);
+                }
             }
         });
         
-        // 5. Для десктопов - click
+        // 3. ОТПУСКАНИЕ ПАЛЬЦА - открываем меню если это был тап
+        widgetButton.addEventListener('touchend', function(e) {
+            clearTimeout(dragTimeout);
+            
+            if (!isDragging) {
+                // Это был короткий тап - открываем/закрываем меню
+                const touchDuration = Date.now() - touchStartTime;
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                const deltaX = Math.abs(touchEndX - touchStartX);
+                const deltaY = Math.abs(touchEndY - touchStartY);
+                
+                // Только если тап был короткий и без движения
+                if (touchDuration < 300 && deltaX < 15 && deltaY < 15) {
+                    e.stopPropagation();
+                    
+                    if (widgetMenu.style.display === 'block') {
+                        widgetMenu.style.display = 'none';
+                        console.log('Меню закрыто');
+                    } else {
+                        widgetMenu.style.display = 'block';
+                        settingsMenu.style.display = 'none';
+                        console.log('Меню открыто');
+                    }
+                    
+                    // Вибрация для подтверждения
+                    if (navigator.vibrate) navigator.vibrate(20);
+                }
+            }
+            
+            isDragging = false;
+        });
+        
+        // 4. КНОПКА НАСТРОЕК
+        settingsBtn.addEventListener('touchend', function(e) {
+            e.stopPropagation();
+            widgetMenu.style.display = 'none';
+            settingsMenu.style.display = 'block';
+        });
+        
+        // 5. КНОПКА НАЗАД
+        backBtn.addEventListener('touchend', function(e) {
+            e.stopPropagation();
+            settingsMenu.style.display = 'none';
+            widgetMenu.style.display = 'block';
+        });
+        
+        // 6. ЗАКРЫТИЕ МЕНЮ при касании ВНЕ - с небольшой задержкой
+        document.addEventListener('touchend', function(e) {
+            // Небольшая задержка чтобы дать время нажать кнопки в меню
+            setTimeout(function() {
+                if (!floatingWidget.contains(e.target)) {
+                    widgetMenu.style.display = 'none';
+                    settingsMenu.style.display = 'none';
+                }
+            }, 100);
+        });
+        
+        // 7. Для десктопов
         widgetButton.addEventListener('click', function(e) {
             if (window.innerWidth > 768) {
                 e.stopPropagation();
@@ -5012,10 +5043,57 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // 6. Включаем перетаскивание (длинное нажатие)
-        setupDragging();
+        console.log('Обработчики настроены');
+    }
+    
+    // Функция начала перетаскивания
+    function startDrag(e) {
+        console.log('Начало перетаскивания');
         
-        console.log('Мобильные обработчики настроены (touchstart)');
+        const startX = e.touches[0].clientX;
+        const startY = e.touches[0].clientY;
+        const startLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
+        const startTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
+        
+        // Скрываем меню
+        widgetMenu.style.display = 'none';
+        settingsMenu.style.display = 'none';
+        
+        // Функция перемещения
+        function onTouchMove(e) {
+            e.preventDefault();
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const dx = currentX - startX;
+            const dy = currentY - startY;
+            
+            let newLeft = startLeft + dx;
+            let newTop = startTop + dy;
+            
+            // Ограничиваем в пределах экрана
+            newLeft = Math.max(10, Math.min(window.innerWidth - 70, newLeft));
+            newTop = Math.max(10, Math.min(window.innerHeight - 70, newTop));
+            
+            floatingWidget.style.left = newLeft + 'px';
+            floatingWidget.style.top = newTop + 'px';
+        }
+        
+        // Функция окончания перетаскивания
+        function onTouchEnd() {
+            document.removeEventListener('touchmove', onTouchMove);
+            document.removeEventListener('touchend', onTouchEnd);
+            
+            // Сохраняем позицию
+            widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
+            widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
+            saveSettings();
+            
+            console.log('Перетаскивание завершено');
+        }
+        
+        // Добавляем обработчики
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
     }
     
     // Настройка перетаскивания виджета
