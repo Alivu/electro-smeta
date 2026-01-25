@@ -1791,13 +1791,26 @@
 .pos-btn:hover {
     background: #e9ecef;
 }
-
+/* Стиль при перетаскивании */
+.widget-btn.dragging {
+    opacity: 0.8;
+    transform: scale(0.95);
+    box-shadow: 0 0 25px rgba(52, 152, 219, 0.6);
+}
 @media (max-width: 768px) {
     #floatingWidget {
         top: 60px;
         left: 10px;
     }
-    
+
+    .widget-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s;
+    }
+	    body.widget-dragging {
+        overflow: hidden;
+        touch-action: none;
+    }
     .widget-btn {
         touch-action: manipulation;
         -webkit-tap-highlight-color: transparent;
