@@ -1592,6 +1592,211 @@
     </div>
 
     <script>
+
+<!-- ========== ВСПЛЫВАЮЩИЙ ВИДЖЕТ ========== -->
+<div id="floatingWidget">
+    <button id="widgetButton" class="widget-btn">
+        <img src="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-48x48.png" alt="Виджет">
+    </button>
+    
+    <div id="widgetMenu" class="widget-menu">
+        <div class="menu-header">
+            <span>ЭлектроСмета</span>
+            <button class="settings-btn" id="settingsBtn">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+        <div class="menu-content"></div>
+    </div>
+    
+    <div id="settingsMenu" class="widget-menu">
+        <div class="menu-header">
+            <span>Настройки</span>
+            <button class="back-btn" id="backBtn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        <div class="menu-content"></div>
+    </div>
+</div>
+
+<style>
+/* Стили для виджета */
+#floatingWidget {
+    position: fixed;
+    top: 80px;
+    left: 20px;
+    z-index: 9998;
+    transition: opacity 0.3s;
+}
+
+.widget-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    border: 3px solid white;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.widget-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.widget-btn img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.widget-menu {
+    position: absolute;
+    top: 0;
+    left: 60px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    width: 200px;
+    display: none;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.menu-header {
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    color: white;
+    padding: 8px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 14px;
+    height: 30px;
+}
+
+.settings-btn, .back-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.settings-btn:hover, .back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.menu-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.menu-btn {
+    width: 100%;
+    padding: 10px 15px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    color: #333;
+}
+
+.menu-btn:hover {
+    background: #e9ecef;
+    transform: translateX(3px);
+}
+
+.menu-btn i {
+    color: #3498db;
+    width: 20px;
+    text-align: center;
+}
+
+.slider-container {
+    padding: 10px 0;
+}
+
+.slider-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #555;
+}
+
+.slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #3498db;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.pos-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.pos-btn {
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.pos-btn:hover {
+    background: #e9ecef;
+}
+
+@media (max-width: 768px) {
+    #floatingWidget {
+        top: 60px;
+        left: 10px;
+    }
+    
+    .widget-menu {
+        left: 50px;
+        width: 180px;
+    }
+}
+</style>
+
+
+		
         // Проверяем iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 		// Обработчик для кнопки "Скачать PDF" в окне печати
@@ -3559,6 +3764,11 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
                     }, 500);
                 };
             <\/script>
+
+
+
+
+			
         </body>
         </html>
     `;
@@ -4414,6 +4624,525 @@ function debugEstimateData() {
     const notificationText = `Данные: ${filledRows.length} заполненных из ${estimateData.length} | DOM: ${tableRows.length} строк`;
     showNotification(`Debug: ${notificationText}`);
 }
+// ========== ВИДЖЕТ ЭЛЕКТРОСМЕТА ==========
+document.addEventListener('DOMContentLoaded', function() {
+    // Только если элементы виджета существуют
+    if (!document.getElementById('floatingWidget')) return;
+    
+    // Элементы DOM
+    const floatingWidget = document.getElementById('floatingWidget');
+    const widgetButton = document.getElementById('widgetButton');
+    const widgetMenu = document.getElementById('widgetMenu');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const backBtn = document.getElementById('backBtn');
+    
+    // Загружаем настройки из localStorage
+    const widgetSettings = JSON.parse(localStorage.getItem('widgetSettings')) || {
+        opacity: 1,
+        buttonSize: 48,
+        verticalPos: 80,
+        horizontalPos: 20,
+        isHidden: false
+    };
+    
+    // Инициализация виджета
+    function initWidget() {
+        // Применяем сохраненные настройки
+        applySettings();
+        
+        // Заполняем главное меню
+        fillMainMenu();
+        
+        // Заполняем меню настроек
+        fillSettingsMenu();
+        
+        // Назначаем обработчики событий
+        setupEventListeners();
+    }
+    
+    // Применение настроек
+    function applySettings() {
+        floatingWidget.style.opacity = widgetSettings.opacity;
+        widgetButton.style.width = widgetSettings.buttonSize + 'px';
+        widgetButton.style.height = widgetSettings.buttonSize + 'px';
+        floatingWidget.style.top = widgetSettings.verticalPos + 'px';
+        floatingWidget.style.left = widgetSettings.horizontalPos + 'px';
+        if (widgetSettings.isHidden) floatingWidget.style.display = 'none';
+    }
+    
+    // Заполнение главного меню
+    function fillMainMenu() {
+        const menuContent = widgetMenu.querySelector('.menu-content');
+        menuContent.innerHTML = '';
+        
+        const buttons = [
+            { icon: 'fa-bolt', text: 'Быстрая смета', action: quickEstimate },
+            { icon: 'fa-calculator', text: 'Калькулятор', action: openCalculator },
+            { icon: 'fa-file-invoice-dollar', text: 'Новая смета', action: newEstimate },
+            { icon: 'fa-save', text: 'Сохранить', action: saveEstimate },
+            { icon: 'fa-folder-open', text: 'Загрузить', action: loadEstimate },
+            { icon: 'fa-print', text: 'Печать', action: printEstimate },
+            { icon: 'fa-file-pdf', text: 'PDF', action: saveAsPDF },
+            { icon: 'fa-search', text: 'Поиск в прайсе', action: searchPrice },
+            { icon: 'fa-chart-bar', text: 'Статистика', action: showStats },
+            { icon: 'fa-question-circle', text: 'Помощь', action: showHelp },
+            { icon: 'fa-moon', text: 'Темная тема', action: toggleTheme },
+            { icon: 'fa-sync', text: 'Обновить', action: refreshApp }
+        ];
+        
+        buttons.forEach(btn => {
+            const button = document.createElement('button');
+            button.className = 'menu-btn';
+            button.innerHTML = `<i class="fas ${btn.icon}"></i> ${btn.text}`;
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                btn.action();
+                hideAllMenus();
+            });
+            menuContent.appendChild(button);
+        });
+    }
+    
+    // Заполнение меню настроек
+    function fillSettingsMenu() {
+        const menuContent = settingsMenu.querySelector('.menu-content');
+        menuContent.innerHTML = '';
+        
+        // 1. Прозрачность
+        const opacityControl = document.createElement('div');
+        opacityControl.className = 'slider-container';
+        opacityControl.innerHTML = `
+            <div class="slider-label">
+                <span>Прозрачность:</span>
+                <span id="opacityValue">${Math.round(widgetSettings.opacity * 100)}%</span>
+            </div>
+            <input type="range" min="0.1" max="1" step="0.1" value="${widgetSettings.opacity}" 
+                   class="slider" id="opacitySlider">
+        `;
+        menuContent.appendChild(opacityControl);
+        
+        // 2. Размер кнопки
+        const sizeControl = document.createElement('div');
+        sizeControl.className = 'slider-container';
+        sizeControl.innerHTML = `
+            <div class="slider-label">
+                <span>Размер кнопки:</span>
+                <span id="sizeValue">${widgetSettings.buttonSize}px</span>
+            </div>
+            <input type="range" min="32" max="80" step="4" value="${widgetSettings.buttonSize}" 
+                   class="slider" id="sizeSlider">
+        `;
+        menuContent.appendChild(sizeControl);
+        
+        // 3. Вертикальное положение
+        const verticalControl = document.createElement('div');
+        verticalControl.innerHTML = `
+            <div style="font-size: 13px; color: #555; margin: 10px 0 5px;">Вертикальное положение:</div>
+            <div class="pos-controls">
+                <button class="pos-btn" id="moveUp">↑ Вверх</button>
+                <button class="pos-btn" id="moveDown">↓ Вниз</button>
+            </div>
+        `;
+        menuContent.appendChild(verticalControl);
+        
+        // 4. Горизонтальное положение
+        const horizontalControl = document.createElement('div');
+        horizontalControl.innerHTML = `
+            <div style="font-size: 13px; color: #555; margin: 10px 0 5px;">Горизонтальное положение:</div>
+            <div class="pos-controls">
+                <button class="pos-btn" id="moveLeft">← Лево</button>
+                <button class="pos-btn" id="moveRight">→ Право</button>
+            </div>
+        `;
+        menuContent.appendChild(horizontalControl);
+        
+        // Пустые места 5-9
+        for (let i = 5; i <= 9; i++) {
+            menuContent.appendChild(document.createElement('div'));
+        }
+        
+        // 10. Очистка кеша
+        const clearCacheBtn = document.createElement('button');
+        clearCacheBtn.className = 'menu-btn';
+        clearCacheBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Очистить кеш браузера';
+        clearCacheBtn.addEventListener('click', clearBrowserCache);
+        menuContent.appendChild(clearCacheBtn);
+        
+        // Обработчики для элементов управления
+        setupSettingsControls();
+    }
+    
+    // Настройка обработчиков для элементов управления настроек
+    function setupSettingsControls() {
+        // Прозрачность
+        const opacitySlider = document.getElementById('opacitySlider');
+        const opacityValue = document.getElementById('opacityValue');
+        
+        opacitySlider && opacitySlider.addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            opacityValue.textContent = Math.round(value * 100) + '%';
+            widgetSettings.opacity = value;
+            floatingWidget.style.opacity = value;
+            saveSettings();
+        });
+        
+        // Размер кнопки
+        const sizeSlider = document.getElementById('sizeSlider');
+        const sizeValue = document.getElementById('sizeValue');
+        
+        sizeSlider && sizeSlider.addEventListener('input', function() {
+            const value = parseInt(this.value);
+            sizeValue.textContent = value + 'px';
+            widgetSettings.buttonSize = value;
+            widgetButton.style.width = value + 'px';
+            widgetButton.style.height = value + 'px';
+            saveSettings();
+        });
+        
+        // Вертикальное положение
+        document.getElementById('moveUp') && document.getElementById('moveUp').addEventListener('click', function() {
+            widgetSettings.verticalPos = Math.max(10, widgetSettings.verticalPos - 10);
+            floatingWidget.style.top = widgetSettings.verticalPos + 'px';
+            saveSettings();
+        });
+        
+        document.getElementById('moveDown') && document.getElementById('moveDown').addEventListener('click', function() {
+            widgetSettings.verticalPos = Math.min(window.innerHeight - 100, widgetSettings.verticalPos + 10);
+            floatingWidget.style.top = widgetSettings.verticalPos + 'px';
+            saveSettings();
+        });
+        
+        // Горизонтальное положение
+        document.getElementById('moveLeft') && document.getElementById('moveLeft').addEventListener('click', function() {
+            widgetSettings.horizontalPos = Math.max(10, widgetSettings.horizontalPos - 10);
+            floatingWidget.style.left = widgetSettings.horizontalPos + 'px';
+            saveSettings();
+        });
+        
+        document.getElementById('moveRight') && document.getElementById('moveRight').addEventListener('click', function() {
+            widgetSettings.horizontalPos = Math.min(window.innerWidth - 100, widgetSettings.horizontalPos + 10);
+            floatingWidget.style.left = widgetSettings.horizontalPos + 'px';
+            saveSettings();
+        });
+    }
+    
+    // Настройка обработчиков событий
+    function setupEventListeners() {
+        // Кнопка виджета
+        widgetButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (widgetMenu.style.display === 'block') {
+                hideAllMenus();
+            } else {
+                showMenu(widgetMenu);
+            }
+        });
+        
+        // Кнопка настроек
+        settingsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            hideMenu(widgetMenu);
+            showMenu(settingsMenu);
+        });
+        
+        // Кнопка назад
+        backBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            hideMenu(settingsMenu);
+            showMenu(widgetMenu);
+        });
+        
+        // Закрытие меню при клике вне
+        document.addEventListener('click', function(e) {
+            if (!floatingWidget.contains(e.target)) {
+                hideAllMenus();
+            }
+        });
+        
+        // Закрытие меню при нажатии ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                hideAllMenus();
+            }
+        });
+        
+        // Перемещение виджета
+        setupDragging();
+    }
+    
+    // Настройка перетаскивания виджета
+    function setupDragging() {
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+        
+        widgetButton.addEventListener('mousedown', startDrag);
+        widgetButton.addEventListener('touchstart', startDragTouch);
+        
+        function startDrag(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
+            startTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
+            
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+            hideAllMenus();
+        }
+        
+        function startDragTouch(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            isDragging = true;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            startLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
+            startTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
+            
+            document.addEventListener('touchmove', dragTouch);
+            document.addEventListener('touchend', stopDragTouch);
+            hideAllMenus();
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            let newLeft = startLeft + dx;
+            let newTop = startTop + dy;
+            
+            newLeft = Math.max(10, Math.min(window.innerWidth - 60, newLeft));
+            newTop = Math.max(10, Math.min(window.innerHeight - 60, newTop));
+            
+            floatingWidget.style.left = newLeft + 'px';
+            floatingWidget.style.top = newTop + 'px';
+        }
+        
+        function dragTouch(e) {
+            if (!isDragging) return;
+            const dx = e.touches[0].clientX - startX;
+            const dy = e.touches[0].clientY - startY;
+            
+            let newLeft = startLeft + dx;
+            let newTop = startTop + dy;
+            
+            newLeft = Math.max(10, Math.min(window.innerWidth - 60, newLeft));
+            newTop = Math.max(10, Math.min(window.innerHeight - 60, newTop));
+            
+            floatingWidget.style.left = newLeft + 'px';
+            floatingWidget.style.top = newTop + 'px';
+        }
+        
+        function stopDrag() {
+            isDragging = false;
+            widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
+            widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
+            saveSettings();
+            
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+        
+        function stopDragTouch() {
+            isDragging = false;
+            widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
+            widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
+            saveSettings();
+            
+            document.removeEventListener('touchmove', dragTouch);
+            document.removeEventListener('touchend', stopDragTouch);
+        }
+    }
+    
+    // Функции управления меню
+    function showMenu(menu) {
+        hideAllMenus();
+        menu.style.display = 'block';
+    }
+    
+    function hideMenu(menu) {
+        menu.style.display = 'none';
+    }
+    
+    function hideAllMenus() {
+        widgetMenu.style.display = 'none';
+        settingsMenu.style.display = 'none';
+    }
+    
+    // Сохранение настроек
+    function saveSettings() {
+        localStorage.setItem('widgetSettings', JSON.stringify(widgetSettings));
+    }
+    
+    // Функции кнопок главного меню
+    function quickEstimate() {
+        showTab('estimate');
+        addEmptyRow();
+        showNotification('Быстрая смета: добавлена пустая строка');
+    }
+    
+    function openCalculator() {
+        const expression = prompt('Введите выражение для расчета (например: 1500*2+500):', '');
+        if (expression) {
+            try {
+                const result = Function('"use strict"; return (' + expression + ')')();
+                alert(`Результат: ${expression} = ${formatCurrency(result)} руб.`);
+            } catch (error) {
+                alert('Ошибка в выражении!');
+            }
+        }
+    }
+    
+    function newEstimate() {
+        if (confirm('Создать новую смету? Текущая несохраненная будет потеряна.')) {
+            clearEstimate();
+            showTab('estimate');
+        }
+    }
+    
+    function saveEstimate() {
+        window.saveEstimate && window.saveEstimate();
+    }
+    
+    function loadEstimate() {
+        window.showLoadModal && window.showLoadModal();
+    }
+    
+    function printEstimate() {
+        window.showPrintModal && window.showPrintModal();
+    }
+    
+    function saveAsPDF() {
+        window.saveAsPDF && window.saveAsPDF();
+    }
+    
+    function searchPrice() {
+        showTab('price');
+        const searchInput = document.getElementById('priceSearch');
+        if (searchInput) {
+            searchInput.focus();
+        }
+    }
+    
+    function showStats() {
+        const filledRows = window.estimateData ? window.estimateData.filter(row => 
+            row.priceId || row.name.trim() !== '' || row.isMaterial
+        ).length : 0;
+        
+        const totalEl = document.getElementById('totalAmount');
+        const totalAmount = totalEl ? parseFloat(totalEl.textContent.replace(/\s/g, '')) : 0;
+        
+        alert(`📊 Статистика сметы:\n\n` +
+              `• Заполненных строк: ${filledRows}\n` +
+              `• Общая сумма: ${formatCurrency(totalAmount)} руб.\n` +
+              `• Сохраненных смет: ${window.savedEstimates ? window.savedEstimates.length : 0}\n` +
+              `• Позиций в прайсе: ${window.priceData ? window.priceData.reduce((sum, section) => sum + section.items.length, 0) : 0}`);
+    }
+    
+    function showHelp() {
+        alert('💡 Помощь по ЭлектроСмета:\n\n' +
+              '1. Прайс-лист - выбор работ из базы\n' +
+              '2. Смета - формирование итогового расчета\n' +
+              '3. Сохранение - сметы хранятся в браузере\n' +
+              '4. PDF/Печать - экспорт результатов\n' +
+              '5. Виджет - быстрый доступ к функциям\n\n' +
+              'Сайт разработчика: https://alivu.github.io/');
+    }
+    
+    function toggleTheme() {
+        const isDark = document.body.classList.toggle('dark-theme');
+        localStorage.setItem('darkTheme', isDark);
+        showNotification(isDark ? 'Темная тема включена' : 'Темная тема выключена');
+        
+        if (isDark) {
+            const style = document.createElement('style');
+            style.id = 'dark-theme-styles';
+            style.textContent = `
+                body { background: #1a1a1a; color: #fff; }
+                .container { background: #2d2d2d; }
+                .tab-content { background: #333; }
+                .price-section { background: #2d2d2d; }
+                .estimate-table { background: #333; color: #fff; }
+                input, select, textarea { background: #444; color: #fff; border-color: #555; }
+            `;
+            document.head.appendChild(style);
+        } else {
+            const style = document.getElementById('dark-theme-styles');
+            if (style) style.remove();
+        }
+    }
+    
+    function refreshApp() {
+        location.reload();
+    }
+    
+    // Функция очистки кеша браузера
+    function clearBrowserCache() {
+        if (confirm('⚠️ Очистить кеш браузера?\n\nСохраните важные сметы перед очисткой!')) {
+            // Сохраняем сметы во временное хранилище
+            const tempEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
+            const tempSettings = JSON.parse(localStorage.getItem('widgetSettings'));
+            
+            // Очищаем localStorage, кроме смет и настроек виджета
+            const keysToKeep = ['electroEstimates', 'widgetSettings'];
+            const allKeys = Object.keys(localStorage);
+            
+            for (const key of allKeys) {
+                if (!keysToKeep.includes(key)) {
+                    localStorage.removeItem(key);
+                }
+            }
+            
+            // Перезаписываем сохраненные данные
+            if (tempEstimates.length > 0) {
+                localStorage.setItem('electroEstimates', JSON.stringify(tempEstimates));
+            }
+            if (tempSettings) {
+                localStorage.setItem('widgetSettings', JSON.stringify(tempSettings));
+            }
+            
+            // Очищаем кеш Service Worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for (let registration of registrations) {
+                        registration.unregister();
+                    }
+                });
+            }
+            
+            // Очищаем кеш изображений
+            caches.keys().then(function(cacheNames) {
+                return Promise.all(
+                    cacheNames.map(function(cacheName) {
+                        return caches.delete(cacheName);
+                    })
+                );
+            }).then(function() {
+                showNotification('✅ Кеш браузера очищен! Сметы сохранены.');
+                setTimeout(() => location.reload(), 1000);
+            }).catch(function(error) {
+                console.error('Ошибка очистки кеша:', error);
+                showNotification('✅ Основной кеш очищен! Сметы сохранены.');
+                setTimeout(() => location.reload(), 1000);
+            });
+        }
+    }
+    
+    // Вспомогательная функция
+    function formatCurrency(amount) {
+        if (isNaN(amount)) return '0';
+        return new Intl.NumberFormat('ru-RU').format(parseFloat(amount).toFixed(2));
+    }
+    
+    // Запускаем виджет
+    initWidget();
+});
+// ========== КОНЕЦ ВИДЖЕТА ==========
+		
     </script>
 </body>
 </html>
