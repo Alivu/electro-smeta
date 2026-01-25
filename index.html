@@ -1679,34 +1679,6 @@
     transform: scale(0.95);
 }
 
-/* Увеличиваем область касания на мобильных */
-@media (max-width: 768px) {
-    .widget-btn {
-        width: 56px !important;
-        height: 56px !important;
-        min-width: 56px;
-        min-height: 56px;
-    }
-    
-    .widget-btn img {
-        width: 40px !important;
-        height: 40px !important;
-    }
-    
-    /* Делаем меню более заметным */
-    .widget-menu {
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 90% !important;
-        max-width: 300px !important;
-        max-height: 80vh !important;
-        z-index: 10000 !important;
-    }
-}
-/* ========== КОНЕЦ НОВОГО КОДА ========== */
-
 .menu-header {
     background: linear-gradient(135deg, #2c3e50, #3498db);
     color: white;
@@ -1826,28 +1798,62 @@
         left: 10px;
     }
     
+    .widget-btn {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        -webkit-user-select: none;
+        cursor: pointer;
+        width: 60px !important;
+        height: 60px !important;
+        min-width: 60px !important;
+        min-height: 60px !important;
+    }
+    
+    .widget-btn img {
+        width: 44px !important;
+        height: 44px !important;
+    }
+    
     .widget-menu {
         position: fixed !important;
-        left: 50px !important;
-        right: 10px !important;
-        width: auto !important;
-        max-width: calc(100vw - 70px) !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw !important;
+        max-width: 320px !important;
         max-height: 70vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        z-index: 10001 !important;
+    }
+    
+    #settingsMenu {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw !important;
+        max-width: 320px !important;
+        max-height: 70vh !important;
+        z-index: 10001 !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
     }
     
     .menu-btn {
-        padding: 12px 15px !important;
-        font-size: 15px !important;
+        padding: 15px 20px !important;
+        font-size: 16px !important;
         touch-action: manipulation;
+        margin: 8px 0 !important;
+        min-height: 50px !important;
+        -webkit-tap-highlight-color: transparent;
     }
     
-    .widget-btn {
-        touch-action: manipulation;
+    .menu-content {
+        touch-action: pan-y;
     }
     
-    /* Предотвращаем увеличение при касании на iOS */
     @supports (-webkit-touch-callout: none) {
         .widget-btn,
         .menu-btn {
@@ -4923,72 +4929,84 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // УЛЬТРА-ПРОСТОЙ обработчик для мобильных
     function setupEventListeners() {
-        console.log('Настройка обработчиков для виджета...');
+        console.log('Настройка обработчиков для МОБИЛЬНЫХ...');
         
-        // Функция переключения главного меню
-        function toggleMainMenu() {
-            console.log('Клик по виджету');
+        let touchStartTime = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        // 1. ГЛАВНАЯ КНОПКА - обрабатываем только touchend
+        widgetButton.addEventListener('touchstart', function(e) {
+            // Запоминаем время и позицию начала касания
+            touchStartTime = Date.now();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            e.preventDefault(); // Предотвращаем скролл
+        }, { passive: false });
+        
+        widgetButton.addEventListener('touchend', function(e) {
+            // Проверяем, был ли это короткий тап (не свайп)
+            const touchDuration = Date.now() - touchStartTime;
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const deltaX = Math.abs(touchEndX - touchStartX);
+            const deltaY = Math.abs(touchEndY - touchStartY);
             
-            if (widgetMenu.style.display === 'block') {
-                widgetMenu.style.display = 'none';
-                console.log('Меню скрыто');
-            } else {
-                widgetMenu.style.display = 'block';
-                settingsMenu.style.display = 'none';
-                console.log('Меню открыто');
+            // Если короткий тап (менее 300ms) и не свайп (менее 10px движения)
+            if (touchDuration < 300 && deltaX < 10 && deltaY < 10) {
+                e.stopPropagation();
+                
+                if (widgetMenu.style.display === 'block') {
+                    widgetMenu.style.display = 'none';
+                    console.log('Меню закрыто (тап)');
+                } else {
+                    widgetMenu.style.display = 'block';
+                    settingsMenu.style.display = 'none';
+                    console.log('Меню открыто (тап)');
+                }
             }
-            
-            // Останавливаем всплытие
-            return false;
-        }
+        });
         
-        // Функция открытия настроек
-        function openSettings() {
+        // 2. КНОПКА НАСТРОЕК
+        settingsBtn.addEventListener('touchend', function(e) {
+            e.stopPropagation();
             widgetMenu.style.display = 'none';
             settingsMenu.style.display = 'block';
-            return false;
-        }
+            console.log('Настройки открыты');
+        });
         
-        // Функция закрытия настроек
-        function closeSettings() {
+        // 3. КНОПКА НАЗАД
+        backBtn.addEventListener('touchend', function(e) {
+            e.stopPropagation();
             settingsMenu.style.display = 'none';
             widgetMenu.style.display = 'block';
-            return false;
-        }
+            console.log('Возврат в главное меню');
+        });
         
-        // ========== ОСНОВНЫЕ ОБРАБОТЧИКИ ==========
-        
-        // Кнопка виджета
-        widgetButton.onclick = toggleMainMenu;
-        widgetButton.ontouchstart = toggleMainMenu;
-        
-        // Кнопка настроек
-        settingsBtn.onclick = openSettings;
-        settingsBtn.ontouchstart = openSettings;
-        
-        // Кнопка назад
-        backBtn.onclick = closeSettings;
-        backBtn.ontouchstart = closeSettings;
-        
-        // Закрытие при клике вне меню
-        document.addEventListener('click', function(e) {
+        // 4. ЗАКРЫТИЕ ПРИ КАСАНИИ ВНЕ МЕНЮ
+        document.addEventListener('touchend', function(e) {
             if (!floatingWidget.contains(e.target)) {
                 widgetMenu.style.display = 'none';
                 settingsMenu.style.display = 'none';
+                console.log('Закрытие меню (тап вне)');
             }
         });
         
-        // Также для touch
-        document.addEventListener('touchstart', function(e) {
-            if (!floatingWidget.contains(e.target)) {
-                widgetMenu.style.display = 'none';
-                settingsMenu.style.display = 'none';
+        // 5. Для десктопов тоже добавляем click
+        widgetButton.addEventListener('click', function(e) {
+            if (window.innerWidth > 768) { // Только для десктопов
+                e.stopPropagation();
+                if (widgetMenu.style.display === 'block') {
+                    widgetMenu.style.display = 'none';
+                } else {
+                    widgetMenu.style.display = 'block';
+                    settingsMenu.style.display = 'none';
+                }
             }
         });
         
-        console.log('Обработчики настроены');
+        console.log('Мобильные обработчики настроены');
     }
     
     // Настройка перетаскивания виджета
