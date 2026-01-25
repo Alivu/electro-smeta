@@ -1667,6 +1667,46 @@
     overflow: hidden;
 }
 
+/* ========== ВСТАВЬТЕ ЗДЕСЬ НОВЫЙ КОД ========== */
+/* Исправление для мобильных */
+.widget-btn { 
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.widget-btn:active {
+    transform: scale(0.95);
+}
+
+/* Увеличиваем область касания на мобильных */
+@media (max-width: 768px) {
+    .widget-btn {
+        width: 56px !important;
+        height: 56px !important;
+        min-width: 56px;
+        min-height: 56px;
+    }
+    
+    .widget-btn img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    /* Делаем меню более заметным */
+    .widget-menu {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90% !important;
+        max-width: 300px !important;
+        max-height: 80vh !important;
+        z-index: 10000 !important;
+    }
+}
+/* ========== КОНЕЦ НОВОГО КОДА ========== */
+
 .menu-header {
     background: linear-gradient(135deg, #2c3e50, #3498db);
     color: white;
@@ -4692,20 +4732,29 @@ document.addEventListener('DOMContentLoaded', function() {
 	
     // Инициализация виджета
     function initWidget() {
+        console.log('Инициализация виджета...');
+        
         // Применяем сохраненные настройки
         applySettings();
-
-        // ИСПРАВЛЕНИЯ ДЛЯ iOS - ДОБАВЬТЕ ЭТУ СТРОЧКУ
-        fixIOSIssues();
-		
-        // Заполняем главное меню
-        fillMainMenu();
         
-        // Заполняем меню настроек
+        // Заполняем меню
+        fillMainMenu();
         fillSettingsMenu();
         
         // Назначаем обработчики событий
         setupEventListeners();
+        
+        // ФИКС ДЛЯ МОБИЛЬНЫХ: принудительно показываем, что виджет загружен
+        setTimeout(function() {
+            widgetButton.style.backgroundColor = '#27ae60'; // Зеленый цвет = работает
+            console.log('Виджет готов к работе');
+            
+            // Тестовая кнопка для отладки
+            if (window.innerWidth <= 768) {
+                console.log('Мобильное устройство обнаружено');
+                alert('Виджет загружен! Нажмите на иконку в левом верхнем углу.');
+            }
+        }, 1000);
     }
     
     // Применение настроек
@@ -4874,59 +4923,72 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
- // Настройка обработчиков событий - ИСПРАВЛЕННАЯ ВЕРСИЯ
+    // УЛЬТРА-ПРОСТОЙ обработчик для мобильных
     function setupEventListeners() {
-        // Кнопка виджета - исправлено для мобильных
-        widgetButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
+        console.log('Настройка обработчиков для виджета...');
+        
+        // Функция переключения главного меню
+        function toggleMainMenu() {
+            console.log('Клик по виджету');
             
             if (widgetMenu.style.display === 'block') {
-                hideAllMenus();
+                widgetMenu.style.display = 'none';
+                console.log('Меню скрыто');
             } else {
-                showMenu(widgetMenu);
+                widgetMenu.style.display = 'block';
+                settingsMenu.style.display = 'none';
+                console.log('Меню открыто');
             }
-        });
+            
+            // Останавливаем всплытие
+            return false;
+        }
+        
+        // Функция открытия настроек
+        function openSettings() {
+            widgetMenu.style.display = 'none';
+            settingsMenu.style.display = 'block';
+            return false;
+        }
+        
+        // Функция закрытия настроек
+        function closeSettings() {
+            settingsMenu.style.display = 'none';
+            widgetMenu.style.display = 'block';
+            return false;
+        }
+        
+        // ========== ОСНОВНЫЕ ОБРАБОТЧИКИ ==========
+        
+        // Кнопка виджета
+        widgetButton.onclick = toggleMainMenu;
+        widgetButton.ontouchstart = toggleMainMenu;
         
         // Кнопка настроек
-        settingsBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            hideMenu(widgetMenu);
-            showMenu(settingsMenu);
-        });
+        settingsBtn.onclick = openSettings;
+        settingsBtn.ontouchstart = openSettings;
         
         // Кнопка назад
-        backBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            e.preventDefault();
-            hideMenu(settingsMenu);
-            showMenu(widgetMenu);
-        });
+        backBtn.onclick = closeSettings;
+        backBtn.ontouchstart = closeSettings;
         
-        // Закрытие меню при клике вне
+        // Закрытие при клике вне меню
         document.addEventListener('click', function(e) {
             if (!floatingWidget.contains(e.target)) {
-                hideAllMenus();
+                widgetMenu.style.display = 'none';
+                settingsMenu.style.display = 'none';
             }
         });
         
-        // Закрытие меню при нажатии ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                hideAllMenus();
-            }
-        });
-        
-        // Добавляем touch события для мобильных
+        // Также для touch
         document.addEventListener('touchstart', function(e) {
             if (!floatingWidget.contains(e.target)) {
-                hideAllMenus();
+                widgetMenu.style.display = 'none';
+                settingsMenu.style.display = 'none';
             }
         });
         
-        // Перемещение виджета
-        setupDragging();
+        console.log('Обработчики настроены');
     }
     
     // Настройка перетаскивания виджета
@@ -5214,8 +5276,36 @@ document.addEventListener('DOMContentLoaded', function() {
         return new Intl.NumberFormat('ru-RU').format(parseFloat(amount).toFixed(2));
     }
     
-    // Запускаем виджет
-    initWidget();
+	    // Принудительный запуск виджета
+    setTimeout(function() {
+        initWidget();
+        
+        // Дополнительный фикс для мобильных
+        if ('ontouchstart' in window) {
+            // Это мобильное устройство
+            document.body.style.cursor = 'pointer';
+            
+            // Добавляем дополнительный обработчик
+            widgetButton.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                if (widgetMenu.style.display === 'block') {
+                    widgetMenu.style.display = 'none';
+                } else {
+                    widgetMenu.style.display = 'block';
+                    settingsMenu.style.display = 'none';
+                }
+                
+                // Вибрация (если поддерживается)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                
+                return false;
+            });
+        }
+    }, 2000); // Запуск через 2 секунды
 });
 // ========== КОНЕЦ ВИДЖЕТА ==========
 		
