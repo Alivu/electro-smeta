@@ -1787,8 +1787,36 @@
     }
     
     .widget-menu {
-        left: 50px;
-        width: 180px;
+        position: fixed !important;
+        left: 50px !important;
+        right: 10px !important;
+        width: auto !important;
+        max-width: calc(100vw - 70px) !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .menu-btn {
+        padding: 12px 15px !important;
+        font-size: 15px !important;
+        touch-action: manipulation;
+    }
+    
+    .widget-btn {
+        touch-action: manipulation;
+    }
+    
+    /* Предотвращаем увеличение при касании на iOS */
+    @supports (-webkit-touch-callout: none) {
+        .widget-btn,
+        .menu-btn {
+            cursor: pointer;
+        }
+        
+        input, textarea, select {
+            font-size: 16px !important;
+        }
     }
 }
 </style>
@@ -4645,12 +4673,31 @@ document.addEventListener('DOMContentLoaded', function() {
         horizontalPos: 20,
         isHidden: false
     };
-    
+
+	    function fixIOSIssues() {
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        if (isIOS) {
+            // Предотвращаем скролл при касании кнопок
+            document.querySelectorAll('.widget-btn, .menu-btn, .settings-btn, .back-btn').forEach(btn => {
+                btn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+            });
+            
+            // Фикс для фокуса на iOS
+            document.addEventListener('touchstart', function() {}, {passive: true});
+        }
+    }
+	
     // Инициализация виджета
     function initWidget() {
         // Применяем сохраненные настройки
         applySettings();
-        
+
+        // ИСПРАВЛЕНИЯ ДЛЯ iOS - ДОБАВЬТЕ ЭТУ СТРОЧКУ
+        fixIOSIssues();
+		
         // Заполняем главное меню
         fillMainMenu();
         
@@ -4827,11 +4874,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Настройка обработчиков событий
+ // Настройка обработчиков событий - ИСПРАВЛЕННАЯ ВЕРСИЯ
     function setupEventListeners() {
-        // Кнопка виджета
+        // Кнопка виджета - исправлено для мобильных
         widgetButton.addEventListener('click', function(e) {
             e.stopPropagation();
+            e.preventDefault();
+            
             if (widgetMenu.style.display === 'block') {
                 hideAllMenus();
             } else {
@@ -4842,6 +4891,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Кнопка настроек
         settingsBtn.addEventListener('click', function(e) {
             e.stopPropagation();
+            e.preventDefault();
             hideMenu(widgetMenu);
             showMenu(settingsMenu);
         });
@@ -4849,6 +4899,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Кнопка назад
         backBtn.addEventListener('click', function(e) {
             e.stopPropagation();
+            e.preventDefault();
             hideMenu(settingsMenu);
             showMenu(widgetMenu);
         });
@@ -4863,6 +4914,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Закрытие меню при нажатии ESC
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
+                hideAllMenus();
+            }
+        });
+        
+        // Добавляем touch события для мобильных
+        document.addEventListener('touchstart', function(e) {
+            if (!floatingWidget.contains(e.target)) {
                 hideAllMenus();
             }
         });
@@ -4958,10 +5016,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Функции управления меню
+// Функции управления меню - ИСПРАВЛЕННЫЕ
     function showMenu(menu) {
         hideAllMenus();
         menu.style.display = 'block';
+        
+        // Для мобильных - позиционируем меню лучше
+        if (window.innerWidth <= 768) {
+            const buttonRect = widgetButton.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const menuHeight = menu.scrollHeight;
+            
+            // Если меню не помещается снизу, показываем сверху
+            if (buttonRect.bottom + menuHeight > viewportHeight - 10) {
+                menu.style.top = 'auto';
+                menu.style.bottom = '0';
+                menu.style.left = '60px';
+            } else {
+                menu.style.top = '0';
+                menu.style.bottom = 'auto';
+                menu.style.left = '60px';
+            }
+        }
     }
     
     function hideMenu(menu) {
