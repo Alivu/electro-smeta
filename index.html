@@ -1591,7 +1591,527 @@
         </div>
     </div>
 
+<!-- ========== ВСПЛЫВАЮЩИЙ ВИДЖЕТ ========== -->
+<div id="floatingWidget">
+    <button id="widgetButton" class="widget-btn">
+        <!-- Используем качественную иконку 144x144 -->
+        <img src="https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-144x144.png" 
+             alt="Виджет ЭлектроСмета"
+             class="widget-icon">
+    </button>
+    
+    <div id="widgetMenu" class="widget-menu">
+        <div class="menu-header">
+            <span>ЭлектроСмета</span>
+            <button class="settings-btn" id="settingsBtn" aria-label="Настройки">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+        <div class="menu-content"></div>
+    </div>
+    
+    <div id="settingsMenu" class="widget-menu">
+        <div class="menu-header">
+            <span>Настройки виджета</span>
+            <button class="back-btn" id="backBtn" aria-label="Назад">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+        </div>
+        <div class="menu-content"></div>
+    </div>
+</div>
+<style>
+/* Стили для виджета */
+#floatingWidget {
+    position: fixed;
+    top: 80px;
+    left: 20px;
+    z-index: 9998;
+    transition: opacity 0.3s;
+}
+
+.widget-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    border: 3px solid white;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.widget-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+.widget-btn.locked:hover {
+    transform: none;
+}
+	.widget-btn.locked:active {
+    transform: none;
+}
+.widget-btn img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+.widget-menu {
+    position: absolute;
+    top: 0;
+    left: 70px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    display: none;
+    z-index: 9999;
+    overflow: hidden;
+	opacity: 1 !important; /* Меню всегда непрозрачное */
+}
+	#settingsMenu {
+    display: none; /* ← ВАЖНО: в основном блоке, не в медиа-запросе! */
+}
+	.widget-btn.locked {
+    cursor: default;
+    opacity: 0.8;
+    box-shadow: 0 0 0 3px #27ae60;
+}
+
+/* ========== ВСТАВЬТЕ ЗДЕСЬ НОВЫЙ КОД ========== */
+/* Исправление для мобильных */
+.widget-btn { 
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+.widget-btn:active {
+    transform: scale(0.95);
+}
+
+.menu-header {
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    color: white;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 14px;
+    height: 40px;
+}
+
+.settings-btn, .back-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 4px;
+    transition: background 0.2s;
+	-webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.settings-btn:hover, .back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.menu-content {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.menu-btn {
+    width: 100%;
+    padding: 12px 15px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    color: #333;
+	-webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.menu-btn:hover {
+    background: #e9ecef;
+    transform: translateX(3px);
+}
+
+.menu-btn i {
+    color: #3498db;
+    width: 20px;
+    text-align: center;
+}
+
+.slider-container {
+    padding: 10px 0;
+}
+
+.slider-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 13px;
+    color: #555;
+}
+
+.slider {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: #ddd;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #3498db;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.pos-controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    margin: 10px 0;
+}
+
+.pos-btn {
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+	-webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.pos-btn:hover {
+    background: #e9ecef;	
+}
+
+	.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+	.checkbox-container input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.checkbox-container label {
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-container i {
+    margin-right: 8px;
+    color: #3498db;
+}
+
+/* Стиль при перетаскивании */
+.widget-btn.dragging {
+    opacity: 0.8;
+    transform: scale(0.95);
+    box-shadow: 0 0 25px rgba(52, 152, 219, 0.6);
+}
+	.widget-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+@media (max-width: 768px) {
+    #floatingWidget {
+        top: 60px;
+        left: 10px;
+    }
+
+    .widget-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s;
+    }
+	    body.widget-dragging {
+        overflow: hidden;
+        touch-action: none;
+    }
+    .widget-btn {
+        width: 56px;
+        height: 56px;
+        min-width: 56px;
+        min-height: 56px;
+        border-width: 2px;
+    }
+
+	    .widget-icon {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .widget-btn img {
+        width: 44px !important;
+        height: 44px !important;
+    }
+    
+    .widget-menu {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw !important;
+        max-width: 320px !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        z-index: 10001 !important;
+    }
+    .menu-header {
+        height: 44px;
+        padding: 12px 15px;
+        font-size: 15px;
+    }
+	
+    #settingsMenu {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw !important;
+        max-width: 320px !important;
+        max-height: 70vh !important;
+        z-index: 10001 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .menu-btn {
+        padding: 14px 16px;
+        font-size: 15px;
+        margin: 6px 0;
+        min-height: 48px;
+    }
+    
+    .menu-content {
+        max-height: 60vh;
+        padding: 12px;
+    }
+
+    .slider-container {
+        padding: 12px 0;
+    }
+
+    .slider-label {
+        font-size: 14px;
+    }
+    
+    .checkbox-container {
+        padding: 12px;
+        margin: 12px 0;
+    }
+    
+    .checkbox-container label {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+	    .pos-btn {
+        padding: 10px;
+        font-size: 13px;
+        min-height: 40px;
+    }
+	
+    /* Для очень маленьких экранов */
+    @media (max-width: 480px) {
+        .widget-btn {
+            width: 52px;
+            height: 52px;
+        }
+        
+        .widget-menu {
+            width: 95vw !important;
+            max-width: 300px !important;
+        }
+        
+        .menu-btn {
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+    }
+    
+    /* Для горизонтальной ориентации */
+    @media (max-height: 500px) and (orientation: landscape) {
+        .widget-menu {
+            max-height: 85vh !important;
+        }
+        
+        .menu-content {
+            max-height: 75vh;
+        }
+    }
+}
+
+/* ========== ПЛАНШЕТНЫЕ СТИЛИ (768px - 1024px) ========== */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .widget-btn {
+        width: 64px;
+        height: 64px;
+    }
+    
+    .widget-menu {
+        width: 280px;
+        left: 74px;
+    }
+    
+    .menu-btn {
+        padding: 13px 16px;
+        font-size: 14px;
+    }
+}
+
+/* ========== iOS СПЕЦИФИЧНЫЕ ИСПРАВЛЕНИЯ ========== */
+@supports (-webkit-touch-callout: none) {
+    .widget-btn,
+    .menu-btn,
+    .settings-btn,
+    .back-btn,
+    .pos-btn {
+        cursor: pointer;
+    }
+    
+    .widget-menu {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    input, textarea, select, .slider {
+        font-size: 16px !important; /* Предотвращает масштабирование iOS */
+    }
+}
+
+/* ========== АНИМАЦИИ ========== */
+@keyframes widgetFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes menuSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.widget-btn {
+    animation: widgetFadeIn 0.3s ease-out;
+}
+
+.widget-menu {
+    animation: menuSlideIn 0.2s ease-out;
+}
+
+/* ========== ТЕМНАЯ ТЕМА ДЛЯ ВИДЖЕТА ========== */
+body.dark-theme .widget-menu,
+body.dark-theme .settings-menu {
+    background: #2d2d2d;
+    color: #fff;
+    border: 1px solid #444;
+}
+
+body.dark-theme .menu-header {
+    background: linear-gradient(135deg, #1a1a1a, #2980b9);
+}
+
+body.dark-theme .menu-btn {
+    background: #3d3d3d;
+    border-color: #444;
+    color: #fff;
+}
+
+body.dark-theme .menu-btn:hover {
+    background: #4a4a4a;
+}
+
+body.dark-theme .menu-btn i {
+    color: #3498db;
+}
+
+body.dark-theme .slider {
+    background: #444;
+}
+
+body.dark-theme .slider::-webkit-slider-thumb {
+    background: #3498db;
+    border-color: #2d2d2d;
+}
+
+body.dark-theme .checkbox-container {
+    background: #3d3d3d;
+    color: #fff;
+}
+
+body.dark-theme .checkbox-container label {
+    color: #fff;
+}
+
+body.dark-theme .pos-btn {
+    background: #3d3d3d;
+    border-color: #444;
+    color: #fff;
+}
+
+body.dark-theme .pos-btn:hover {
+    background: #4a4a4a;
+}
+</style>
+
+
+		
     <script>
+
         // Проверяем iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 		// Обработчик для кнопки "Скачать PDF" в окне печати
@@ -1893,14 +2413,14 @@ const priceData = [
             {id: 19, name: "Монтаж греющего кабеля и систем электрообогрева.", unit: "м/п", price: 500},
             {id: 20, name: "Траншея под силовой кабель, закладные трубы до 30см в глубину.", unit: "м/п", price: 450},
             {id: 21, name: "Подушка и засыпка кабеля.", unit: "м/п", price: 300},
-            {id: 22, name: "Протяжка СИП. 4/16, 4/25.", unit: "м/п", price: 200},
-            {id: 23, name: "Протяжка СИП. 4/35, 4/50.", unit: "м/п", price: 250},
+            {id: 22, name: "Протяжка СИП. 4-16, 4-25.", unit: "м/п", price: 200},
+            {id: 23, name: "Протяжка СИП. 4-35, 4-50.", unit: "м/п", price: 250},
             {id: 24, name: "Слаботочка (тв, интернет).", unit: "м/п", price: 100},
             {id: 25, name: "Опрессовка наконечников RJ45.", unit: "шт.", price: 200},
             {id: 26, name: "Укладка закладной трубы для протяжки кабелей. До Ø32мм.", unit: "м/п", price: 200},
             {id: 27, name: "Монтаж заводского заземления.", unit: "м/п", price: 2000},
             {id: 28, name: "Монтаж (самодельная из уголков 40х4мм) заземления.", unit: "м/п", price: 2300},
-            {id: 29, name: "Монтаж железных лотков 200/300 мм.", unit: "м/п", price: 500},
+            {id: 29, name: "Монтаж железных лотков 200-300 мм.", unit: "м/п", price: 500},
             {id: 30, name: "Монтаж кабель каналов до 40 мм.", unit: "м/п", price: 180},
             {id: 31, name: "Монтаж кабель каналов от 40 мм до 100 мм.", unit: "м/п", price: 250}
         ]
@@ -1909,19 +2429,19 @@ const priceData = [
         section: "② Черновые работы",
         items: [
             {id: 32, name: "Сквозное сверление стены до Ø18 мм один сантиметр.", unit: "см.", price: 20},
-            {id: 33, name: "Сквозное сверление стены Ø20\25мм один сантиметр.", unit: "см.", price: 25},
-            {id: 34, name: "Сквозное сверление стены Ø28\40мм один сантиметр.", unit: "см.", price: 35},
-            {id: 35, name: "Сквозное сверление стены Ø50\120мм один сантиметр.", unit: "см.", price: 38},
+            {id: 33, name: "Сквозное сверление стены Ø20-25мм один сантиметр.", unit: "см.", price: 25},
+            {id: 34, name: "Сквозное сверление стены Ø28-40мм один сантиметр.", unit: "см.", price: 35},
+            {id: 35, name: "Сквозное сверление стены Ø50-120мм один сантиметр.", unit: "см.", price: 38},
             {id: 36, name: "Штроба по штукатурке (известковая и гипсовая) шириной до 20 мм.", unit: "м/п", price: 300},
             {id: 37, name: "Штроба по кирпичу шириной до 20 мм.", unit: "м/п", price: 400},
-            {id: 38, name: "Штроба по бетону шириной до 20 мм. (монолитный, ж/б коэф. Слож. 1, 5).", unit: "м/п", price: 600},
+            {id: 38, name: "Штроба по бетону шириной до 20 мм. (монолитный, ж/б коэф. Слож. 1,5).", unit: "м/п", price: 600},
             {id: 40, name: "Штроба замазка.", unit: "м/п", price: 150},
             {id: 41, name: "Сверление подрозетников в блоке до Ø80 мм.", unit: "шт.", price: 150},
             {id: 42, name: "Сверление подрозетников в кирпиче до Ø80 мм.", unit: "шт.", price: 200},
             {id: 43, name: "Сверление подрозетников в кирпиче до Ø80 мм (глубокие).", unit: "шт.", price: 250},
             {id: 44, name: "Сверление подрозетников в бетоне до Ø80мм (монолитный ж/б коэф. Слож. 1.5).", unit: "шт.", price: 450},
             {id: 45, name: "Сверление подрозетников в бетоне до Ø80 мм (глубокие).", unit: "шт.", price: 650},
-            {id: 46, name: "Сверление подрозетников в высокопрочном монолитном жб / до Ø80 мм.", unit: "шт.", price: 670},
+            {id: 46, name: "Сверление подрозетников в высокопрочном монолитном жб до Ø80 мм.", unit: "шт.", price: 670},
             {id: 47, name: "Сверление и установка подрозетников в гипсокартонной стене Ø80 мм.", unit: "шт.", price: 180},
             {id: 48, name: "Монтаж подрозетников с гипсовой смесью.", unit: "шт.", price: 200},
             {id: 49, name: "Монтаж накладных модульных подрозетников.", unit: "шт.", price: 200},
@@ -1941,11 +2461,11 @@ const priceData = [
             {id: 58, name: "Установка бокса (щита) внутреннего до 60 модулей в бетоне.", unit: "шт.", price: 10000},
             {id: 59, name: "Высверливание тех-отверстия.", unit: "шт.", price: 500},
             {id: 60, name: "Подключение Щита, Ввода к щиту, (Соединение Орешками).", unit: "шт.", price: 1500},
-            {id: 61, name: "Маркировка жил и автоматов, (включая коплект маркировки).", unit: "шт.", price: 3000},
+            {id: 61, name: "Маркировка жил и автоматов, (включая комплект маркировки).", unit: "шт.", price: 3000},
             {id: 62, name: "Сборка автоматов в щите 1P/1 мод (в щитах 60-96 мод): Коэф. 1.5 (2х от 120).", unit: "шт.", price: 500},
             {id: 63, name: "Формирование узла шин N/PE (расключение свыше 10 жил): Коэф. 1.5.", unit: "шт.", price: 500},
             {id: 64, name: "Установка проходных клемм (зажим Push-in/WAGO).", unit: "шт.", price: 500},
-            {id: 65, name: "Установка РБ (Распределительного блока 80-250а.", unit: "шт.", price: 1500},
+            {id: 65, name: "Установка РБ (Распределительного блока) 80-250а.", unit: "шт.", price: 1500},
             {id: 66, name: "Блок соединительный до 80а 1ф.", unit: "шт.", price: 500},
             {id: 67, name: "Установка УЗО ( дифференциального автомата) 220В.", unit: "шт.", price: 2000},
             {id: 68, name: "Установка УЗО ( дифференциального автомата) 380В.", unit: "шт.", price: 3500},
@@ -2010,16 +2530,16 @@ const priceData = [
             {id: 122, name: "Монтаж трековых светильников (На тросах).", unit: "м/п", price: 1800},
             {id: 123, name: "Гирлянда с патронами Е27.", unit: "м/п", price: 500},
             {id: 124, name: "Диодные ленты 220В.", unit: "м/п", price: 500},
-            {id: 125, name: "Диодные ленты 12/24В.", unit: "м/п", price: 600},
+            {id: 125, name: "Диодные ленты 12-24В.", unit: "м/п", price: 600},
             {id: 126, name: "Монтаж алюминиевого профиля для светодиодной ленты.", unit: "м/п", price: 500},
             {id: 127, name: "Распил угла профиля для светодиодной ленты.", unit: "м/п", price: 500},
             {id: 128, name: "Монтаж блока 12В, 24В, 220В.", unit: "шт.", price: 1500},
-            {id: 129, name: "Установка Светильников, Армстронг, линейные, плафоны,.", unit: "шт.", price: 1200},
+            {id: 129, name: "Установка Светильников, Армстронг, линейные, плафоны.", unit: "шт.", price: 1200},
             {id: 130, name: "Светильники в подвесной потолок, Линии Армстронг и остальные.", unit: "шт.", price: 800},
             {id: 131, name: "Монтаж и выравнивание подвесных светильников на тросах.", unit: "шт.", price: 1800},
             {id: 132, name: "Светильник садовый, столб для сада.", unit: "м/п", price: 3000},
             {id: 133, name: "Бетонное основание для светильника.", unit: "шт.", price: 2000},
-            {id: 134, name: "Установка домофона с замком. (Отдельно замок или домофон 5000т).", unit: "шт.", price: 10000},
+            {id: 134, name: "Установка домофона с замком. (Отдельно замок или домофон 5000).", unit: "шт.", price: 10000},
             {id: 135, name: "Установка вытяжки Ø120.", unit: "шт.", price: 1500},
             {id: 136, name: "Поиск замыканий за точку (устранение не входит в цену).", unit: "шт.", price: 3500},
             {id: 137, name: "Прозвонка кабеля (с точки А до точки Б) (обсудить заранее с заказчиком).", unit: "шт.", price: 200},
@@ -2036,9 +2556,9 @@ const priceData = [
             {id: 143, name: "Установка ТП.", unit: "шт.", price: 50000},
             {id: 144, name: "Монтаж разъединителя.", unit: "шт.", price: 20000},
             {id: 145, name: "Установка опоры с механизмом.", unit: "шт.", price: 10000},
-            {id: 146, name: "Монтаж соединительной муфты 0, 4 кВ.", unit: "шт.", price: 7000},
+            {id: 146, name: "Монтаж соединительной муфты 0,4 кВ.", unit: "шт.", price: 7000},
             {id: 147, name: "Монтаж и подключение рубильника 380В 100А.", unit: "шт.", price: 5000},
-            {id: 148, name: "Монтаж и подключение рубильника 380В от 250А по 400А.", unit: "шт.", price: 8000},
+            {id: 148, name: "Монтаж и подключение рубильника 380В от 250А до 400А.", unit: "шт.", price: 8000},
             {id: 149, name: "Подключение циркуляционного насоса, термодатчика, кондиционера, бойлера.", unit: "шт.", price: 1000},
             {id: 150, name: "Подключение однофазного оборудования 220В.", unit: "шт.", price: 2500},
             {id: 151, name: "Подключение трёхфазного оборудования 380В.", unit: "шт.", price: 3500},
@@ -2636,8 +3156,8 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
 }
 
 function initializeEstimateData() {
-    // Создаем 30 пустых строк для сметы
-    estimateData = Array(30).fill().map((_, i) => ({
+    // Создаем 50 пустых строк для сметы (больше чем нужно)
+    estimateData = Array(50).fill().map((_, i) => ({
         id: i + 1,
         priceId: "",
         name: "",
@@ -3278,12 +3798,16 @@ function saveEstimate() {
     const estimateName = prompt('Введите название для сохранения сметы:', `Смета ${new Date().toLocaleDateString()}`);
     
     if (estimateName) {
-        // Сохраняем ВСЕ 30 строк (даже пустые)
+        // Фильтруем ТОЛЬКО заполненные строки при сохранении
+        const filledRows = estimateData.filter(row => 
+            row.priceId || row.name.trim() !== '' || row.isMaterial
+        );
+        
         const estimateToSave = {
             id: Date.now(),
             name: estimateName,
             date: new Date().toISOString(),
-            data: estimateData.map(row => ({ ...row })), // Копируем все строки
+            data: filledRows.map(row => ({ ...row })), // Сохраняем только заполненные
             totals: {
                 totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
             }
@@ -3292,10 +3816,9 @@ function saveEstimate() {
         savedEstimates.push(estimateToSave);
         localStorage.setItem('electroEstimates', JSON.stringify(savedEstimates));
         
-        showNotification(`Смета "${estimateName}" сохранена (${estimateData.length} строк)`);
+        showNotification(`Смета "${estimateName}" сохранена (${filledRows.length} строк)`);
     }
 }
-
         function showLoadModal() {
             const listContainer = document.getElementById('savedEstimatesList');
             listContainer.innerHTML = '';
@@ -3348,16 +3871,32 @@ function loadEstimate(estimateId) {
         console.log('Количество строк в сохраненной смете:', estimate.data.length);
         console.log('Все сохраненные строки:', estimate.data);
         
-        // ВАЖНО: Полностью очищаем текущие данные
+        // ВАЖНО: Очищаем текущие данные
         estimateData = [];
         
-        // Загружаем ВСЕ сохраненные данные
+        // Загружаем ВСЕ сохраненные данные точно как они были сохранены
         estimate.data.forEach((item, index) => {
             estimateData.push({ 
-                ...item, 
-                id: index + 1 
+                ...item,
+                id: index + 1  // Пересчитываем ID
             });
         });
+        
+        // Если сохранено меньше 50 строк, добавляем пустые до 50
+        const targetCount = 50;
+        while (estimateData.length < targetCount) {
+            estimateData.push({
+                id: estimateData.length + 1,
+                priceId: "",
+                name: "",
+                unit: "",
+                price: 0,
+                quantity: 1,
+                total: 0,
+                notes: "",
+                isMaterial: false
+            });
+        }
         
         console.log('Данные загружены в estimateData:', estimateData.length, 'строк');
         console.log('Первые 10 строк загруженных данных:', estimateData.slice(0, 10));
@@ -3540,6 +4079,11 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
                     }, 500);
                 };
             <\/script>
+
+
+
+
+			
         </body>
         </html>
     `;
@@ -4157,7 +4701,7 @@ async function saveToDrive() {
         id: Date.now(),
         name: estimateName,
         date: new Date().toISOString(),
-        data: estimateData.map(row => ({
+        data: filledRows.map(row => ({
             id: row.id,
             priceId: row.priceId,
             name: row.name,
@@ -4172,8 +4716,9 @@ async function saveToDrive() {
         }
     };
     
-    console.log('Сохранение:', currentEstimate);
-    console.log('Позиций:', currentEstimate.data.length); // Должно быть 30
+    console.log('Сохранение в Drive:', currentEstimate);
+    console.log('Фильтровано строк для сохранения:', currentEstimate.data.length);
+    console.log('Всего строк в estimateData:', estimateData.length);
     
     try {
         // 1. Сохраняем в Google Drive
@@ -4360,7 +4905,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
     checkSavedToken();
 });
-	function debugEstimateData() {
+function debugEstimateData() {
     console.log('=== DEBUG estimateData ===');
     console.log('Всего строк в массиве:', estimateData.length);
     
@@ -4370,14 +4915,661 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Заполненных строк:', filledRows.length);
     
     // Показываем все заполненные строки
+    console.log('=== ЗАПОЛНЕННЫЕ СТРОКИ ===');
     filledRows.forEach((row, index) => {
-        console.log(`${index + 1}. ID: ${row.id}, Название: ${row.name.substring(0, 30)}...`);
+        console.log(`${index + 1}. ID: ${row.id}, Код: ${row.priceId}, Название: ${row.name.substring(0, 30)}...`);
     });
     
     // Проверяем DOM
     const tableRows = document.querySelectorAll('#estimateTable tr');
     console.log('Строк в DOM таблице:', tableRows.length);
-}	
+    
+    // Проверяем последнюю сохраненную смету
+    const saved = JSON.parse(localStorage.getItem('electroEstimates'));
+    if (saved && saved.length > 0) {
+        const lastEstimate = saved[saved.length - 1];
+        console.log('=== ПОСЛЕДНЯЯ СОХРАНЕННАЯ СМЕТА ===');
+        console.log('Название:', lastEstimate.name);
+        console.log('Сохранено строк:', lastEstimate.data.length);
+        console.log('Первые 5 строк сохраненных данных:', lastEstimate.data.slice(0, 5));
+        console.log('Последние 5 строк сохраненных данных:', lastEstimate.data.slice(-5));
+    }
+    
+    // Отображаем в уведомлении для быстрой проверки
+    const notificationText = `Данные: ${filledRows.length} заполненных из ${estimateData.length} | DOM: ${tableRows.length} строк`;
+    showNotification(`Debug: ${notificationText}`);
+}
+// ========== ВИДЖЕТ ЭЛЕКТРОСМЕТА (ИСПРАВЛЕН ФИКСИРОВАННЫЙ ВИДЖЕТ НА МОБИЛЬНЫХ) ==========
+document.addEventListener('DOMContentLoaded', function() {
+    if (!document.getElementById('floatingWidget')) return;
+    
+    console.log('Инициализация виджета...');
+    
+    // Элементы DOM
+    const floatingWidget = document.getElementById('floatingWidget');
+    const widgetButton = document.getElementById('widgetButton');
+    const widgetMenu = document.getElementById('widgetMenu');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const backBtn = document.getElementById('backBtn');
+    
+    // Загружаем настройки из localStorage
+    const widgetSettings = JSON.parse(localStorage.getItem('widgetSettings')) || {
+        opacity: 1,
+        buttonSize: 60,
+        verticalPos: 80,
+        horizontalPos: 20,
+        isLocked: false,
+        isHidden: false
+    };
+
+    // Переменные для управления
+    let isDragging = false;
+    let dragStartX, dragStartY, initialLeft, initialTop;
+    let touchStartTime = 0;
+    let touchStartX = 0, touchStartY = 0;
+    let touchMoved = false;
+    let dragTimeout = null;
+
+    // Инициализация виджета
+    function initWidget() {
+        console.log('Инициализация виджета...');
+        
+        // Применяем сохраненные настройки
+        applySettings();
+        
+        // Заполняем меню
+        fillMainMenu();
+        fillSettingsMenu();
+        
+        // Назначаем обработчики событий
+        setupEventListeners();
+        
+        console.log('Виджет инициализирован');
+    }
+    
+    // Применение настроек
+    function applySettings() {
+        console.log('Применение настроек:', widgetSettings);
+        
+        // Прозрачность ТОЛЬКО кнопки виджета
+        widgetButton.style.opacity = widgetSettings.opacity;
+        
+        // Размер кнопки
+        widgetButton.style.width = widgetSettings.buttonSize + 'px';
+        widgetButton.style.height = widgetSettings.buttonSize + 'px';
+        
+        // Позиция
+        floatingWidget.style.top = widgetSettings.verticalPos + 'px';
+        floatingWidget.style.left = widgetSettings.horizontalPos + 'px';
+        
+        // Фиксация - меняем только курсор и визуальные эффекты
+        if (widgetSettings.isLocked) {
+            widgetButton.classList.add('locked');
+            widgetButton.style.cursor = 'pointer'; // Всегда pointer для клика
+            console.log('Виджет зафиксирован');
+        } else {
+            widgetButton.classList.remove('locked');
+            widgetButton.style.cursor = 'move'; // Для перетаскивания
+            console.log('Виджет разблокирован');
+        }
+        
+        // Скрытие
+        if (widgetSettings.isHidden) {
+            floatingWidget.style.display = 'none';
+        } else {
+            floatingWidget.style.display = 'block';
+        }
+        
+        // Сохраняем настройки
+        saveSettings();
+    }
+    
+    // Заполнение главного меню
+    function fillMainMenu() {
+        const menuContent = document.querySelector('#widgetMenu .menu-content');
+        if (!menuContent) return;
+        
+        menuContent.innerHTML = `
+            <button class="menu-btn" onclick="window.quickEstimate && window.quickEstimate()">
+                <i class="fas fa-bolt"></i> Быстрая смета
+            </button>
+            <button class="menu-btn" onclick="window.openCalculator && window.openCalculator()">
+                <i class="fas fa-calculator"></i> Калькулятор
+            </button>
+            <button class="menu-btn" onclick="window.newEstimate && window.newEstimate()">
+                <i class="fas fa-file-alt"></i> Новая смета
+            </button>
+            <button class="menu-btn" onclick="window.saveEstimate && window.saveEstimate()">
+                <i class="fas fa-save"></i> Сохранить
+            </button>
+            <button class="menu-btn" onclick="window.loadEstimate && window.loadEstimate()">
+                <i class="fas fa-folder-open"></i> Загрузить
+            </button>
+            <button class="menu-btn" onclick="window.printEstimate && window.printEstimate()">
+                <i class="fas fa-print"></i> Печать
+            </button>
+            <button class="menu-btn" onclick="window.saveAsPDF && window.saveAsPDF()">
+                <i class="fas fa-file-pdf"></i> PDF
+            </button>
+            <button class="menu-btn" onclick="window.searchPrice && window.searchPrice()">
+                <i class="fas fa-search"></i> Поиск в прайсе
+            </button>
+            <button class="menu-btn" onclick="window.showStats && window.showStats()">
+                <i class="fas fa-chart-bar"></i> Статистика
+            </button>
+            <button class="menu-btn" onclick="window.showHelp && window.showHelp()">
+                <i class="fas fa-question-circle"></i> Помощь
+            </button>
+        `;
+    }
+    
+    // Заполнение меню настроек
+    function fillSettingsMenu() {
+        const menuContent = document.querySelector('#settingsMenu .menu-content');
+        if (!menuContent) return;
+        
+        menuContent.innerHTML = `
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Прозрачность</span>
+                    <span>${Math.round(widgetSettings.opacity * 100)}%</span>
+                </div>
+                <input type="range" class="slider" id="opacitySlider" 
+                       min="0.3" max="1" step="0.1" value="${widgetSettings.opacity}">
+            </div>
+            
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Размер кнопки</span>
+                    <span>${widgetSettings.buttonSize}px</span>
+                </div>
+                <input type="range" class="slider" id="sizeSlider" 
+                       min="40" max="80" step="5" value="${widgetSettings.buttonSize}">
+            </div>
+            
+            <div class="pos-controls">
+                <button class="pos-btn" onclick="window.moveWidget && window.moveWidget('up')">↑ Вверх</button>
+                <button class="pos-btn" onclick="window.moveWidget && window.moveWidget('down')">↓ Вниз</button>
+                <button class="pos-btn" onclick="window.moveWidget && window.moveWidget('left')">← Лево</button>
+                <button class="pos-btn" onclick="window.moveWidget && window.moveWidget('right')">→ Право</button>
+            </div>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="lockWidget" ${widgetSettings.isLocked ? 'checked' : ''}>
+                <label for="lockWidget">
+                    <i class="fas fa-lock"></i> Зафиксировать виджет
+                </label>
+            </div>
+            
+            <div class="checkbox-container">
+                <input type="checkbox" id="hideWidget" ${widgetSettings.isHidden ? 'checked' : ''}>
+                <label for="hideWidget">
+                    <i class="fas fa-eye-slash"></i> Скрыть виджет
+                </label>
+            </div>
+            
+            <button class="menu-btn" onclick="window.toggleTheme && window.toggleTheme()">
+                <i class="fas fa-moon"></i> Темная тема
+            </button>
+            
+            <button class="menu-btn" onclick="window.refreshApp && window.refreshApp()">
+                <i class="fas fa-redo"></i> Обновить приложение
+            </button>
+            
+            <button class="menu-btn" onclick="window.clearBrowserCache && window.clearBrowserCache()">
+                <i class="fas fa-trash"></i> Очистить кеш
+            </button>
+        `;
+        
+        // Назначаем обработчики слайдеров
+        setTimeout(() => {
+            const opacitySlider = document.getElementById('opacitySlider');
+            const sizeSlider = document.getElementById('sizeSlider');
+            const lockWidget = document.getElementById('lockWidget');
+            const hideWidget = document.getElementById('hideWidget');
+            
+            if (opacitySlider) {
+                opacitySlider.addEventListener('input', function(e) {
+                    widgetSettings.opacity = parseFloat(e.target.value);
+                    widgetButton.style.opacity = widgetSettings.opacity;
+                    saveSettings();
+                });
+            }
+            
+            if (sizeSlider) {
+                sizeSlider.addEventListener('input', function(e) {
+                    widgetSettings.buttonSize = parseInt(e.target.value);
+                    widgetButton.style.width = widgetSettings.buttonSize + 'px';
+                    widgetButton.style.height = widgetSettings.buttonSize + 'px';
+                    saveSettings();
+                });
+            }
+            
+            if (lockWidget) {
+                lockWidget.addEventListener('change', function(e) {
+                    widgetSettings.isLocked = e.target.checked;
+                    console.log('Фиксация виджета изменена:', widgetSettings.isLocked);
+                    applySettings(); // Применяем настройки сразу
+                });
+            }
+            
+            if (hideWidget) {
+                hideWidget.addEventListener('change', function(e) {
+                    widgetSettings.isHidden = e.target.checked;
+                    floatingWidget.style.display = widgetSettings.isHidden ? 'none' : 'block';
+                    saveSettings();
+                });
+            }
+        }, 100);
+    }
+    
+    // Основные обработчики событий
+    function setupEventListeners() {
+        console.log('Настройка обработчиков виджета...');
+        
+        // ========== УПРОЩЕННЫЙ ПОДХОД ==========
+        
+        // Для мобильных: touchstart для начала взаимодействия
+        widgetButton.addEventListener('touchstart', function(e) {
+            console.log('touchstart на виджете, фиксация:', widgetSettings.isLocked);
+            e.stopPropagation();
+            
+            // Если виджет зафиксирован - сразу открываем меню
+            if (widgetSettings.isLocked) {
+                console.log('Виджет фиксирован - готовим открытие меню');
+                // Не начинаем перетаскивание, только подготовка к открытию меню
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+                touchStartTime = Date.now();
+                return;
+            }
+            
+            // Только для незафиксированного виджета
+            touchStartTime = Date.now();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchMoved = false;
+            
+            initialLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
+            initialTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
+            
+            // Таймер для перетаскивания
+            dragTimeout = setTimeout(() => {
+                if (!touchMoved) {
+                    console.log('Начинаем перетаскивание');
+                    isDragging = true;
+                    widgetButton.classList.add('dragging');
+                    hideAllMenus();
+                }
+            }, 200);
+        }, { passive: true });
+        
+        // Для мобильных: touchmove
+        widgetButton.addEventListener('touchmove', function(e) {
+            // Если виджет зафиксирован - игнорируем перемещение
+            if (widgetSettings.isLocked) {
+                clearTimeout(dragTimeout);
+                return;
+            }
+            
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const deltaX = Math.abs(currentX - touchStartX);
+            const deltaY = Math.abs(currentY - touchStartY);
+            
+            // Если перемещение больше 5px - это перетаскивание
+            if (deltaX > 5 || deltaY > 5) {
+                touchMoved = true;
+                clearTimeout(dragTimeout);
+                
+                if (!isDragging) {
+                    isDragging = true;
+                    widgetButton.classList.add('dragging');
+                    hideAllMenus();
+                }
+                
+                // Перетаскиваем
+                const dx = currentX - touchStartX;
+                const dy = currentY - touchStartY;
+                
+                let newLeft = initialLeft + dx;
+                let newTop = initialTop + dy;
+                
+                // Ограничиваем границы
+                newLeft = Math.max(10, Math.min(window.innerWidth - widgetSettings.buttonSize - 10, newLeft));
+                newTop = Math.max(10, Math.min(window.innerHeight - widgetSettings.buttonSize - 10, newTop));
+                
+                floatingWidget.style.left = newLeft + 'px';
+                floatingWidget.style.top = newTop + 'px';
+                
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Для мобильных: touchend - ОСНОВНОЙ обработчик клика
+        widgetButton.addEventListener('touchend', function(e) {
+            console.log('touchend на виджете, фиксация:', widgetSettings.isLocked);
+            clearTimeout(dragTimeout);
+            
+            if (isDragging) {
+                console.log('Завершаем перетаскивание');
+                isDragging = false;
+                widgetButton.classList.remove('dragging');
+                
+                widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
+                widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
+                saveSettings();
+                return;
+            }
+            
+            // Определяем, был ли это клик
+            const touchDuration = Date.now() - touchStartTime;
+            const touchEndX = e.changedTouches ? e.changedTouches[0].clientX : 0;
+            const touchEndY = e.changedTouches ? e.changedTouches[0].clientY : 0;
+            const deltaX = Math.abs(touchEndX - touchStartX);
+            const deltaY = Math.abs(touchEndY - touchStartY);
+            
+            console.log('Проверка клика:', { touchDuration, deltaX, deltaY, touchMoved });
+            
+            // Условия для клика: короткое нажатие, малое перемещение ИЛИ фиксированный виджет
+            if (widgetSettings.isLocked || (touchDuration < 300 && deltaX < 10 && deltaY < 10)) {
+                console.log('Открываем меню (клик)');
+                e.stopPropagation();
+                e.preventDefault();
+                
+                // Открываем меню
+                setTimeout(() => {
+                    toggleMenu();
+                }, 50);
+            }
+            
+            // Сброс состояния
+            touchMoved = false;
+        });
+        
+        // Для компьютеров: клик мышью (работает для всех)
+        widgetButton.addEventListener('click', function(e) {
+            console.log('Клик на виджете');
+            if (isDragging) {
+                isDragging = false;
+                return;
+            }
+            e.stopPropagation();
+            e.preventDefault();
+            toggleMenu();
+        });
+        
+        // Для компьютеров: перетаскивание мышью (только если не зафиксирован)
+        widgetButton.addEventListener('mousedown', function(e) {
+            if (widgetSettings.isLocked) {
+                console.log('Виджет фиксирован - игнорируем mousedown для перетаскивания');
+                return;
+            }
+            
+            e.preventDefault();
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            initialLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
+            initialTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
+            
+            widgetButton.classList.add('dragging');
+            hideAllMenus();
+            
+            function handleMouseMove(e) {
+                if (!isDragging) return;
+                
+                const dx = e.clientX - dragStartX;
+                const dy = e.clientY - dragStartY;
+                
+                let newLeft = initialLeft + dx;
+                let newTop = initialTop + dy;
+                
+                newLeft = Math.max(10, Math.min(window.innerWidth - widgetSettings.buttonSize - 10, newLeft));
+                newTop = Math.max(10, Math.min(window.innerHeight - widgetSettings.buttonSize - 10, newTop));
+                
+                floatingWidget.style.left = newLeft + 'px';
+                floatingWidget.style.top = newTop + 'px';
+            }
+            
+            function handleMouseUp() {
+                isDragging = false;
+                widgetButton.classList.remove('dragging');
+                
+                widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
+                widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
+                saveSettings();
+                
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
+            }
+            
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        });
+        
+        // Кнопка настроек
+        settingsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            widgetMenu.style.display = 'none';
+            settingsMenu.style.display = 'block';
+        });
+        
+        // Кнопка назад
+        backBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            settingsMenu.style.display = 'none';
+            widgetMenu.style.display = 'block';
+        });
+        
+        // Закрытие меню при клике вне
+        document.addEventListener('click', function(e) {
+            if (!floatingWidget.contains(e.target)) {
+                hideAllMenus();
+            }
+        });
+        
+        document.addEventListener('touchstart', function(e) {
+            if (!floatingWidget.contains(e.target)) {
+                hideAllMenus();
+            }
+        });
+        
+        console.log('Обработчики виджета настроены');
+    }
+    
+    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+    function toggleMenu() {
+        console.log('toggleMenu вызван');
+        if (widgetMenu.style.display === 'block') {
+            widgetMenu.style.display = 'none';
+        } else {
+            widgetMenu.style.display = 'block';
+            settingsMenu.style.display = 'none';
+        }
+    }
+    
+    function hideAllMenus() {
+        widgetMenu.style.display = 'none';
+        settingsMenu.style.display = 'none';
+    }
+    
+    // Сохранение настроек
+    function saveSettings() {
+        localStorage.setItem('widgetSettings', JSON.stringify(widgetSettings));
+        console.log('Настройки виджета сохранены:', widgetSettings);
+    }
+    
+    // Функция перемещения виджета
+    function moveWidget(direction) {
+        const step = 10;
+        switch(direction) {
+            case 'up':
+                widgetSettings.verticalPos = Math.max(10, widgetSettings.verticalPos - step);
+                break;
+            case 'down':
+                widgetSettings.verticalPos = Math.min(window.innerHeight - widgetSettings.buttonSize - 10, 
+                                                      widgetSettings.verticalPos + step);
+                break;
+            case 'left':
+                widgetSettings.horizontalPos = Math.max(10, widgetSettings.horizontalPos - step);
+                break;
+            case 'right':
+                widgetSettings.horizontalPos = Math.min(window.innerWidth - widgetSettings.buttonSize - 10, 
+                                                        widgetSettings.horizontalPos + step);
+                break;
+        }
+        applySettings();
+    }
+    
+    // Глобальные функции для кнопок меню
+    window.quickEstimate = function() {
+        console.log('Быстрая смета');
+        if (window.showTab) window.showTab('estimate');
+        if (window.addEmptyRow) window.addEmptyRow();
+        if (window.showNotification) window.showNotification('Быстрая смета: добавлена пустая строка');
+        hideAllMenus();
+    };
+    
+    window.openCalculator = function() {
+        const expression = prompt('Введите выражение для расчета (например: 1500*2+500):', '');
+        if (expression) {
+            try {
+                const result = Function('"use strict"; return (' + expression + ')')();
+                alert(`Результат: ${expression} = ${window.formatCurrency ? window.formatCurrency(result) : result} руб.`);
+            } catch (error) {
+                alert('Ошибка в выражении!');
+            }
+        }
+        hideAllMenus();
+    };
+    
+    window.newEstimate = function() {
+        if (confirm('Создать новую смету? Текущая несохраненная будет потеряна.')) {
+            if (window.clearEstimate) window.clearEstimate();
+            if (window.showTab) window.showTab('estimate');
+        }
+        hideAllMenus();
+    };
+    
+    window.saveEstimate = function() {
+        if (window.saveEstimate) window.saveEstimate();
+        hideAllMenus();
+    };
+    
+    window.loadEstimate = function() {
+        if (window.showLoadModal) window.showLoadModal();
+        hideAllMenus();
+    };
+    
+    window.printEstimate = function() {
+        if (window.showPrintModal) window.showPrintModal();
+        hideAllMenus();
+    };
+    
+    window.saveAsPDF = function() {
+        if (window.saveAsPDF) window.saveAsPDF();
+        hideAllMenus();
+    };
+    
+    window.searchPrice = function() {
+        if (window.showTab) window.showTab('price');
+        const searchInput = document.getElementById('priceSearch');
+        if (searchInput) {
+            setTimeout(() => searchInput.focus(), 300);
+        }
+        hideAllMenus();
+    };
+    
+    window.showStats = function() {
+        const filledRows = window.estimateData ? window.estimateData.filter(row => 
+            row.priceId || row.name.trim() !== '' || row.isMaterial
+        ).length : 0;
+        
+        const totalEl = document.getElementById('totalAmount');
+        const totalAmount = totalEl ? parseFloat(totalEl.textContent.replace(/\s/g, '')) : 0;
+        
+        alert(`📊 Статистика сметы:\n\n` +
+              `• Заполненных строк: ${filledRows}\n` +
+              `• Общая сумма: ${window.formatCurrency ? window.formatCurrency(totalAmount) : totalAmount} руб.\n` +
+              `• Сохраненных смет: ${window.savedEstimates ? window.savedEstimates.length : 0}\n` +
+              `• Позиций в прайсе: ${window.priceData ? window.priceData.reduce((sum, section) => sum + section.items.length, 0) : 0}`);
+        hideAllMenus();
+    };
+    
+    window.showHelp = function() {
+        alert('💡 Помощь по ЭлектроСмета:\n\n' +
+              '1. Прайс-лист - выбор работ из базы\n' +
+              '2. Смета - формирование итогового расчета\n' +
+              '3. Сохранение - сметы хранятся в браузере\n' +
+              '4. PDF/Печать - экспорт результатов\n' +
+              '5. Виджет - быстрый доступ к функциям\n\n' +
+              'Сайт разработчика: https://alivu.github.io/');
+        hideAllMenus();
+    };
+    
+    window.toggleTheme = function() {
+        const isDark = document.body.classList.toggle('dark-theme');
+        localStorage.setItem('darkTheme', isDark);
+        if (window.showNotification) window.showNotification(isDark ? 'Темная тема включена' : 'Темная тема выключена');
+        hideAllMenus();
+    };
+    
+    window.refreshApp = function() {
+        location.reload();
+    };
+    
+    window.clearBrowserCache = function() {
+        if (confirm('⚠️ Очистить кеш браузера?\n\nСохраните важные сметы перед очисткой!')) {
+            const tempEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
+            const tempSettings = JSON.parse(localStorage.getItem('widgetSettings'));
+            
+            const keysToKeep = ['electroEstimates', 'widgetSettings'];
+            const allKeys = Object.keys(localStorage);
+            
+            for (const key of allKeys) {
+                if (!keysToKeep.includes(key)) {
+                    localStorage.removeItem(key);
+                }
+            }
+            
+            if (tempEstimates.length > 0) {
+                localStorage.setItem('electroEstimates', JSON.stringify(tempEstimates));
+            }
+            if (tempSettings) {
+                localStorage.setItem('widgetSettings', JSON.stringify(tempSettings));
+            }
+            
+            if (window.showNotification) window.showNotification('✅ Кеш браузера очищен! Сметы сохранены.');
+            setTimeout(() => location.reload(), 1000);
+        }
+        hideAllMenus();
+    };
+    
+    window.moveWidget = moveWidget;
+    
+    // Запускаем инициализацию
+    initWidget();
+    
+    // Адаптация при изменении размера окна
+    window.addEventListener('resize', function() {
+        const maxLeft = window.innerWidth - widgetSettings.buttonSize - 10;
+        const maxTop = window.innerHeight - widgetSettings.buttonSize - 10;
+        
+        if (widgetSettings.horizontalPos > maxLeft) {
+            widgetSettings.horizontalPos = maxLeft;
+            floatingWidget.style.left = maxLeft + 'px';
+        }
+        
+        if (widgetSettings.verticalPos > maxTop) {
+            widgetSettings.verticalPos = maxTop;
+            floatingWidget.style.top = maxTop + 'px';
+        }
+        saveSettings();
+    });
+});
+// ========== КОНЕЦ ВИДЖЕТА ==========
     </script>
 </body>
 </html>
