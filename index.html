@@ -4932,70 +4932,76 @@ document.addEventListener('DOMContentLoaded', function() {
     function setupEventListeners() {
         console.log('Настройка обработчиков для МОБИЛЬНЫХ...');
         
-        let touchStartTime = 0;
-        let touchStartX = 0;
-        let touchStartY = 0;
+        let lastTapTime = 0;
+        let tapTimeout;
         
-        // 1. ГЛАВНАЯ КНОПКА - обрабатываем только touchend
+        // 1. ГЛАВНАЯ КНОПКА - открываем СРАЗУ при касании
         widgetButton.addEventListener('touchstart', function(e) {
-            // Запоминаем время и позицию начала касания
-            touchStartTime = Date.now();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            e.preventDefault(); // Предотвращаем скролл
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const currentTime = Date.now();
+            const tapLength = currentTime - lastTapTime;
+            
+            // Отменяем предыдущий таймаут если он есть
+            if (tapTimeout) clearTimeout(tapTimeout);
+            
+            // Если двойной тап - ничего не делаем
+            if (tapLength > 0 && tapLength < 300) {
+                lastTapTime = 0;
+                return;
+            }
+            
+            // Запоминаем время тапа
+            lastTapTime = currentTime;
+            
+            // Открываем/закрываем меню сразу
+            if (widgetMenu.style.display === 'block') {
+                widgetMenu.style.display = 'none';
+                console.log('Меню закрыто (touchstart)');
+            } else {
+                widgetMenu.style.display = 'block';
+                settingsMenu.style.display = 'none';
+                console.log('Меню открыто (touchstart)');
+            }
+            
+            // Вибрация (если есть)
+            if (navigator.vibrate) navigator.vibrate(10);
+            
         }, { passive: false });
         
-        widgetButton.addEventListener('touchend', function(e) {
-            // Проверяем, был ли это короткий тап (не свайп)
-            const touchDuration = Date.now() - touchStartTime;
-            const touchEndX = e.changedTouches[0].clientX;
-            const touchEndY = e.changedTouches[0].clientY;
-            const deltaX = Math.abs(touchEndX - touchStartX);
-            const deltaY = Math.abs(touchEndY - touchStartY);
-            
-            // Если короткий тап (менее 300ms) и не свайп (менее 10px движения)
-            if (touchDuration < 300 && deltaX < 10 && deltaY < 10) {
-                e.stopPropagation();
-                
-                if (widgetMenu.style.display === 'block') {
-                    widgetMenu.style.display = 'none';
-                    console.log('Меню закрыто (тап)');
-                } else {
-                    widgetMenu.style.display = 'block';
-                    settingsMenu.style.display = 'none';
-                    console.log('Меню открыто (тап)');
-                }
-            }
-        });
-        
-        // 2. КНОПКА НАСТРОЕК
-        settingsBtn.addEventListener('touchend', function(e) {
+        // 2. КНОПКА НАСТРОЕК - тоже touchstart
+        settingsBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
             e.stopPropagation();
             widgetMenu.style.display = 'none';
             settingsMenu.style.display = 'block';
-            console.log('Настройки открыты');
-        });
+            console.log('Настройки открыты (touchstart)');
+        }, { passive: false });
         
-        // 3. КНОПКА НАЗАД
-        backBtn.addEventListener('touchend', function(e) {
+        // 3. КНОПКА НАЗАД - тоже touchstart
+        backBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
             e.stopPropagation();
             settingsMenu.style.display = 'none';
             widgetMenu.style.display = 'block';
-            console.log('Возврат в главное меню');
-        });
+            console.log('Возврат в главное меню (touchstart)');
+        }, { passive: false });
         
-        // 4. ЗАКРЫТИЕ ПРИ КАСАНИИ ВНЕ МЕНЮ
-        document.addEventListener('touchend', function(e) {
+        // 4. ЗАКРЫТИЕ ПРИ КАСАНИИ ВНЕ МЕНЮ - с задержкой
+        document.addEventListener('touchstart', function(e) {
             if (!floatingWidget.contains(e.target)) {
-                widgetMenu.style.display = 'none';
-                settingsMenu.style.display = 'none';
-                console.log('Закрытие меню (тап вне)');
+                // Небольшая задержка, чтобы не закрывалось сразу
+                setTimeout(function() {
+                    widgetMenu.style.display = 'none';
+                    settingsMenu.style.display = 'none';
+                }, 50);
             }
         });
         
-        // 5. Для десктопов тоже добавляем click
+        // 5. Для десктопов - click
         widgetButton.addEventListener('click', function(e) {
-            if (window.innerWidth > 768) { // Только для десктопов
+            if (window.innerWidth > 768) {
                 e.stopPropagation();
                 if (widgetMenu.style.display === 'block') {
                     widgetMenu.style.display = 'none';
@@ -5006,7 +5012,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        console.log('Мобильные обработчики настроены');
+        // 6. Включаем перетаскивание (длинное нажатие)
+        setupDragging();
+        
+        console.log('Мобильные обработчики настроены (touchstart)');
     }
     
     // Настройка перетаскивания виджета
