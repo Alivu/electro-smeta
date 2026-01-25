@@ -2762,13 +2762,23 @@ function renderEstimateTable() {
     
     tableBody.innerHTML = '';
     
-    // Рендерим ВСЕ строки из estimateData (не только первые 20)
-    estimateData.forEach((row, index) => {
+    // Получаем ВСЕ строки из estimateData
+    const allRows = estimateData;
+    console.log(`Рендеринг ${allRows.length} строк сметы`);
+    console.log('Первые 5 строк данных:', allRows.slice(0, 5));
+    
+    // Рендерим ВСЕ строки без ограничений
+    allRows.forEach((row, index) => {
         const tr = document.createElement('tr');
         if (row.isMaterial) {
             tr.classList.add('material-row');
         }
         
+        // Проверяем, заполнена ли строка
+        const isRowEmpty = !row.priceId && !row.name.trim() && !row.isMaterial;
+        
+        // Если строка пустая и это далеко за пределами, можно скрыть
+        // Но для надежности показываем ВСЕ
         tr.innerHTML = `
             <td class="price-id-cell">${row.isMaterial ? 'МАТ' : (row.priceId || '')}</td>
             <td class="search-cell">
@@ -2787,22 +2797,26 @@ function renderEstimateTable() {
                        min="0" step="0.01">
             </td>
             <td class="quantity-cell">
-                        <input type="number" class="number-input quantity-input" 
-                               data-row="${index}" 
-                               value="${row.quantity || 1}" 
-                               min="1" step="1">
-                    </td>
-                    <td class="total-cell">${formatCurrency(row.total)}</td>
-                    <td class="actions-cell">
-                        <i class="fas fa-trash delete-row" data-row="${index}"></i>
-                    </td>
-                `;
-                tableBody.appendChild(tr);
-            });
-            
-            // Настраиваем обработчики событий для всех новых строк
-            setupRowEventListeners();
-        }
+                <input type="number" class="number-input quantity-input" 
+                       data-row="${index}" 
+                       value="${row.quantity || 1}" 
+                       min="1" step="1">
+            </td>
+            <td class="total-cell">${formatCurrency(row.total)}</td>
+            <td class="actions-cell">
+                <i class="fas fa-trash delete-row" data-row="${index}"></i>
+            </td>
+        `;
+        tableBody.appendChild(tr);
+    });
+    
+    // После рендеринга показываем сколько строк реально отрисовано
+    const renderedRows = tableBody.querySelectorAll('tr').length;
+    console.log(`Отображено ${renderedRows} строк в таблице`);
+    
+    // Настраиваем обработчики событий для всех новых строк
+    setupRowEventListeners();
+}
 
         function setupEventListeners() {
             console.log('Настройка обработчиков событий');
