@@ -2789,6 +2789,9 @@ function renderEstimateTable() {
     
     // Рендерим ВСЕ строки без ограничений
     allRows.forEach((row, index) => {
+		console.log('Проверка DOM после рендеринга:');
+const visibleRows = tableBody.querySelectorAll('tr:not([style*="display: none"])');
+console.log('Видимых строк в DOM:', visibleRows.length);
         const tr = document.createElement('tr');
         if (row.isMaterial) {
             tr.classList.add('material-row');
