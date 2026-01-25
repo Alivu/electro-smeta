@@ -3038,7 +3038,7 @@ function renderEstimateTable() {
             updateEstimateCounter();
         }
 
-  function addEmptyRow() {
+function addEmptyRow() {
     const newId = estimateData.length + 1;
     estimateData.push({
         id: newId,
@@ -3053,6 +3053,7 @@ function renderEstimateTable() {
     });
     
     renderEstimateTable();
+    console.log(`Добавлена новая строка. Всего строк: ${estimateData.length}`);
 }
 
         function deleteRow(rowIndex) {
@@ -3345,34 +3346,23 @@ function loadEstimate(estimateId) {
     if (estimate) {
         console.log('Найдена смета:', estimate.name);
         console.log('Количество строк в сохраненной смете:', estimate.data.length);
-        console.log('Первые 5 строк:', estimate.data.slice(0, 5));
-        // Получаем максимальное количество строк из сохраненной сметы или 30
-        const maxRows = Math.max(estimate.data.length, 30);
+        console.log('Все сохраненные строки:', estimate.data);
         
-        // Инициализируем массив на нужное количество строк
-        estimateData = Array(maxRows).fill().map((_, i) => ({
-            id: i + 1,
-            priceId: "",
-            name: "",
-            unit: "",
-            price: 0,
-            quantity: 1,
-            total: 0,
-            notes: "",
-            isMaterial: false
-        }));
+        // ВАЖНО: Полностью очищаем текущие данные
+        estimateData = [];
         
-        // Загружаем ВСЕ сохраненные данные (без ограничения в 30 строк)
+        // Загружаем ВСЕ сохраненные данные
         estimate.data.forEach((item, index) => {
-            if (index < maxRows) {
-                estimateData[index] = { 
-                    ...item, 
-                    id: index + 1 
-                };
-            }
+            estimateData.push({ 
+                ...item, 
+                id: index + 1 
+            });
         });
         
-        // Обновляем отображение
+        console.log('Данные загружены в estimateData:', estimateData.length, 'строк');
+        console.log('Первые 10 строк загруженных данных:', estimateData.slice(0, 10));
+        
+        // Рендерим таблицу
         renderEstimateTable();
         updateTotals();
         updateEstimateCounter();
@@ -4370,7 +4360,24 @@ document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
     checkSavedToken();
 });
-		
+	function debugEstimateData() {
+    console.log('=== DEBUG estimateData ===');
+    console.log('Всего строк в массиве:', estimateData.length);
+    
+    const filledRows = estimateData.filter(row => 
+        row.priceId || row.name.trim() !== '' || row.isMaterial
+    );
+    console.log('Заполненных строк:', filledRows.length);
+    
+    // Показываем все заполненные строки
+    filledRows.forEach((row, index) => {
+        console.log(`${index + 1}. ID: ${row.id}, Название: ${row.name.substring(0, 30)}...`);
+    });
+    
+    // Проверяем DOM
+    const tableRows = document.querySelectorAll('#estimateTable tr');
+    console.log('Строк в DOM таблице:', tableRows.length);
+}	
     </script>
 </body>
 </html>
