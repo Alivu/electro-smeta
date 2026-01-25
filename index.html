@@ -2636,8 +2636,8 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
 }
 
 function initializeEstimateData() {
-    // Создаем 30 пустых строк для сметы
-    estimateData = Array(30).fill().map((_, i) => ({
+    // Создаем 50 пустых строк для сметы (больше чем нужно)
+    estimateData = Array(50).fill().map((_, i) => ({
         id: i + 1,
         priceId: "",
         name: "",
@@ -3278,12 +3278,16 @@ function saveEstimate() {
     const estimateName = prompt('Введите название для сохранения сметы:', `Смета ${new Date().toLocaleDateString()}`);
     
     if (estimateName) {
-        // Сохраняем ВСЕ 30 строк (даже пустые)
+        // Фильтруем ТОЛЬКО заполненные строки при сохранении
+        const filledRows = estimateData.filter(row => 
+            row.priceId || row.name.trim() !== '' || row.isMaterial
+        );
+        
         const estimateToSave = {
             id: Date.now(),
             name: estimateName,
             date: new Date().toISOString(),
-            data: estimateData.map(row => ({ ...row })), // Копируем все строки
+            data: filledRows.map(row => ({ ...row })), // Сохраняем только заполненные
             totals: {
                 totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
             }
@@ -3292,10 +3296,9 @@ function saveEstimate() {
         savedEstimates.push(estimateToSave);
         localStorage.setItem('electroEstimates', JSON.stringify(savedEstimates));
         
-        showNotification(`Смета "${estimateName}" сохранена (${estimateData.length} строк)`);
+        showNotification(`Смета "${estimateName}" сохранена (${filledRows.length} строк)`);
     }
 }
-
         function showLoadModal() {
             const listContainer = document.getElementById('savedEstimatesList');
             listContainer.innerHTML = '';
@@ -3348,16 +3351,32 @@ function loadEstimate(estimateId) {
         console.log('Количество строк в сохраненной смете:', estimate.data.length);
         console.log('Все сохраненные строки:', estimate.data);
         
-        // ВАЖНО: Полностью очищаем текущие данные
+        // ВАЖНО: Очищаем текущие данные
         estimateData = [];
         
-        // Загружаем ВСЕ сохраненные данные
+        // Загружаем ВСЕ сохраненные данные точно как они были сохранены
         estimate.data.forEach((item, index) => {
             estimateData.push({ 
-                ...item, 
-                id: index + 1 
+                ...item,
+                id: index + 1  // Пересчитываем ID
             });
         });
+        
+        // Если сохранено меньше 50 строк, добавляем пустые до 50
+        const targetCount = 50;
+        while (estimateData.length < targetCount) {
+            estimateData.push({
+                id: estimateData.length + 1,
+                priceId: "",
+                name: "",
+                unit: "",
+                price: 0,
+                quantity: 1,
+                total: 0,
+                notes: "",
+                isMaterial: false
+            });
+        }
         
         console.log('Данные загружены в estimateData:', estimateData.length, 'строк');
         console.log('Первые 10 строк загруженных данных:', estimateData.slice(0, 10));
@@ -4157,7 +4176,7 @@ async function saveToDrive() {
         id: Date.now(),
         name: estimateName,
         date: new Date().toISOString(),
-        data: estimateData.map(row => ({
+        data: filledRows.map(row => ({
             id: row.id,
             priceId: row.priceId,
             name: row.name,
@@ -4172,8 +4191,9 @@ async function saveToDrive() {
         }
     };
     
-    console.log('Сохранение:', currentEstimate);
-    console.log('Позиций:', currentEstimate.data.length); // Должно быть 30
+    console.log('Сохранение в Drive:', currentEstimate);
+    console.log('Фильтровано строк для сохранения:', currentEstimate.data.length);
+    console.log('Всего строк в estimateData:', estimateData.length);
     
     try {
         // 1. Сохраняем в Google Drive
@@ -4360,7 +4380,7 @@ document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
     checkSavedToken();
 });
-	function debugEstimateData() {
+function debugEstimateData() {
     console.log('=== DEBUG estimateData ===');
     console.log('Всего строк в массиве:', estimateData.length);
     
@@ -4370,14 +4390,30 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Заполненных строк:', filledRows.length);
     
     // Показываем все заполненные строки
+    console.log('=== ЗАПОЛНЕННЫЕ СТРОКИ ===');
     filledRows.forEach((row, index) => {
-        console.log(`${index + 1}. ID: ${row.id}, Название: ${row.name.substring(0, 30)}...`);
+        console.log(`${index + 1}. ID: ${row.id}, Код: ${row.priceId}, Название: ${row.name.substring(0, 30)}...`);
     });
     
     // Проверяем DOM
     const tableRows = document.querySelectorAll('#estimateTable tr');
     console.log('Строк в DOM таблице:', tableRows.length);
-}	
+    
+    // Проверяем последнюю сохраненную смету
+    const saved = JSON.parse(localStorage.getItem('electroEstimates'));
+    if (saved && saved.length > 0) {
+        const lastEstimate = saved[saved.length - 1];
+        console.log('=== ПОСЛЕДНЯЯ СОХРАНЕННАЯ СМЕТА ===');
+        console.log('Название:', lastEstimate.name);
+        console.log('Сохранено строк:', lastEstimate.data.length);
+        console.log('Первые 5 строк сохраненных данных:', lastEstimate.data.slice(0, 5));
+        console.log('Последние 5 строк сохраненных данных:', lastEstimate.data.slice(-5));
+    }
+    
+    // Отображаем в уведомлении для быстрой проверки
+    const notificationText = `Данные: ${filledRows.length} заполненных из ${estimateData.length} | DOM: ${tableRows.length} строк`;
+    showNotification(`Debug: ${notificationText}`);
+}
     </script>
 </body>
 </html>
