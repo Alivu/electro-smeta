@@ -5020,25 +5020,47 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Настройка перетаскивания виджета
     function setupDragging() {
-        let isDragging = false;
-        let startX, startY, startLeft, startTop;
+        let dragStartTime;
+        let dragStartX, dragStartY;
+        let isPotentialDrag = false;
         
-        widgetButton.addEventListener('mousedown', startDrag);
-        widgetButton.addEventListener('touchstart', startDragTouch);
+        widgetButton.addEventListener('touchstart', function(e) {
+            dragStartTime = Date.now();
+            dragStartX = e.touches[0].clientX;
+            dragStartY = e.touches[0].clientY;
+            isPotentialDrag = true;
+            
+            // Если долгое нажатие (более 300ms) - начинаем перетаскивание
+            setTimeout(function() {
+                if (isPotentialDrag) {
+                    startDrag(e);
+                }
+            }, 300);
+        }, { passive: false });
+        
+        widgetButton.addEventListener('touchmove', function(e) {
+            if (!isPotentialDrag) return;
+            
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const deltaX = Math.abs(currentX - dragStartX);
+            const deltaY = Math.abs(currentY - dragStartY);
+            
+            // Если переместились больше чем на 5px - это перетаскивание, не тап
+            if (deltaX > 5 || deltaY > 5) {
+                isPotentialDrag = false;
+                startDrag(e);
+            }
+        });
+        
+        widgetButton.addEventListener('touchend', function() {
+            isPotentialDrag = false;
+        });
         
         function startDrag(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            startLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
-            startTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
-            
-            document.addEventListener('mousemove', drag);
-            document.addEventListener('mouseup', stopDrag);
-            hideAllMenus();
+            // ... существующий код перетаскивания ...
         }
+    }
         
         function startDragTouch(e) {
             e.preventDefault();
