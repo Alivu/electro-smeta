@@ -4951,7 +4951,9 @@ document.addEventListener('DOMContentLoaded', function() {
         let touchStartY = 0;
         let dragTimeout;
         
-        // 1. НАЧАЛО КАСАНИЯ - запоминаем время и позицию
+        // ========== ДЛЯ МОБИЛЬНЫХ (TOUCH) ==========
+        
+        // 1. НАЧАЛО КАСАНИЯ
         widgetButton.addEventListener('touchstart', function(e) {
             e.stopPropagation();
             touchStartTime = Date.now();
@@ -4959,23 +4961,21 @@ document.addEventListener('DOMContentLoaded', function() {
             touchStartY = e.touches[0].clientY;
             isDragging = false;
             
-            // Запускаем таймер для перетаскивания
             dragTimeout = setTimeout(function() {
                 if (!isDragging) {
                     isDragging = true;
                     startDrag(e);
                 }
-            }, 300); // 300ms - время для начала перетаскивания
+            }, 300);
         }, { passive: false });
         
-        // 2. ДВИЖЕНИЕ ПАЛЬЦЕМ - проверяем, это перетаскивание или нет
+        // 2. ДВИЖЕНИЕ ПАЛЬЦЕМ
         widgetButton.addEventListener('touchmove', function(e) {
             const currentX = e.touches[0].clientX;
             const currentY = e.touches[0].clientY;
             const deltaX = Math.abs(currentX - touchStartX);
             const deltaY = Math.abs(currentY - touchStartY);
             
-            // Если переместились больше чем на 10px - это перетаскивание
             if (deltaX > 10 || deltaY > 10) {
                 clearTimeout(dragTimeout);
                 if (!isDragging) {
@@ -4985,68 +4985,40 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // 3. ОТПУСКАНИЕ ПАЛЬЦА - открываем меню если это был тап
+        // 3. ОТПУСКАНИЕ ПАЛЬЦА
         widgetButton.addEventListener('touchend', function(e) {
             clearTimeout(dragTimeout);
             
             if (!isDragging) {
-                // Это был короткий тап - открываем/закрываем меню
                 const touchDuration = Date.now() - touchStartTime;
                 const touchEndX = e.changedTouches[0].clientX;
                 const touchEndY = e.changedTouches[0].clientY;
                 const deltaX = Math.abs(touchEndX - touchStartX);
                 const deltaY = Math.abs(touchEndY - touchStartY);
                 
-                // Только если тап был короткий и без движения
                 if (touchDuration < 300 && deltaX < 15 && deltaY < 15) {
                     e.stopPropagation();
                     
                     if (widgetMenu.style.display === 'block') {
                         widgetMenu.style.display = 'none';
-                        console.log('Меню закрыто');
                     } else {
                         widgetMenu.style.display = 'block';
                         settingsMenu.style.display = 'none';
-                        console.log('Меню открыто');
                     }
-                    
-                    // Вибрация для подтверждения
-                    if (navigator.vibrate) navigator.vibrate(20);
                 }
             }
             
             isDragging = false;
         });
         
-        // 4. КНОПКА НАСТРОЕК
-        settingsBtn.addEventListener('touchend', function(e) {
-            e.stopPropagation();
-            widgetMenu.style.display = 'none';
-            settingsMenu.style.display = 'block';
-        });
+        // ========== ДЛЯ КОМПЬЮТЕРОВ (CLICK/MOUSE) ==========
         
-        // 5. КНОПКА НАЗАД
-        backBtn.addEventListener('touchend', function(e) {
-            e.stopPropagation();
-            settingsMenu.style.display = 'none';
-            widgetMenu.style.display = 'block';
-        });
-        
-        // 6. ЗАКРЫТИЕ МЕНЮ при касании ВНЕ - с небольшой задержкой
-        document.addEventListener('touchend', function(e) {
-            // Небольшая задержка чтобы дать время нажать кнопки в меню
-            setTimeout(function() {
-                if (!floatingWidget.contains(e.target)) {
-                    widgetMenu.style.display = 'none';
-                    settingsMenu.style.display = 'none';
-                }
-            }, 100);
-        });
-        
-        // 7. Для десктопов
+        // 4. КЛИК ДЛЯ МЕНЮ
         widgetButton.addEventListener('click', function(e) {
-            if (window.innerWidth > 768) {
+            // Только для компьютеров или если это не касание
+            if (!('ontouchstart' in window) || e.type === 'click') {
                 e.stopPropagation();
+                
                 if (widgetMenu.style.display === 'block') {
                     widgetMenu.style.display = 'none';
                 } else {
@@ -5056,23 +5028,120 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
+        // 5. КНОПКА НАСТРОЕК (для всех)
+        settingsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            widgetMenu.style.display = 'none';
+            settingsMenu.style.display = 'block';
+        });
+        
+        settingsBtn.addEventListener('touchend', function(e) {
+            e.stopPropagation();
+            widgetMenu.style.display = 'none';
+            settingsMenu.style.display = 'block';
+        });
+        
+        // 6. КНОПКА НАЗАД (для всех)
+        backBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            settingsMenu.style.display = 'none';
+            widgetMenu.style.display = 'block';
+        });
+        
+        backBtn.addEventListener('touchend', function(e) {
+            e.stopPropagation();
+            settingsMenu.style.display = 'none';
+            widgetMenu.style.display = 'block';
+        });
+        
+        // 7. ЗАКРЫТИЕ МЕНЮ при клике ВНЕ
+        document.addEventListener('click', function(e) {
+            if (!floatingWidget.contains(e.target)) {
+                widgetMenu.style.display = 'none';
+                settingsMenu.style.display = 'none';
+            }
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            setTimeout(function() {
+                if (!floatingWidget.contains(e.target)) {
+                    widgetMenu.style.display = 'none';
+                    settingsMenu.style.display = 'none';
+                }
+            }, 100);
+        });
+        
+        // 8. ПЕРЕТАСКИВАНИЕ ДЛЯ КОМПЬЮТЕРОВ
+        setupComputerDragging();
+        
         console.log('Обработчики настроены');
     }
     
-    // Функция начала перетаскивания
+    // Функция перетаскивания для компьютеров
+    function setupComputerDragging() {
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
+        
+        widgetButton.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
+            startTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
+            
+            // Скрываем меню
+            widgetMenu.style.display = 'none';
+            settingsMenu.style.display = 'none';
+            
+            widgetButton.classList.add('dragging');
+            
+            function onMouseMove(e) {
+                if (!isDragging) return;
+                
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                let newLeft = startLeft + dx;
+                let newTop = startTop + dy;
+                
+                newLeft = Math.max(10, Math.min(window.innerWidth - 70, newLeft));
+                newTop = Math.max(10, Math.min(window.innerHeight - 70, newTop));
+                
+                floatingWidget.style.left = newLeft + 'px';
+                floatingWidget.style.top = newTop + 'px';
+            }
+            
+            function onMouseUp() {
+                isDragging = false;
+                widgetButton.classList.remove('dragging');
+                
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                
+                widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
+                widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
+                saveSettings();
+            }
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
+    }
+    
+    // Функция начала перетаскивания для мобильных
     function startDrag(e) {
-        console.log('Начало перетаскивания');
+        console.log('Начало перетаскивания (мобильное)');
         
         const startX = e.touches[0].clientX;
         const startY = e.touches[0].clientY;
         const startLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
         const startTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
         
-        // Скрываем меню
         widgetMenu.style.display = 'none';
         settingsMenu.style.display = 'none';
+        widgetButton.classList.add('dragging');
         
-        // Функция перемещения
         function onTouchMove(e) {
             e.preventDefault();
             const currentX = e.touches[0].clientX;
@@ -5083,7 +5152,6 @@ document.addEventListener('DOMContentLoaded', function() {
             let newLeft = startLeft + dx;
             let newTop = startTop + dy;
             
-            // Ограничиваем в пределах экрана
             newLeft = Math.max(10, Math.min(window.innerWidth - 70, newLeft));
             newTop = Math.max(10, Math.min(window.innerHeight - 70, newTop));
             
@@ -5091,127 +5159,20 @@ document.addEventListener('DOMContentLoaded', function() {
             floatingWidget.style.top = newTop + 'px';
         }
         
-        // Функция окончания перетаскивания
         function onTouchEnd() {
             document.removeEventListener('touchmove', onTouchMove);
             document.removeEventListener('touchend', onTouchEnd);
             
-            // Сохраняем позицию
+            widgetButton.classList.remove('dragging');
+            
             widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
             widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
             saveSettings();
-            
-            console.log('Перетаскивание завершено');
         }
         
-        // Добавляем обработчики
         document.addEventListener('touchmove', onTouchMove, { passive: false });
         document.addEventListener('touchend', onTouchEnd);
-    }
-    
-    // Настройка перетаскивания виджета
-    function setupDragging() {
-        let dragStartTime;
-        let dragStartX, dragStartY;
-        let isPotentialDrag = false;
-        
-        widgetButton.addEventListener('touchstart', function(e) {
-            dragStartTime = Date.now();
-            dragStartX = e.touches[0].clientX;
-            dragStartY = e.touches[0].clientY;
-            isPotentialDrag = true;
-            
-            // Если долгое нажатие (более 300ms) - начинаем перетаскивание
-            setTimeout(function() {
-                if (isPotentialDrag) {
-                    startDrag(e);
-                }
-            }, 300);
-        }, { passive: false });
-        
-        widgetButton.addEventListener('touchmove', function(e) {
-            if (!isPotentialDrag) return;
-            
-            const currentX = e.touches[0].clientX;
-            const currentY = e.touches[0].clientY;
-            const deltaX = Math.abs(currentX - dragStartX);
-            const deltaY = Math.abs(currentY - dragStartY);
-            
-            // Если переместились больше чем на 5px - это перетаскивание, не тап
-            if (deltaX > 5 || deltaY > 5) {
-                isPotentialDrag = false;
-                startDrag(e);
-            }
-        });
-        
-        widgetButton.addEventListener('touchend', function() {
-            isPotentialDrag = false;
-        });
-        
-        function startDragTouch(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            isDragging = true;
-            startX = e.touches[0].clientX;
-            startY = e.touches[0].clientY;
-            startLeft = parseInt(floatingWidget.style.left) || widgetSettings.horizontalPos;
-            startTop = parseInt(floatingWidget.style.top) || widgetSettings.verticalPos;
-            
-            document.addEventListener('touchmove', dragTouch);
-            document.addEventListener('touchend', stopDragTouch);
-            hideAllMenus();
-        }
-        
-        function drag(e) {
-            if (!isDragging) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            
-            let newLeft = startLeft + dx;
-            let newTop = startTop + dy;
-            
-            newLeft = Math.max(10, Math.min(window.innerWidth - 60, newLeft));
-            newTop = Math.max(10, Math.min(window.innerHeight - 60, newTop));
-            
-            floatingWidget.style.left = newLeft + 'px';
-            floatingWidget.style.top = newTop + 'px';
-        }
-        
-        function dragTouch(e) {
-            if (!isDragging) return;
-            const dx = e.touches[0].clientX - startX;
-            const dy = e.touches[0].clientY - startY;
-            
-            let newLeft = startLeft + dx;
-            let newTop = startTop + dy;
-            
-            newLeft = Math.max(10, Math.min(window.innerWidth - 60, newLeft));
-            newTop = Math.max(10, Math.min(window.innerHeight - 60, newTop));
-            
-            floatingWidget.style.left = newLeft + 'px';
-            floatingWidget.style.top = newTop + 'px';
-        }
-        
-        function stopDrag() {
-            isDragging = false;
-            widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
-            widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
-            saveSettings();
-            
-            document.removeEventListener('mousemove', drag);
-            document.removeEventListener('mouseup', stopDrag);
-        }
-        
-        function stopDragTouch() {
-            isDragging = false;
-            widgetSettings.horizontalPos = parseInt(floatingWidget.style.left);
-            widgetSettings.verticalPos = parseInt(floatingWidget.style.top);
-            saveSettings();
-            
-            document.removeEventListener('touchmove', dragTouch);
-            document.removeEventListener('touchend', stopDragTouch);
-        }
-    }
+  }
     
 // Функции управления меню - ИСПРАВЛЕННЫЕ
     function showMenu(menu) {
