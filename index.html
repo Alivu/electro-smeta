@@ -1406,14 +1406,17 @@
                 <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
             </button>
             <div class="dropdown-menu" id="controlsMenu">
+
+    			<!-- ВСТАВЬТЕ СЮДА НОВУЮ КНОПКУ: -->
+    			<button class="dropdown-item" id="refreshEstimateBtn">
+        			<i class="fas fa-sync-alt"></i> Обновить смету
+    			</button>
+				
                 <button class="dropdown-item" id="addRowBtn">
                     <i class="fas fa-plus"></i> Добавить строку
                 </button>
                 <button class="dropdown-item" id="addMaterialBtn">
                     <i class="fas fa-box"></i> Добавить материал
-                </button>
-                <button class="dropdown-item" id="clearEstimateBtn">
-                    <i class="fas fa-broom"></i> Очистить смету
                 </button>
                 <div class="dropdown-divider"></div>
                 <button class="dropdown-item" id="saveEstimateBtn">
@@ -2884,13 +2887,13 @@ function renderEstimateTable() {
                     menu.classList.remove('show');
                 });
                 
-                document.getElementById('clearEstimateBtn').addEventListener('click', function() {
-                    if (confirm('Вы уверены, что хотите очистить всю смету?')) {
-                        clearEstimate();
-                        updateEstimateCounter();
-                    }
-                    menu.classList.remove('show');
-                });
+        			// ОБНОВЛЕНИЕ СМЕТЫ - НОВЫЙ КОД
+        		document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
+            			if (confirm('Обновить смету?\n\nЭто удалит ВСЕ сохраненные данные и сбросит приложение к начальным настройкам.')) {
+                		refreshEstimate();
+            		}
+            		menu.classList.remove('show');
+        		});
                 
                 document.getElementById('saveEstimateBtn').addEventListener('click', function() {
                     saveEstimate();
@@ -4414,6 +4417,50 @@ function debugEstimateData() {
     const notificationText = `Данные: ${filledRows.length} заполненных из ${estimateData.length} | DOM: ${tableRows.length} строк`;
     showNotification(`Debug: ${notificationText}`);
 }
+// ========== ФУНКЦИЯ ОБНОВЛЕНИЯ СМЕТЫ ==========
+function refreshEstimate() {
+    if (!confirm('ВНИМАНИЕ!\n\nОбновление сметы удалит:\n• Все сохраненные сметы\n• Настройки приложения\n• Google авторизацию\n\nПродолжить?')) {
+        return;
+    }
+    
+    // Очищаем все хранилища
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // Сбрасываем переменные
+    estimateData = [{
+        id: 1,
+        priceId: "",
+        name: "",
+        unit: "",
+        price: 0,
+        quantity: 1,
+        total: 0,
+        notes: "",
+        isMaterial: false
+    }];
+    
+    savedEstimates = [];
+    nextMaterialId = 1000;
+    googleToken = '';
+    
+    // Обновляем интерфейс
+    renderEstimateTable();
+    updateTotals();
+    updateEstimateCounter();
+    showTab('estimate');
+    
+    // Показываем уведомление
+    showNotification('🔄 Смета обновлена! Приложение сброшено к начальному состоянию.');
+    
+    // Предлагаем перезагрузку
+    setTimeout(() => {
+        if (confirm('Для полного обновления рекомендуется перезагрузить страницу. Сделать это сейчас?')) {
+            location.reload();
+        }
+    }, 1500);
+}
+		
     </script>
 </body>
 </html>
