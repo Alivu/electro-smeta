@@ -2887,13 +2887,17 @@ function renderEstimateTable() {
                     menu.classList.remove('show');
                 });
                 
-        			// ОБНОВЛЕНИЕ СМЕТЫ - НОВЫЙ КОД
-        		document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
-            			if (confirm('Обновить смету?\n\nЭто удалит ВСЕ сохраненные данные и сбросит приложение к начальным настройкам.')) {
-                		refreshEstimate();
-            		}
-            		menu.classList.remove('show');
-        		});
+        // ОБНОВЛЕНИЕ СМЕТЫ
+        document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
+            if (confirm('Вы точно хотите сбросить все настройки?')) {
+                // Удаляем ВСЕ данные
+                localStorage.clear();
+                sessionStorage.clear();
+                // Обновляем страницу без кэша
+                location.reload(true);
+            }
+            menu.classList.remove('show');
+        });
                 
                 document.getElementById('saveEstimateBtn').addEventListener('click', function() {
                     saveEstimate();
