@@ -2887,20 +2887,117 @@ function renderEstimateTable() {
                     menu.classList.remove('show');
                 });
                 
-        // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ САЙТА
+        // ОБНОВЛЕНИЕ СМЕТЫ - ПОЛНЫЙ СБРОС КАК В НАСТРОЙКАХ БРАУЗЕРА
         document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
-            if (confirm('Вы точно хотите сбросить ВСЕ данные и загрузить свежую версию сайта?')) {
+            if (confirm('Вы точно хотите сбросить ВСЕ данные сайта?\n\nЭто удалит ВСЁ как в настройках браузера.')) {
                 
-                // 1. Удаляем всё, что можем
-                localStorage.clear();
-                sessionStorage.clear();
+                // Список действий для полного сброса
+                const cleanupActions = [
+                    // 1. LocalStorage
+                    () => localStorage.clear(),
+                    
+                    // 2. SessionStorage
+                    () => sessionStorage.clear(),
+                    
+                    // 3. Cookies
+                    () => {
+                        const cookies = document.cookie.split(";");
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i];
+                            const eqPos = cookie.indexOf("=");
+                            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+                            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." + window.location.hostname;
+                        }
+                    },
+                    
+                    // 4. IndexedDB
+                    () => {
+                        if (window.indexedDB) {
+                            const dbs = ["electro-smeta", "google-drive", "app-cache"];
+                            dbs.forEach(dbName => {
+                                indexedDB.deleteDatabase(dbName).catch(() => {});
+                            });
+                        }
+                    },
+                    
+                    // 5. Cache API (Service Worker кэш)
+                    () => {
+                        if ('caches' in window) {
+                            caches.keys().then(cacheNames => {
+                                cacheNames.forEach(cacheName => {
+                                    caches.delete(cacheName);
+                                });
+                            }).catch(() => {});
+                        }
+                    },
+                    
+                    // 6. Service Worker регистрация
+                    () => {
+                        if ('serviceWorker' in navigator) {
+                            navigator.serviceWorker.getRegistrations().then(registrations => {
+                                registrations.forEach(registration => {
+                                    registration.unregister();
+                                });
+                            }).catch(() => {});
+                        }
+                    },
+                    
+                    // 7. LocalStorage с принудительным удалением ВСЕХ ключей
+                    () => {
+                        // Удаляем всё подряд для этого домена
+                        const allKeys = [];
+                        for (let i = 0; i < localStorage.length; i++) {
+                            allKeys.push(localStorage.key(i));
+                        }
+                        allKeys.forEach(key => localStorage.removeItem(key));
+                    },
+                    
+                    // 8. Пытаемся очистить даже то, что обычно не очищается
+                    () => {
+                        // Специфичные для вашего приложения ключи
+                        const appKeys = [
+                            'electroEstimates',
+                            'google_token', 
+                            'hijri_date_cache',
+                            'last_saved',
+                            'app_settings',
+                            'user_prefs'
+                        ];
+                        appKeys.forEach(key => {
+                            localStorage.removeItem(key);
+                            sessionStorage.removeItem(key);
+                        });
+                    }
+                ];
                 
-                // 2. Загружаем СВЕЖУЮ версию с GitHub
-                // Этот URL заставит GitHub отдать новую версию
-                const freshUrl = 'https://alivu.github.io/electro-smeta/?' + Date.now();
+                // Выполняем все действия очистки
+                try {
+                    cleanupActions.forEach(action => {
+                        try {
+                            action();
+                        } catch (e) {
+                            console.warn('Не удалось выполнить действие:', e);
+                        }
+                    });
+                    
+                    console.log('✅ Все возможные данные удалены');
+                    
+                    // Показываем подтверждение
+                    alert('✅ Все данные сайта удалены!\n\nСтраница перезагрузится...');
+                    
+                } catch (error) {
+                    console.error('Ошибка при очистке:', error);
+                    alert('⚠️ Часть данных не удалось удалить.\n\nЗайдите в настройки браузера и очистите данные сайта вручную.');
+                }
                 
-                // 3. Используем replace, чтобы нельзя было вернуться назад
-                window.location.replace(freshUrl);
+                // Финальная перезагрузка
+                setTimeout(() => {
+                    // Самый жесткий способ - полная перезагрузка с меткой времени
+                    window.location.href = window.location.origin + window.location.pathname + '?clean=' + Date.now();
+                }, 1500);
+                
             }
             menu.classList.remove('show');
         });
