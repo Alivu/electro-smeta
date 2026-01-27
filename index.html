@@ -61,7 +61,7 @@
     <!-- Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <title>ЭлектроСмета профессиональный расчет от Electric_Group для Братьев</title>
+    <title>1ЭлектроСмета профессиональный расчет от Electric_Group для Братьев</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 	
@@ -2887,13 +2887,19 @@ function renderEstimateTable() {
                     menu.classList.remove('show');
                 });
                 
-        // ОБНОВЛЕНИЕ СМЕТЫ
+// ОБНОВЛЕНИЕ СМЕТЫ
         document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
             if (confirm('Вы точно хотите сбросить все настройки?')) {
-                // Удаляем ВСЕ данные
+                // 1. Удаляем ВСЕ данные сайта
+                localStorage.removeItem('electroEstimates'); // сохраненные сметы
+                localStorage.removeItem('google_token');     // токен Google
+                localStorage.removeItem('hijri_date_cache'); // кэш даты Хиджры
+                
+                // 2. Очищаем ВСЁ остальное (на всякий случай)
                 localStorage.clear();
                 sessionStorage.clear();
-                // Обновляем страницу без кэша
+                
+                // 3. Обновляем страницу
                 location.reload(true);
             }
             menu.classList.remove('show');
