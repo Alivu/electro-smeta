@@ -63,7 +63,7 @@
     <!-- Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <title>ЭлектроСмета профессиональный расчет от Electric_Group для Братьев</title>
+    <title>2ЭлектроСмета профессиональный расчет от Electric_Group для Братьев</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 	
@@ -2889,13 +2889,21 @@ function renderEstimateTable() {
                     menu.classList.remove('show');
                 });
                 
-// Обновление сметы
-document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
-    if (confirm('Обновить смету? Текущие данные будут сброшены, а настройки сайта вступят в силу.')) {
-        refreshEstimate();
+// Сильное обновление (с перезагрузкой)
+function hardRefreshEstimate() {
+    if (confirm('ВНИМАНИЕ! Это удалит ВСЕ данные сметы и перезагрузит страницу. Продолжить?')) {
+        // Очищаем ВСЕ данные
+        localStorage.clear();
+        sessionStorage.clear();
+        indexedDB.deleteDatabase('electro-smeta'); // если используете IndexedDB
+        
+        // Принудительная перезагрузка без кэша
+        location.reload(true);
+        
+        // Или так (еще более жестко):
+        // window.location.href = window.location.href.split('?')[0];
     }
-    menu.classList.remove('show');
-});
+}
                 
                 document.getElementById('saveEstimateBtn').addEventListener('click', function() {
                     saveEstimate();
