@@ -2889,21 +2889,52 @@ function renderEstimateTable() {
                     menu.classList.remove('show');
                 });
                 
-// Сильное обновление (с перезагрузкой)
-function hardRefreshEstimate() {
-    if (confirm('ВНИМАНИЕ! Это удалит ВСЕ данные сметы и перезагрузит страницу. Продолжить?')) {
-        // Очищаем ВСЕ данные
-        localStorage.clear();
-        sessionStorage.clear();
-        indexedDB.deleteDatabase('electro-smeta'); // если используете IndexedDB
-        
-        // Принудительная перезагрузка без кэша
-        location.reload(true);
-        
-        // Или так (еще более жестко):
-        // window.location.href = window.location.href.split('?')[0];
-    }
-}
+        // ОБНОВЛЕНИЕ СМЕТЫ - ПОЛНЫЙ СБРОС
+        document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
+            if (confirm('Вы точно хотите сбросить ВСЕ данные сайта?\n\nЭто удалит:\n• Все сохраненные сметы\n• Авторизацию Google\n• Кэш страницы\n• Cookies')) {
+                
+                // Удаляем ВСЁ для этого домена
+                try {
+                    // 1. LocalStorage
+                    localStorage.clear();
+                    
+                    // 2. SessionStorage  
+                    sessionStorage.clear();
+                    
+                    // 3. Cookies
+                    document.cookie.split(";").forEach(function(c) {
+                        document.cookie = c.replace(/^ +/, "")
+                            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                    });
+                    
+                    // 4. IndexedDB (если есть)
+                    if (window.indexedDB) {
+                        indexedDB.deleteDatabase("electro-smeta");
+                    }
+                    
+                    // 5. Cache API (Service Worker)
+                    if ('caches' in window) {
+                        caches.keys().then(function(names) {
+                            for (let name of names) {
+                                caches.delete(name);
+                            }
+                        });
+                    }
+                    
+                    console.log('✅ Все данные сайта удалены');
+                    
+                } catch (error) {
+                    console.error('Ошибка удаления:', error);
+                }
+                
+                // 6. Принудительная перезагрузка БЕЗ кэша
+                setTimeout(() => {
+                    // Самый жесткий способ перезагрузки
+                    window.location.replace(window.location.origin + window.location.pathname + '?force=' + Date.now());
+                }, 500);
+            }
+            menu.classList.remove('show');
+        });
                 
                 document.getElementById('saveEstimateBtn').addEventListener('click', function() {
                     saveEstimate();
