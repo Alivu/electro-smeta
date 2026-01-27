@@ -2887,20 +2887,20 @@ function renderEstimateTable() {
                     menu.classList.remove('show');
                 });
                 
-// ОБНОВЛЕНИЕ СМЕТЫ
+        // ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ САЙТА
         document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
-            if (confirm('Вы точно хотите сбросить все настройки?')) {
-                // 1. Удаляем ВСЕ данные сайта
-                localStorage.removeItem('electroEstimates'); // сохраненные сметы
-                localStorage.removeItem('google_token');     // токен Google
-                localStorage.removeItem('hijri_date_cache'); // кэш даты Хиджры
+            if (confirm('Вы точно хотите сбросить ВСЕ данные и загрузить свежую версию сайта?')) {
                 
-                // 2. Очищаем ВСЁ остальное (на всякий случай)
+                // 1. Удаляем всё, что можем
                 localStorage.clear();
                 sessionStorage.clear();
                 
-                // 3. Обновляем страницу
-                location.reload(true);
+                // 2. Загружаем СВЕЖУЮ версию с GitHub
+                // Этот URL заставит GitHub отдать новую версию
+                const freshUrl = 'https://alivu.github.io/electro-smeta/?' + Date.now();
+                
+                // 3. Используем replace, чтобы нельзя было вернуться назад
+                window.location.replace(freshUrl);
             }
             menu.classList.remove('show');
         });
