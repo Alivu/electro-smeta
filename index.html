@@ -1605,11 +1605,6 @@ const APP_VERSION = '1.3.0'; // ← ДОЛЖНО СОВПАДАТЬ С ВЕРС�
 if (localStorage.getItem('app_version') !== APP_VERSION) {
   console.log(`🔄 Обновление до версии ${APP_VERSION}`);
   localStorage.setItem('app_version', APP_VERSION);
-  
-  // Очищаем специфичные данные если нужно
-  if (APP_VERSION === '1.3.0') {
-    localStorage.removeItem('old_price_cache');
-  }
 }
 
 // 2. Проверка обновлений Service Worker
