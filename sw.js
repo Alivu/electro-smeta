@@ -1,5 +1,5 @@
 // Service Worker для ЭлектроСметы
-const APP_VERSION = '1.4.0'; // ← МЕНЯЙТЕ ПРИ КАЖДОМ ОБНОВЛЕНИИ ПРАЙСА!
+const APP_VERSION = '1.5.0'; // ← МЕНЯЙТЕ ПРИ КАЖДОМ ОБНОВЛЕНИИ ПРАЙСА!
 const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 
 // Установка
