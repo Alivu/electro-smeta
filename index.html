@@ -1597,74 +1597,57 @@
     </div>
 
     <script>
+// ========== ЗАГРУЗКА ВЕРСИИ ИЗ SW.js ==========
+let APP_VERSION = '1.0.0'; // значение по умолчанию
 
-		// ========== ВЕРСИОНИРОВАНИЕ И ОБНОВЛЕНИЕ ==========
-const APP_VERSION = '1.3.0'; // ← ДОЛЖНО СОВПАДАТЬ С ВЕРСИЕЙ В sw.js!
-
-// 1. Сохраняем версию
-if (localStorage.getItem('app_version') !== APP_VERSION) {
-  console.log(`🔄 Обновление до версии ${APP_VERSION}`);
-  localStorage.setItem('app_version', APP_VERSION);
+// Функция загрузки версии из Service Worker
+async function loadVersionFromSW() {
+  try {
+    console.log('🔍 Загружаю версию из Service Worker...');
+    const response = await fetch('sw.js?t=' + Date.now());
+    const swCode = await response.text();
+    const versionMatch = swCode.match(/const APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+    
+    if (versionMatch && versionMatch[1]) {
+      APP_VERSION = versionMatch[1];
+      console.log(`✅ Версия загружена: ${APP_VERSION}`);
+    }
+  } catch (error) {
+    console.error('❌ Ошибка загрузки версии:', error);
+  }
+  return APP_VERSION;
 }
 
-// 2. Проверка обновлений Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    try {
-      const registration = await navigator.serviceWorker.register('./sw.js');
-      
-      // Принудительная проверка обновлений
-      registration.update();
-      
-      // Слушаем новые версии
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        console.log('🔄 Найдено обновление Service Worker');
-        
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed') {
-            // Показываем уведомление
-            showNotification(
-              'Доступно обновление! ' +
-              '<button onclick="window.location.reload()" style="margin-left:10px;padding:3px 10px;background:#27ae60;color:white;border:none;border-radius:3px;cursor:pointer">' +
-              'Перезагрузить' +
-              '</button>'
-            );
-          }
-        });
-      });
-      
-      // Периодическая проверка (каждые 4 часа)
-      setInterval(() => {
-        registration.update();
-        console.log('🔍 Проверка обновлений SW...');
-      }, 4 * 60 * 60 * 1000);
-      
-    } catch (error) {
-      console.error('❌ Ошибка Service Worker:', error);
+// Основная функция инициализации версии
+async function initializeVersion() {
+  await loadVersionFromSW();
+  const savedVersion = localStorage.getItem('app_version');
+  
+  if (savedVersion !== APP_VERSION) {
+    console.log(`🔄 ОБНОВЛЕНИЕ: ${savedVersion || 'нет'} → ${APP_VERSION}`);
+    localStorage.setItem('app_version', APP_VERSION);
+    
+    setTimeout(() => {
+      if (typeof showNotification === 'function') {
+        showNotification(`Обновлено до версии ${APP_VERSION}! ⚡`);
+      }
+    }, 1000);
+  }
+  
+  // Показываем версию в интерфейсе
+  document.addEventListener('DOMContentLoaded', function() {
+    const logo = document.querySelector('.logo-text');
+    if (logo) {
+      logo.innerHTML = `𝔼𝕝𝕖𝕜𝕥𝕣𝕠𝕊𝕞𝕖𝕥𝕒 
+        <span style="color:#3498db; font-weight:bold">v${APP_VERSION}</span> 
+        @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡`;
     }
   });
 }
 
-// 3. Показываем версию в интерфейсе
-document.addEventListener('DOMContentLoaded', () => {
-  // Добавляем версию в логотип
-  const logo = document.querySelector('.logo-text');
-  if (logo) {
-    logo.innerHTML = `𝔼𝕝𝕖𝕜𝕥𝕣𝕠𝕊𝕞𝕖𝕥𝕒 <span style="color:#3498db;font-weight:bold">v${APP_VERSION}</span> @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡`;
-  }
-  
-  // Показываем уведомление о новой версии (только первый раз)
-  const firstVisit = !localStorage.getItem('app_version');
-  if (firstVisit || localStorage.getItem('shown_version') !== APP_VERSION) {
-    setTimeout(() => {
-      showNotification(`Добро пожаловать в ЭлектроСмета v${APP_VERSION}! ⚡`);
-      localStorage.setItem('shown_version', APP_VERSION);
-    }, 2000);
-  }
-});
-
-		
+// Запускаем
+initializeVersion();
+// ========== КОНЕЦ БЛОКА ВЕРСИОНИРОВАНИЯ ==========
         // Проверяем iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 		// Обработчик для кнопки "Скачать PDF" в окне печати
@@ -2960,52 +2943,79 @@ function renderEstimateTable() {
                     menu.classList.remove('show');
                 });
                 
-        // ОБНОВЛЕНИЕ СМЕТЫ - ПОЛНЫЙ СБРОС
-        document.getElementById('refreshEstimateBtn').addEventListener('click', function() {
-            if (confirm('Вы точно хотите сбросить ВСЕ данные сайта?\n\nЭто удалит:\n• Все сохраненные сметы\n• Авторизацию Google\n• Кэш страницы\n• Cookies')) {
-                
-                // Удаляем ВСЁ для этого домена
-                try {
-                    // 1. LocalStorage
-                    localStorage.clear();
-                    
-                    // 2. SessionStorage  
-                    sessionStorage.clear();
-                    
-                    // 3. Cookies
-                    document.cookie.split(";").forEach(function(c) {
-                        document.cookie = c.replace(/^ +/, "")
-                            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-                    });
-                    
-                    // 4. IndexedDB (если есть)
-                    if (window.indexedDB) {
-                        indexedDB.deleteDatabase("electro-smeta");
-                    }
-                    
-                    // 5. Cache API (Service Worker)
-                    if ('caches' in window) {
-                        caches.keys().then(function(names) {
-                            for (let name of names) {
-                                caches.delete(name);
-                            }
-                        });
-                    }
-                    
-                    console.log('✅ Все данные сайта удалены');
-                    
-                } catch (error) {
-                    console.error('Ошибка удаления:', error);
-                }
-                
-                // 6. Принудительная перезагрузка БЕЗ кэша
-                setTimeout(() => {
-                    // Самый жесткий способ перезагрузки
-                    window.location.replace(window.location.origin + window.location.pathname + '?force=' + Date.now());
-                }, 500);
+// ОБНОВЛЕНИЕ СМЕТЫ И ПРОВЕРКА ВЕРСИЙ
+document.getElementById('refreshEstimateBtn').addEventListener('click', async function() {
+    try {
+        // 1. Проверяем версию в sw.js
+        const swResponse = await fetch('sw.js?t=' + Date.now());
+        const swCode = await swResponse.text();
+        const versionMatch = swCode.match(/const APP_VERSION\s*=\s*['"]([^'"]+)['"]/);
+        
+        if (!versionMatch) {
+            showNotification('❌ Не удалось проверить версию');
+            menu.classList.remove('show');
+            return;
+        }
+        
+        const currentSWVersion = versionMatch[1];
+        const myVersion = localStorage.getItem('app_version') || '1.0.0';
+        
+        // 2. Если версия актуальна - предлагаем обычный сброс
+        if (currentSWVersion === myVersion) {
+            if (confirm('У вас актуальная версия!\n\nХотите очистить все данные сметы?')) {
+                localStorage.removeItem('electroEstimates');
+                showNotification('✅ Данные сметы очищены');
             }
             menu.classList.remove('show');
-        });
+            return;
+        }
+        
+        // 3. Если есть обновление
+        const updateConfirmed = confirm(
+            `🎉 ДОСТУПНО ОБНОВЛЕНИЕ!\n\n` +
+            `Ваша версия: ${myVersion}\n` +
+            `Новая версия: ${currentSWVersion}\n\n` +
+            `Обновить сейчас? (Загрузит новый прайс-лист)`
+        );
+        
+        if (updateConfirmed) {
+            // Очищаем ВСЁ для обновления
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                if ('serviceWorker' in navigator) {
+                    const reg = await navigator.serviceWorker.getRegistration();
+                    if (reg) await reg.unregister();
+                    
+                    if ('caches' in window) {
+                        const cacheNames = await caches.keys();
+                        for (const cacheName of cacheNames) {
+                            await caches.delete(cacheName);
+                        }
+                    }
+                }
+                
+                console.log('✅ Все данные очищены для обновления');
+                showNotification('🔄 Загружаем новую версию...');
+                
+            } catch (error) {
+                console.error('Ошибка очистки:', error);
+            }
+            
+            // Перезагружаем
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+        
+    } catch (error) {
+        console.error('Ошибка проверки обновления:', error);
+        showNotification('❌ Ошибка при проверке обновлений');
+    }
+    
+    menu.classList.remove('show');
+});
                 
                 document.getElementById('saveEstimateBtn').addEventListener('click', function() {
                     saveEstimate();
