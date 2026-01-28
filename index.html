@@ -1617,7 +1617,71 @@ async function loadVersionFromSW() {
   }
   return APP_VERSION;
 }
-
+// ========== УВЕДОМЛЕНИЕ В ЦЕНТРЕ (ТОЛЬКО ДЛЯ ОБНОВЛЕНИЙ) ==========
+function showCenterNotification(message) {
+    const isMobile = window.innerWidth <= 767;
+    
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        color: white;
+        padding: ${isMobile ? '20px' : '25px 30px'};
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        z-index: 9999;
+        max-width: ${isMobile ? '90vw' : '500px'};
+        width: ${isMobile ? '85%' : '80%'};
+        text-align: center;
+        animation: centerNotifyIn 0.4s ease-out;
+        border: 2px solid rgba(255,255,255,0.1);
+        font-size: ${isMobile ? '16px' : '18px'};
+        font-weight: 500;
+        line-height: 1.4;
+    `;
+    
+    notification.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: ${message.includes('<br>') ? '15px' : '0'};">
+            <i class="fas fa-bolt" style="color: #f1c40f; font-size: 1.3em;"></i>
+            <div>${message}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Анимации
+    if (!document.querySelector('#center-notify-style')) {
+        const style = document.createElement('style');
+        style.id = 'center-notify-style';
+        style.textContent = `
+            @keyframes centerNotifyIn {
+                from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+                to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            }
+            @keyframes centerNotifyOut {
+                from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                to { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Автоскрытие
+    setTimeout(() => {
+        notification.style.animation = 'centerNotifyOut 0.4s ease-out';
+        setTimeout(() => notification.remove(), 400);
+    }, 4000);
+    
+    // Закрытие по клику
+    notification.addEventListener('click', function() {
+        notification.style.animation = 'centerNotifyOut 0.4s ease-out';
+        setTimeout(() => notification.remove(), 400);
+    });
+}
+// ========== КОНЕЦ ЦЕНТРАЛЬНОГО УВЕДОМЛЕНИЯ ==========
 // Основная функция инициализации версии
 async function initializeVersion() {
   await loadVersionFromSW();
@@ -1627,11 +1691,9 @@ async function initializeVersion() {
     console.log(`🔄 ОБНОВЛЕНИЕ: ${savedVersion || 'нет'} → ${APP_VERSION}`);
     localStorage.setItem('app_version', APP_VERSION);
     
-    setTimeout(() => {
-      if (typeof showNotification === 'function') {
-        showNotification(`Обновлено до версии ${APP_VERSION}! ⚡`);
-      }
-    }, 1000);
+setTimeout(() => {
+    showCenterNotification(`🎉 Обновлено до версии ${APP_VERSION}!`);
+}, 1000);
   }
   
   // Показываем версию в интерфейсе
