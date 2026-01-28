@@ -1,5 +1,5 @@
 // Service Worker для ЭлектроСмета
-const CACHE_NAME = 'electro-smeta-v1.2'; // ← Меняйте версию!
+const CACHE_NAME = 'electro-smeta-v1';
 const urlsToCache = [
   './',
   './index.html'
