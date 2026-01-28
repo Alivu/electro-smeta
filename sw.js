@@ -1,93 +1,99 @@
-// Service Worker для ЭлектроСмета
-const CACHE_NAME = 'electro-smeta-v1';
-const urlsToCache = [
-  './',
-  './index.html'
-];
+// Service Worker для ЭлектроСметы
+const APP_VERSION = '1.3.0'; // ← МЕНЯЙТЕ ПРИ КАЖДОМ ОБНОВЛЕНИИ ПРАЙСА!
+const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 
 // Установка
 self.addEventListener('install', event => {
-  console.log('⚡ Установка Service Worker');
+  console.log(`⚡ Установка версии ${APP_VERSION}`);
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('📦 Кэширование основных файлов');
-        // Кэшируем только главную страницу
-        return cache.addAll(['./', './index.html']);
-      })
+      .then(cache => cache.addAll(['./', './index.html']))
       .then(() => self.skipWaiting())
   );
 });
 
 // Активация
 self.addEventListener('activate', event => {
-  console.log('🔧 Активация Service Worker');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('🗑️ Удаление старого кэша:', cacheName);
+          // Удаляем ВСЕ старые кеши
+          if (cacheName.startsWith('electro-smeta-') && 
+              cacheName !== CACHE_NAME) {
+            console.log('🗑️ Удаляем старый кеш:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      // Немедленно забираем контроль
+      return self.clients.claim();
+    })
   );
 });
 
 // Перехват запросов
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  
   // Пропускаем Яндекс.Метрику и внешние ресурсы
   if (event.request.url.includes('yandex.ru') || 
       event.request.url.includes('mc.yandex') ||
       event.request.url.includes('cdnjs.cloudflare.com') ||
       event.request.url.includes('raw.githubusercontent.com')) {
-    return; // Не кэшируем внешние ресурсы
-  }
-  
-  // Только локальные запросы
-  if (!event.request.url.startsWith(self.location.origin)) {
     return;
   }
   
+  // Универсальная проверка для главной страницы
+  const isMainPage = (
+    // Любой из этих вариантов
+    url.pathname.endsWith('/electro-smeta/') ||
+    url.pathname.endsWith('/electro-smeta/index.html') ||
+    url.pathname === '/' ||
+    url.pathname === '/index.html' ||
+    event.request.mode === 'navigate'
+  );
+  
+  // Для главной страницы - всегда свежая версия из сети
+  if (isMainPage) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }) // ← ЗАПРЕЩАЕМ КЕШ БРАУЗЕРА
+        .then(networkResponse => {
+          // Всегда обновляем кеш Service Worker
+          if (networkResponse.ok) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => cache.put(event.request, responseClone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Только если сеть недоступна - отдаем из кеша
+          return caches.match('./index.html');
+        })
+    );
+    return;
+  }
+  
+  // Для остальных запросов - кеш с фоновым обновлением
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        // Возвращаем из кэша если есть
-        if (response) {
-          return response;
-        }
-        
-        // Загружаем из сети
-        return fetch(event.request)
-          .then(response => {
-            // Не кэшируем ошибки и большие файлы
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
+      .then(cachedResponse => {
+        // Параллельно загружаем свежую версию для следующего раза
+        const fetchPromise = fetch(event.request)
+          .then(networkResponse => {
+            if (networkResponse.ok) {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => cache.put(event.request, responseClone));
             }
-            
-            // Клонируем для кэширования
-            const responseToCache = response.clone();
-            
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-              
-            return response;
+            return networkResponse;
           })
-          .catch(error => {
-            console.log('❌ Ошибка загрузки:', error);
-            // Для навигационных запросов возвращаем главную
-            if (event.request.mode === 'navigate') {
-              return caches.match('./index.html');
-            }
-            return new Response('Офлайн режим', {
-              status: 408,
-              headers: {'Content-Type': 'text/plain'}
-            });
-          });
+          .catch(() => null); // Игнорируем ошибки сети
+        
+        // Сразу возвращаем кеш (если есть) или сеть
+        return cachedResponse || fetchPromise;
       })
   );
 });
@@ -96,5 +102,9 @@ self.addEventListener('fetch', event => {
 self.addEventListener('message', event => {
   if (event.data.action === 'skipWaiting') {
     self.skipWaiting();
+  }
+  
+  if (event.data.action === 'clearCache') {
+    caches.delete(CACHE_NAME);
   }
 });
