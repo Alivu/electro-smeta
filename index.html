@@ -1617,10 +1617,20 @@ async function loadVersionFromSW() {
   }
   return APP_VERSION;
 }
-// ========== УВЕДОМЛЕНИЕ В ЦЕНТРЕ (ТОЛЬКО ДЛЯ ОБНОВЛЕНИЙ) ==========
+// ========== УВЕДОМЛЕНИЕ В ЦЕНТРЕ СО ЗВУКОМ ==========
 function showCenterNotification(message) {
     const isMobile = window.innerWidth <= 767;
     
+    // 1. ВИБРАЦИЯ (только на мобильных)
+    if (isMobile && 'vibrate' in navigator) {
+        // Короткая вибрация: 100ms вибрация, 50ms пауза, 100ms вибрация
+        navigator.vibrate([100, 50, 100]);
+    }
+    
+    // 2. ЗВУКОВОЕ УВЕДОМЛЕНИЕ
+    playNotificationSound();
+    
+    // 3. СОЗДАЕМ УВЕДОМЛЕНИЕ (стиль как был)
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed;
@@ -1643,8 +1653,30 @@ function showCenterNotification(message) {
         line-height: 1.4;
     `;
     
+    // Добавляем бренд Electric Group сверху
     notification.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: ${message.includes('<br>') ? '15px' : '0'};">
+        <div style="
+            font-size: ${isMobile ? '20px' : '24px'};
+            font-weight: bold;
+            color: #f1c40f;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        ">
+            <i class="fas fa-bolt"></i>
+            Electric Group
+            <i class="fas fa-bolt"></i>
+        </div>
+        
+        <div style="
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #f1c40f, transparent);
+            margin: 10px 0 15px;
+        "></div>
+        
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
             <i class="fas fa-bolt" style="color: #f1c40f; font-size: 1.3em;"></i>
             <div>${message}</div>
         </div>
@@ -1669,18 +1701,108 @@ function showCenterNotification(message) {
         document.head.appendChild(style);
     }
     
-    // Автоскрытие
+    // Автоскрытие через 4 секунды
     setTimeout(() => {
         notification.style.animation = 'centerNotifyOut 0.4s ease-out';
-        setTimeout(() => notification.remove(), 400);
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 400);
     }, 4000);
     
     // Закрытие по клику
     notification.addEventListener('click', function() {
         notification.style.animation = 'centerNotifyOut 0.4s ease-out';
-        setTimeout(() => notification.remove(), 400);
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 400);
     });
 }
+
+// ========== ФУНКЦИЯ ВОСПРОИЗВЕДЕНИЯ ЗВУКА ==========
+function playNotificationSound() {
+    try {
+        // Создаем AudioContext для современных браузеров
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            const audioContext = new AudioContext();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            // Настраиваем звук (приятный "динь")
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // Частота
+            oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+            
+            // Настраиваем громкость (fade in/out)
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.05);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            // Подключаем
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Воспроизводим
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+            
+            // Автоматически закрываем контекст
+            setTimeout(() => {
+                if (audioContext.state !== 'closed') {
+                    audioContext.close();
+                }
+            }, 1000);
+            
+        } else {
+            // Fallback для старых браузеров - используем HTML5 Audio
+            fallbackSound();
+        }
+    } catch (error) {
+        console.log('Не удалось воспроизвести звук:', error);
+        fallbackSound();
+    }
+}
+
+// ========== РЕЗЕРВНЫЙ ЗВУК (HTML5 Audio) ==========
+function fallbackSound() {
+    try {
+        // Создаем короткий бип с помощью Web Audio API или простого beep
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+        
+    } catch (error) {
+        // Самый простой fallback - имитация звука через динамик (только в некоторых браузерах)
+        console.log('Используем простой звук');
+        try {
+            // Это сработает не во всех браузерах
+            const audio = new Audio();
+            const source = audioContext.createBufferSource();
+            // Просто пытаемся создать простой звук
+            console.log('\u0007'); // ASCII bell (работает в некоторых консолях)
+        } catch (e) {
+            console.log('Звук недоступен');
+        }
+    }
+}
+
 // ========== КОНЕЦ ЦЕНТРАЛЬНОГО УВЕДОМЛЕНИЯ ==========
 // Основная функция инициализации версии
 async function initializeVersion() {
