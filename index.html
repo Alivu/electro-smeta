@@ -1812,7 +1812,37 @@ async function initializeVersion() {
   if (savedVersion !== APP_VERSION) {
     console.log(`🔄 ОБНОВЛЕНИЕ: ${savedVersion || 'нет'} → ${APP_VERSION}`);
     localStorage.setItem('app_version', APP_VERSION);
-    
+        // ========== ПОДСВЕТКА КНОПКИ "ОБНОВИТЬ СМЕТУ" ==========
+    const refreshBtn = document.getElementById('refreshEstimateBtn');
+    if (refreshBtn) {
+        // Меняем текст и стиль кнопки
+        refreshBtn.innerHTML = `
+            <i class="fas fa-bolt" style="color: #f39c12;"></i> 
+            Новая версия ${APP_VERSION}
+            <span style="
+                margin-left: 8px; 
+                background: #e74c3c; 
+                color: white; 
+                padding: 2px 6px; 
+                border-radius: 10px; 
+                font-size: 0.7em;
+                font-weight: bold;
+            ">
+                NEW
+            </span>
+        `;
+        
+        // Меняем стиль кнопки
+        refreshBtn.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
+        refreshBtn.style.color = 'white';
+        refreshBtn.style.fontWeight = 'bold';
+        refreshBtn.style.border = 'none';
+        
+        // Сохраняем информацию для обработчика
+        refreshBtn.dataset.oldVersion = savedVersion || 'нет';
+        refreshBtn.dataset.newVersion = APP_VERSION;
+    }
+    // ========== КОНЕЦ ПОДСВЕТКИ ==========
 setTimeout(() => {
     showCenterNotification(`🎉 Обновлено до версии ${APP_VERSION}!`);
 }, 1000);
