@@ -1,5 +1,9 @@
-const APP_VERSION = '1.8.0';
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.6.2/workbox-sw.js');
+
+const APP_VERSION = '1.9.0';
 const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
+
+// Файлы для кеша
 const FILES_TO_CACHE = [
   './',
   './index.html',
@@ -14,26 +18,26 @@ const FILES_TO_CACHE = [
   './Icon/icon-512x512.png',
   './Icon/icon-Maskable-512x512.png',
   './Icon/icon-monochrome-512x512.png'
-  // сюда можно добавить CSS и JS, если они есть
+  // сюда можно добавить CSS и JS, если есть
 ];
 
-self.addEventListener('install', event => {
+// Установка SW и кеширование
+self.addEventListener('install', (event) => {
   console.log(`⚡ Установка версии ${APP_VERSION}`);
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
       .then(() => self.skipWaiting())
   );
 });
 
-self.addEventListener('activate', event => {
+// Активация и удаление старых кешей
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then(keys => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName.startsWith('electro-smeta-') && cacheName !== CACHE_NAME) {
-            console.log('🗑️ Удаляем старый кеш:', cacheName);
-            return caches.delete(cacheName);
+        keys.map(key => {
+          if (key.startsWith('electro-smeta-') && key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         })
       );
@@ -41,14 +45,34 @@ self.addEventListener('activate', event => {
   );
 });
 
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(cached => cached || fetch(event.request))
-  );
-});
+// Навигация и офлайн fallback через Workbox
+if (workbox.navigationPreload.isSupported()) {
+  workbox.navigationPreload.enable();
+}
 
+workbox.routing.registerRoute(
+  ({ request }) => request.mode === 'navigate',
+  new workbox.strategies.NetworkFirst({
+    cacheName: CACHE_NAME,
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({ maxEntries: 50 }),
+    ],
+  })
+);
+
+// Остальные запросы: кеш с фоновым обновлением
+workbox.routing.registerRoute(
+  ({ request }) => request.destination !== 'document',
+  new workbox.strategies.StaleWhileRevalidate({
+    cacheName: CACHE_NAME,
+    plugins: [
+      new workbox.expiration.ExpirationPlugin({ maxEntries: 100 }),
+    ],
+  })
+);
+
+// Сообщения для управления SW
 self.addEventListener('message', event => {
-  if (event.data.action === 'skipWaiting') self.skipWaiting();
-  if (event.data.action === 'clearCache') caches.delete(CACHE_NAME);
+  if (event.data && event.data.action === 'skipWaiting') self.skipWaiting();
+  if (event.data && event.data.action === 'clearCache') caches.delete(CACHE_NAME);
 });
