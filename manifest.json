@@ -50,6 +50,7 @@
       "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+      "purpose": "any"
     },
     {
       "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-Maskable-512x512.png",
