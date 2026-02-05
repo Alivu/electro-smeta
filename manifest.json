@@ -9,6 +9,7 @@
   "background_color": "#f5f7fa",
   "theme_color": "#2c3e50",
   "orientation": "portrait",
+
   "icons": [
     {
       "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-72x72.png",
@@ -49,8 +50,15 @@
       "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-Maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
+
   "screenshots": [
     {
       "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/screen-640x480.png",
@@ -60,9 +68,11 @@
     {
       "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/screen-1280x720.png",
       "sizes": "1280x720",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide"
     }
   ],
+
   "categories": ["business", "productivity"],
   "related_applications": [],
   "prefer_related_applications": false
