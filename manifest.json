@@ -49,5 +49,12 @@
       "sizes": "512x512",
       "type": "image/png"
     }
+  ],
+  "screenshots": [
+    {
+      "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/screen-640x480.png",
+      "sizes": "640x480",
+      "type": "image/png"
+    }
   ]
 }
