@@ -27,7 +27,7 @@
       "type": "image/png"
     },
     {
-      "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-144x144.png",
+      "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png"
     },
@@ -57,6 +57,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/icon-monochrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "monochrome"
     }
   ],
 
