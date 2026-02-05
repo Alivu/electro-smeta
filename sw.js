@@ -1,13 +1,12 @@
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.6.2/workbox-sw.js');
-
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.9.1';
 const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
+const OFFLINE_PAGE = './offline.html';
 
-// Файлы для кеша
 const FILES_TO_CACHE = [
   './',
   './index.html',
   './Price_Electric_GrouP.pdf',
+  OFFLINE_PAGE,
   './Icon/icon-72x72.png',
   './Icon/icon-96x96.png',
   './Icon/icon-128x128.png',
@@ -18,20 +17,19 @@ const FILES_TO_CACHE = [
   './Icon/icon-512x512.png',
   './Icon/icon-Maskable-512x512.png',
   './Icon/icon-monochrome-512x512.png'
-  // сюда можно добавить CSS и JS, если есть
 ];
 
 // Установка SW и кеширование
-self.addEventListener('install', (event) => {
-  console.log(`⚡ Установка версии ${APP_VERSION}`);
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(FILES_TO_CACHE))
       .then(() => self.skipWaiting())
   );
 });
 
 // Активация и удаление старых кешей
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => {
       return Promise.all(
@@ -45,34 +43,54 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Навигация и офлайн fallback через Workbox
-if (workbox.navigationPreload.isSupported()) {
-  workbox.navigationPreload.enable();
-}
+// Навигация — отдаём offline.html при отсутствии сети
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
 
-workbox.routing.registerRoute(
-  ({ request }) => request.mode === 'navigate',
-  new workbox.strategies.NetworkFirst({
-    cacheName: CACHE_NAME,
-    plugins: [
-      new workbox.expiration.ExpirationPlugin({ maxEntries: 50 }),
-    ],
-  })
-);
+  // Пропускаем внешние ресурсы (Яндекс, CDN и т.д.)
+  if (event.request.url.includes('yandex.ru') || 
+      event.request.url.includes('mc.yandex') ||
+      event.request.url.includes('cdnjs.cloudflare.com') ||
+      event.request.url.includes('raw.githubusercontent.com')) {
+    return;
+  }
 
-// Остальные запросы: кеш с фоновым обновлением
-workbox.routing.registerRoute(
-  ({ request }) => request.destination !== 'document',
-  new workbox.strategies.StaleWhileRevalidate({
-    cacheName: CACHE_NAME,
-    plugins: [
-      new workbox.expiration.ExpirationPlugin({ maxEntries: 100 }),
-    ],
-  })
-);
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' })
+        .then(networkResponse => {
+          if (networkResponse.ok) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => caches.match(OFFLINE_PAGE))
+    );
+    return;
+  }
+
+  // Остальные запросы — кеш с фоновым обновлением
+  event.respondWith(
+    caches.match(event.request)
+      .then(cachedResponse => {
+        const fetchPromise = fetch(event.request)
+          .then(networkResponse => {
+            if (networkResponse.ok) {
+              const clone = networkResponse.clone();
+              caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+            }
+            return networkResponse;
+          })
+          .catch(() => null);
+
+        return cachedResponse || fetchPromise;
+      })
+  );
+});
 
 // Сообщения для управления SW
 self.addEventListener('message', event => {
-  if (event.data && event.data.action === 'skipWaiting') self.skipWaiting();
-  if (event.data && event.data.action === 'clearCache') caches.delete(CACHE_NAME);
+  if (event.data?.action === 'skipWaiting') self.skipWaiting();
+  if (event.data?.action === 'clearCache') caches.delete(CACHE_NAME);
 });
