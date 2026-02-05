@@ -56,6 +56,10 @@
       "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/screen-640x480.png",
       "sizes": "640x480",
       "type": "image/png"
-    }
-  ]
-}
+  },
+  {
+    "src": "https://raw.githubusercontent.com/Alivu/alivu.github.io/main/Icon/screen-1280x720.png",
+    "sizes": "1280x720",
+    "type": "image/png"
+  }
+]
