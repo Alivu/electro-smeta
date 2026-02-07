@@ -81,7 +81,211 @@
             --warning: #f39c12;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+/* Улучшенные стили для увеличительной линзы */
+.magnifier {
+    position: fixed;
+    width: 220px;
+    height: 90px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    overflow: hidden;
+    display: none;
+    box-shadow: 
+        0 0 0 3px rgba(255,255,255,0.9),
+        0 0 25px rgba(52, 152, 219, 0.4),
+        inset 0 0 40px rgba(255,255,255,0.3);
+    background: radial-gradient(
+        circle at 30% 30%,
+        rgba(255, 255, 255, 0.25) 0%,
+        rgba(255, 255, 255, 0.1) 40%,
+        rgba(255, 255, 255, 0.05) 70%,
+        transparent 100%
+    );
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.4);
+}
 
+.magnifier-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-sizing: border-box;
+    z-index: 2;
+}
+
+/* Уровни увеличения для разных позиций букв */
+.magnifier-letter {
+    display: inline-block;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+}
+
+.letter-0, .letter-3 {
+    transform: scale(2);
+    opacity: 0.8;
+    color: #3498db !important;
+    text-shadow: 0 1px 3px rgba(52, 152, 219, 0.4) !important;
+}
+
+.letter-1, .letter-2 {
+    transform: scale(3);
+    opacity: 1;
+    color: #2c3e50 !important;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+    font-weight: 900 !important;
+}
+
+.letter-outside {
+    transform: scale(1.5);
+    opacity: 0.3;
+    color: #666 !important;
+}
+
+/* Эффект волны внутри линзы */
+.magnifier-wave {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle at 30% 30%,
+        rgba(52, 152, 219, 0.15) 0%,
+        rgba(41, 128, 185, 0.08) 30%,
+        rgba(31, 97, 141, 0.03) 50%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 1;
+    animation: wavePulse 3s infinite ease-in-out;
+}
+
+/* Отражения на стекле */
+.magnifier-reflections {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle at 70% 20%,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0.1) 10%,
+        transparent 20%
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Для мобильных устройств */
+@media (max-width: 767px) {
+    .magnifier {
+        width: 180px;
+        height: 70px;
+    }
+    
+    .magnifier-content {
+        padding: 8px;
+    }
+    
+    .letter-0, .letter-3 {
+        transform: scale(1.8);
+    }
+    
+    .letter-1, .letter-2 {
+        transform: scale(2.5);
+    }
+}
+
+/* Анимации */
+@keyframes magnifierAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) rotate(-5deg);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes wavePulse {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.05);
+    }
+}
+
+.magnifier.active {
+    animation: magnifierAppear 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Эффект при наведении на текст с включенной линзой */
+body.magnifier-active .price-item:hover {
+    background: rgba(52, 152, 219, 0.15) !important;
+    box-shadow: 0 0 15px rgba(52, 152, 219, 0.2) !important;
+}
+
+body.magnifier-active .section-header:hover {
+    background: linear-gradient(to right, #3498db, #2c3e50) !important;
+}
+
+/* Улучшенная кнопка линзы */
+.magnifier-toggle {
+    position: fixed;
+    bottom: 120px;
+    right: 20px;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 9999;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+.magnifier-toggle:hover {
+    transform: scale(1.15) rotate(15deg);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+}
+
+.magnifier-toggle.active {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.4), 0 8px 25px rgba(231, 76, 60, 0.3);
+    animation: buttonPulse 2s infinite;
+}
+
+@keyframes buttonPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.4), 0 8px 25px rgba(231, 76, 60, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(231, 76, 60, 0.3), 0 8px 25px rgba(231, 76, 60, 0.4);
+    }
+}
+`;
         * {
             margin: 0;
             padding: 0;
@@ -104,6 +308,8 @@
             margin: 0 auto;
             padding: 15px;
         }
+
+		
 
         /* Шапка */
         .header {
@@ -1360,6 +1566,22 @@
     </style>
 </head>
 <body>
+	    <!-- Кнопка переключения линзы -->
+    <button class="magnifier-toggle" id="magnifierToggle" title="Включить увеличительную линзу">
+        <i class="fas fa-search-plus"></i>
+    </button>
+    
+    <!-- Подсказка -->
+    <div class="magnifier-hint" id="magnifierHint">
+        <strong>Увеличительная линза</strong><br>
+        Наведите на текст в прайс-листе для увеличения
+    </div>
+    
+    <!-- Сама линза -->
+    <div class="magnifier" id="magnifier">
+        <div class="magnifier-content" id="magnifierContent"></div>
+        <div class="magnifier-wave"></div>
+    </div>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <div class="container">
@@ -4726,6 +4948,604 @@ document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
     checkSavedToken();
 });
+class Magnifier {
+    constructor() {
+        this.magnifier = document.getElementById('magnifier');
+        this.content = document.getElementById('magnifierContent');
+        this.toggleBtn = document.getElementById('magnifierToggle');
+        this.hint = document.getElementById('magnifierHint');
+        this.isActive = false;
+        this.zoom = 2.5;
+        this.lastText = '';
+        this.lastPosition = 0;
+        
+        // Размеры линзы
+        this.lensWidth = 180;
+        this.lensHeight = 70;
+        this.charsToShow = 7;
+        
+        // Отступы между буквами + смещение левых букв
+        this.letterSpacing = {
+            center: '0.15em',
+            near: '0.1em',
+            far: '0.08em',
+            leftOffset: '-0.05em'
+        };
+        
+        // Уменьшаем масштабы букв
+        this.letterScale = {
+            center: 2.3,
+            near: 2.0,
+            far: 1.4,
+            veryFar: 1.1
+        };
+        
+        // Флаг для показа подсказки (показываем только 1 раз)
+        this.hintShown = false;
+        
+        this.init();
+    }
+    
+    init() {
+        if (!this.magnifier) return;
+        
+        const style = document.createElement('style');
+        style.textContent = `
+            /* Стили линзы остаются без изменений */
+            .magnifier {
+                position: fixed;
+                width: ${this.lensWidth}px;
+                height: ${this.lensHeight}px;
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9999;
+                overflow: visible;
+                display: none;
+                border: 3px solid rgba(255,255,255,0.9);
+                box-shadow: 
+                    0 0 25px rgba(52, 152, 219, 0.6),
+                    0 0 0 4px rgba(255,255,255,0.3),
+                    inset 0 0 30px rgba(255,255,255,0.5);
+                background: radial-gradient(
+                    circle at center,
+                    rgba(255,255,255,0.3) 0%,
+                    rgba(255,255,255,0.15) 40%,
+                    rgba(255,255,255,0.05) 70%,
+                    transparent 90%
+                );
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
+            }
+            
+            .magnifier-content {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: #2c3e50;
+                font-size: 28px;
+                white-space: nowrap;
+                overflow: visible;
+                text-shadow: 
+                    0 2px 4px white,
+                    0 0 8px rgba(255,255,255,0.5);
+                padding: 0 15px;
+            }
+            
+            .magnifier-letter {
+                display: inline-block;
+                transition: transform 0.1s ease;
+                position: relative;
+                text-align: center;
+                vertical-align: middle;
+            }
+            
+            .letter-left {
+                position: relative;
+                left: ${this.letterSpacing.leftOffset};
+            }
+            
+            .letter-center {
+                transform: scale(${this.letterScale.center});
+                color: #2c3e50;
+                font-weight: 900;
+                text-shadow: 0 3px 6px rgba(0,0,0,0.4);
+                letter-spacing: ${this.letterSpacing.center};
+                margin: 0 8px;
+                z-index: 3;
+            }
+            
+            .letter-near {
+                transform: scale(${this.letterScale.near});
+                color: #3498db;
+                opacity: 0.9;
+                text-shadow: 0 2px 4px rgba(52, 152, 219, 0.3);
+                letter-spacing: ${this.letterSpacing.near};
+                margin: 0 6px;
+                z-index: 2;
+            }
+            
+            .letter-far {
+                transform: scale(${this.letterScale.far});
+                color: #666;
+                opacity: 0.7;
+                letter-spacing: ${this.letterSpacing.far};
+                margin: 0 4px;
+                z-index: 1;
+            }
+            
+            .letter-very-far {
+                transform: scale(${this.letterScale.veryFar});
+                color: #999;
+                opacity: 0.5;
+                letter-spacing: 0.05em;
+                margin: 0 2px;
+                z-index: 0;
+            }
+            
+            .magnifier-letter.space {
+                min-width: 0.8em;
+            }
+            
+            /* Улучшенные стили для подсказки над кнопкой */
+            .magnifier-hint {
+                position: fixed;
+                bottom: 180px; /* Над кнопкой лупы */
+                right: 20px;
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 12px;
+                font-size: 0.85rem;
+                max-width: 220px;
+                z-index: 9998;
+                display: none;
+                box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+                border-left: 4px solid #3498db;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: opacity 0.3s ease, transform 0.3s ease;
+                pointer-events: none;
+            }
+            
+            .magnifier-hint.show {
+                opacity: 1;
+                transform: translateY(0);
+                display: block;
+            }
+            
+            .magnifier-hint:after {
+                content: '';
+                position: absolute;
+                bottom: -8px;
+                right: 20px;
+                border: 8px solid transparent;
+                border-top-color: #2c3e50;
+            }
+            
+            .magnifier-hint strong {
+                color: #f1c40f;
+                display: block;
+                margin-bottom: 5px;
+                font-size: 0.95rem;
+            }
+            
+            .magnifier-hint i {
+                color: #3498db;
+                margin-right: 8px;
+            }
+            
+            /* Кнопка лупы */
+            .magnifier-toggle {
+                position: fixed;
+                bottom: 120px;
+                right: 20px;
+                width: 55px;
+                height: 55px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #3498db, #2c3e50);
+                color: white;
+                border: none;
+                cursor: pointer;
+                z-index: 9999;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.6rem;
+                transition: all 0.3s ease;
+                border: 2px solid rgba(255,255,255,0.2);
+            }
+            
+            .magnifier-toggle:hover {
+                transform: scale(1.15) rotate(15deg);
+                box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+            }
+            
+            .magnifier-toggle.active {
+                background: linear-gradient(135deg, #e74c3c, #c0392b);
+                box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.4), 0 8px 25px rgba(231, 76, 60, 0.3);
+                animation: buttonPulse 2s infinite;
+            }
+            
+            @keyframes buttonPulse {
+                0%, 100% {
+                    box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.4), 0 8px 25px rgba(231, 76, 60, 0.3);
+                }
+                50% {
+                    box-shadow: 0 0 0 6px rgba(231, 76, 60, 0.3), 0 8px 25px rgba(231, 76, 60, 0.4);
+                }
+            }
+            
+            @media (max-width: 767px) {
+                .magnifier {
+                    width: 140px;
+                    height: 55px;
+                }
+                
+                .magnifier-content {
+                    font-size: 22px;
+                }
+                
+                .letter-center { transform: scale(${this.letterScale.center * 0.82}); }
+                .letter-near { transform: scale(${this.letterScale.near * 0.85}); }
+                .letter-far { transform: scale(${this.letterScale.far * 0.86}); }
+                .letter-very-far { transform: scale(${this.letterScale.veryFar * 0.91}); }
+                
+                /* Для мобильных делаем подсказку компактнее */
+                .magnifier-hint {
+                    bottom: 160px;
+                    right: 15px;
+                    max-width: 180px;
+                    font-size: 0.75rem;
+                    padding: 10px 14px;
+                }
+                
+                .magnifier-toggle {
+                    bottom: 100px;
+                    right: 15px;
+                    width: 50px;
+                    height: 50px;
+                    font-size: 1.4rem;
+                }
+            }
+            
+            @media (min-width: 1200px) {
+                .magnifier {
+                    width: 200px;
+                    height: 80px;
+                }
+                
+                .magnifier-content {
+                    font-size: 32px;
+                }
+                
+                .letter-center { transform: scale(${this.letterScale.center * 1.14}); }
+                .letter-near { transform: scale(${this.letterScale.near * 1.15}); }
+                .letter-far { transform: scale(${this.letterScale.far * 1.21}); }
+                .letter-very-far { transform: scale(${this.letterScale.veryFar * 1.18}); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        this.toggleBtn.addEventListener('click', () => this.toggle());
+        document.addEventListener('mousemove', (e) => this.handleMove(e));
+        document.addEventListener('touchmove', (e) => this.handleTouch(e), { passive: false });
+        
+        // Показываем подсказку при наведении на кнопку
+        this.toggleBtn.addEventListener('mouseenter', () => {
+            this.showHint();
+        });
+        
+        this.toggleBtn.addEventListener('mouseleave', () => {
+            this.hideHint();
+        });
+        
+        // На тач-устройствах показываем подсказку при тапе
+        this.toggleBtn.addEventListener('touchstart', () => {
+            this.showHint();
+            setTimeout(() => this.hideHint(), 3000);
+        });
+        
+        console.log('✅ Линза инициализирована');
+        
+        // Автоматически показываем подсказку при первом запуске (через 3 секунды)
+        setTimeout(() => {
+            if (!this.hintShown) {
+                this.showHint();
+                setTimeout(() => this.hideHint(), 5000);
+                this.hintShown = true;
+            }
+        }, 3000);
+    }
+    
+    showHint() {
+        if (this.hint) {
+            this.hint.classList.add('show');
+            
+            // Обновляем текст подсказки в зависимости от состояния
+            if (this.isActive) {
+                this.hint.innerHTML = `
+                    <strong><i class="fas fa-search-plus"></i> Линза активна</strong>
+                    Двигайте курсор по тексту для увеличения.
+                    Нажмите кнопку для выключения.
+                `;
+            } else {
+                this.hint.innerHTML = `
+                    <strong><i class="fas fa-search-plus"></i> Увеличительная линза</strong>
+                    Нажмите для включения. Затем наведите на текст в прайс-листе или смете для увеличения.
+                `;
+            }
+        }
+    }
+    
+    hideHint() {
+        if (this.hint) {
+            this.hint.classList.remove('show');
+        }
+    }
+    
+    toggle() {
+        this.isActive = !this.isActive;
+        this.magnifier.style.display = this.isActive ? 'block' : 'none';
+        this.toggleBtn.classList.toggle('active', this.isActive);
+        
+        // Обновляем подсказку при переключении
+        this.showHint();
+        setTimeout(() => this.hideHint(), 2000);
+        
+        if (this.isActive) {
+            showNotification('🔍 Линза включена. Наводите на текст');
+        } else {
+            showNotification('🔍 Линза выключена');
+        }
+    }
+    
+    // ... остальные методы без изменений ...
+    handleMove(e) {
+        if (!this.isActive) return;
+        
+        const x = e.clientX;
+        const y = e.clientY;
+        
+        this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
+        this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
+        
+        this.updateTextUnderCursor(x, y);
+    }
+    
+    handleTouch(e) {
+        if (!this.isActive || !e.touches[0]) return;
+        
+        e.preventDefault();
+        const touch = e.touches[0];
+        const x = touch.clientX;
+        const y = touch.clientY;
+        
+        this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
+        this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
+        
+        this.updateTextUnderCursor(x, y);
+    }
+    
+    updateTextUnderCursor(x, y) {
+        try {
+            const element = document.elementFromPoint(x, y);
+            if (!element) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            const textNode = this.findTextNodeUnderCursor(x, y, element);
+            if (!textNode || !textNode.textContent) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            const fullText = textNode.textContent.trim();
+            if (!fullText) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            const charIndex = this.getCharIndexAtPoint(textNode, x, y);
+            if (charIndex === -1) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            this.renderTextAtPosition(fullText, charIndex);
+            
+        } catch (error) {
+            console.log('Ошибка обновления текста:', error);
+            this.content.innerHTML = '';
+        }
+    }
+    
+    findTextNodeUnderCursor(x, y, startElement) {
+        const walker = document.createTreeWalker(
+            startElement,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        let node;
+        let bestNode = null;
+        let bestDistance = Infinity;
+        
+        while (node = walker.nextNode()) {
+            if (node.textContent.trim().length < 2) continue;
+            
+            const parentRect = node.parentElement.getBoundingClientRect();
+            if (x >= parentRect.left && x <= parentRect.right &&
+                y >= parentRect.top && y <= parentRect.bottom) {
+                
+                const centerX = parentRect.left + parentRect.width / 2;
+                const centerY = parentRect.top + parentRect.height / 2;
+                const distance = Math.sqrt(
+                    Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)
+                );
+                
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    bestNode = node;
+                }
+            }
+        }
+        
+        return bestNode || startElement;
+    }
+    
+    getCharIndexAtPoint(textNode, x, y) {
+        const text = textNode.textContent;
+        const range = document.createRange();
+        
+        let left = 0;
+        let right = text.length;
+        
+        while (left <= right) {
+            const mid = Math.floor((left + right) / 2);
+            
+            range.setStart(textNode, Math.min(mid, text.length - 1));
+            range.setEnd(textNode, Math.min(mid + 1, text.length));
+            
+            const rect = range.getBoundingClientRect();
+            
+            if (rect.left <= x && x <= rect.right &&
+                rect.top <= y && y <= rect.bottom) {
+                return mid;
+            }
+            
+            if (x < rect.left) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        
+        return -1;
+    }
+    
+    renderTextAtPosition(fullText, position) {
+        const half = Math.floor(this.charsToShow / 2);
+        const start = Math.max(0, position - half);
+        const end = Math.min(fullText.length, position + half + 1);
+        
+        let displayText = '';
+        let centerIndexInDisplay = position - start;
+        
+        for (let i = start; i < end; i++) {
+            if (i >= 0 && i < fullText.length) {
+                displayText += fullText[i];
+            }
+        }
+        
+        if (displayText.length < this.charsToShow) {
+            centerIndexInDisplay = Math.floor(displayText.length / 2);
+        }
+        
+        let html = '';
+        for (let i = 0; i < displayText.length; i++) {
+            const distance = Math.abs(i - centerIndexInDisplay);
+            const isLeft = i < centerIndexInDisplay;
+            
+            let className = 'letter-far';
+            
+            if (distance === 0) {
+                className = 'letter-center';
+            } else if (distance === 1) {
+                className = 'letter-near';
+            } else if (distance === 2) {
+                className = 'letter-far';
+            } else {
+                className = 'letter-very-far';
+            }
+            
+            if (isLeft) {
+                className += ' letter-left';
+            }
+            
+            const extraClass = displayText[i] === ' ' ? ' space' : '';
+            
+            const char = displayText[i];
+            html += `<span class="magnifier-letter ${className}${extraClass}">${
+                char === ' ' ? '&nbsp;' : char
+            }</span>`;
+        }
+        
+        this.content.innerHTML = html;
+    }
+}
+// Функция инициализации
+function initMagnifier() {
+    console.log('🔄 Инициализация линзы...');
+    
+    try {
+        // Ждем немного чтобы DOM полностью загрузился
+        setTimeout(() => {
+            const magnifier = new Magnifier();
+            window.magnifierInstance = magnifier;
+            console.log('✅ Линза готова к работе');
+            
+            // Тестовый запуск
+            setTimeout(() => {
+                const btn = document.getElementById('magnifierToggle');
+                if (btn) {
+                    console.log('🟡 Тестируем линзу...');
+                    btn.click(); // Включаем
+                    setTimeout(() => {
+                        if (magnifier.isActive) {
+                            btn.click(); // Выключаем
+                            console.log('✅ Тест завершен');
+                        }
+                    }, 2000);
+                }
+            }, 1000);
+            
+        }, 500);
+        
+    } catch (error) {
+        console.error('❌ Ошибка инициализации линзы:', error);
+    }
+}
+// ТЕСТОВАЯ ФУНКЦИЯ ДЛЯ ЛИНЗЫ
+function testMagnifier() {
+    console.log('🔍 Тестирование линзы...');
+    
+    // Проверяем элементы
+    const elements = [
+        'magnifier',
+        'magnifierContent', 
+        'magnifierToggle',
+        'magnifierHint'
+    ];
+    
+    elements.forEach(id => {
+        const el = document.getElementById(id);
+        console.log(`${id}:`, el ? '✅ Найден' : '❌ Не найден');
+    });
+    
+    // Включаем линзу для теста
+    const toggle = document.getElementById('magnifierToggle');
+    if (toggle) {
+        toggle.click();
+        console.log('Линза включена для теста');
+    }
+}
+
+// ДОБАВЛЯЕМ ИНИЦИАЛИЗАЦИЮ ЛИНЗЫ В DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    checkGoogleAuth();
+    checkSavedToken();
+    
+    // Инициализация линзы
+    initMagnifier();
+});
+		
 function debugEstimateData() {
     console.log('=== DEBUG estimateData ===');
     console.log('Всего строк в массиве:', estimateData.length);
