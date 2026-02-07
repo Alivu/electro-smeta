@@ -5022,21 +5022,41 @@ class Magnifier {
                 }
             }
             
-            @media (max-width: 767px) {
-                .magnifier {
-                    width: 140px;
-                    height: 55px;
-                }
-                
-                .magnifier-content {
-                    font-size: 22px;
-                }
-                
-                .letter-center { transform: scale(${this.letterScale.center * 0.82}); }
-                .letter-near { transform: scale(${this.letterScale.near * 0.85}); }
-                .letter-far { transform: scale(${this.letterScale.far * 0.86}); }
-                .letter-very-far { transform: scale(${this.letterScale.veryFar * 0.91}); }
-                
+@media (max-width: 767px) {
+    .magnifier {
+        width: 180px !important;    /* ← УВЕЛИЧИВАЕМ ШИРИНУ */
+        height: 80px !important;    /* ← УВЕЛИЧИВАЕМ ВЫСОТУ */
+    }
+    
+    .magnifier-content {
+        font-size: 26px !important; /* ← УВЕЛИЧИВАЕМ ШРИФТ */
+    }
+    
+    /* УВЕЛИЧИВАЕМ ВСЕ БУКВЫ */
+    .letter-center { 
+        transform: scale(2.8) !important;    /* ← БОЛЬШЕ */
+        letter-spacing: 0.2em !important;
+    }
+    
+    .letter-near { 
+        transform: scale(2.3) !important;    /* ← БОЛЬШЕ */
+        letter-spacing: 0.15em !important;
+    }
+    
+    .letter-far { 
+        transform: scale(1.8) !important;    /* ← БОЛЬШЕ */
+        letter-spacing: 0.1em !important;
+    }
+    
+    .letter-very-far { 
+        transform: scale(1.3) !important;    /* ← БОЛЬШЕ */
+    }
+    
+    /* Увеличиваем количество видимых букв */
+    .magnifier-letter {
+        margin: 0 4px !important;
+    }
+}
                 /* Для мобильных делаем подсказку компактнее */
                 .magnifier-hint {
                     bottom: 160px;
