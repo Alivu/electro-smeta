@@ -5091,12 +5091,6 @@ class Magnifier {
         // Обновляем подсказку при переключении
         this.showHint();
         setTimeout(() => this.hideHint(), 2000);
-        
-        if (this.isActive) {
-            showNotification('🔍 Линза включена. Наводите на текст');
-        } else {
-            showNotification('🔍 Линза выключена');
-        }
     }
     
     // ... остальные методы без изменений ...
@@ -5284,23 +5278,7 @@ function initMagnifier() {
         setTimeout(() => {
             const magnifier = new Magnifier();
             window.magnifierInstance = magnifier;
-            console.log('✅ Линза готова к работе');
-            
-            // Тестовый запуск
-            setTimeout(() => {
-                const btn = document.getElementById('magnifierToggle');
-                if (btn) {
-                    console.log('🟡 Тестируем линзу...');
-                    btn.click(); // Включаем
-                    setTimeout(() => {
-                        if (magnifier.isActive) {
-                            btn.click(); // Выключаем
-                            console.log('✅ Тест завершен');
-                        }
-                    }, 2000);
-                }
-            }, 1000);
-            
+            console.log('✅ Линза готова к работе');            
         }, 500);
         
     } catch (error) {
