@@ -1359,7 +1359,52 @@
                 margin-right: 6px;
             }
         }
-			
+		/* ========== МОБИЛЬНАЯ ВЕРСИЯ ПРАЙС-ЛИСТА ========== */
+@media (max-width: 767px) {
+    .price-item {
+        grid-template-columns: 35px minmax(100px, 1fr) 50px 75px !important;
+        gap: 8px !important;
+        padding: 8px 10px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    .item-name {
+        font-size: 0.82rem !important;
+        line-height: 1.3 !important;
+        word-break: break-word !important;
+    }
+    
+    .item-unit {
+        font-size: 0.75rem !important;
+        white-space: nowrap !important;
+        min-width: 45px !important;
+        text-align: center !important;
+    }
+    
+    .item-price {
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+    }
+}
+
+/* ========== ПЛАНШЕТЫ ========== */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .price-item {
+        grid-template-columns: 45px minmax(150px, 1fr) 55px 85px !important;
+        gap: 10px !important;
+        padding: 10px 12px !important;
+    }
+}
+
+/* ========== МАЛЕНЬКИЕ ТЕЛЕФОНЫ ========== */
+@media (max-width: 480px) {
+    .price-item {
+        grid-template-columns: 30px minmax(80px, 1fr) 45px 65px !important;
+        gap: 6px !important;
+        padding: 6px 8px !important;
+        font-size: 0.78rem !important;
+    }
+}	
     </style>
 </head>
 <body>
