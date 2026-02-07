@@ -4834,57 +4834,69 @@ class Magnifier {
         const style = document.createElement('style');
         style.textContent = `
             /* Стили линзы остаются без изменений */
-            .magnifier {
-                position: fixed;
-                width: ${this.lensWidth}px;
-                height: ${this.lensHeight}px;
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: 9999;
-                overflow: visible;
-                display: none;
-                border: 3px solid rgba(255,255,255,0.9);
-                box-shadow: 
-                    0 0 25px rgba(52, 152, 219, 0.6),
-                    0 0 0 4px rgba(255,255,255,0.3),
-                    inset 0 0 30px rgba(255,255,255,0.5);
-                background: radial-gradient(
-                    circle at center,
-                    rgba(255,255,255,0.3) 0%,
-                    rgba(255,255,255,0.15) 40%,
-                    rgba(255,255,255,0.05) 70%,
-                    transparent 90%
-                );
-                backdrop-filter: blur(4px);
-                -webkit-backdrop-filter: blur(4px);
-            }
+.magnifier {
+    position: fixed;
+    width: 100%; /* ← ЗАНИМАЕТ ВСЮ ШИРИНУ СТРОКИ */
+    height: 60px; /* ← ВЫСОТА КАК У СТРОКИ */
+    border-radius: 8px; /* ← СКРУГЛЕННЫЕ УГЛЫ */
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    display: none;
+    border: 3px solid rgba(52, 152, 219, 0.8);
+    box-shadow: 
+        0 0 30px rgba(52, 152, 219, 0.5),
+        0 0 0 1px rgba(255,255,255,0.5),
+        inset 0 0 40px rgba(255,255,255,0.3);
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.25) 0%,
+        rgba(255,255,255,0.1) 100%
+    );
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transform-origin: center;
+    transform: scale(1.05); /* ← ЛЕГКОЕ УВЕЛИЧЕНИЕ */
+}
             
-            .magnifier-content {
-                position: absolute;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                color: #2c3e50;
-                font-size: 28px;
-                white-space: nowrap;
-                overflow: visible;
-                text-shadow: 
-                    0 2px 4px white,
-                    0 0 8px rgba(255,255,255,0.5);
-                padding: 0 15px;
-            }
-            
-            .magnifier-letter {
-                display: inline-block;
-                transition: transform 0.1s ease;
-                position: relative;
-                text-align: center;
-                vertical-align: middle;
-            }
-            
+.magnifier-content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* ← ТЕКСТ СЛЕВА */
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 18px; /* ← БАЗОВЫЙ РАЗМЕР */
+    white-space: nowrap;
+    overflow: visible;
+    text-shadow: 
+        0 2px 4px rgba(255,255,255,0.8),
+        0 0 8px rgba(255,255,255,0.4);
+    padding: 0 15px;
+    transform: scale(1.3); /* ← УВЕЛИЧЕНИЕ ВСЕГО ТЕКСТА */
+    transform-origin: left center;
+}
+
+/* УБИРАЕМ СТАРЫЕ СТИЛИ БУКВ (удалите или закомментируйте) */
+.magnifier-letter,
+.letter-center,
+.letter-near,
+.letter-far,
+.letter-very-far,
+.letter-left {
+    display: none; /* ← ОТКЛЮЧАЕМ СТАРУЮ СИСТЕМУ */
+}
+
+/* Вместо этого - простой увеличенный текст */
+.magnified-text {
+    display: inline-block;
+    transform: scale(1.4); /* ← КОЭФФИЦИЕНТ УВЕЛИЧЕНИЯ */
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.2;
+}
             .letter-left {
                 position: relative;
                 left: ${this.letterSpacing.leftOffset};
@@ -5024,12 +5036,21 @@ class Magnifier {
             
 @media (max-width: 767px) {
     .magnifier {
-        width: 180px !important;    /* ← УВЕЛИЧИВАЕМ ШИРИНУ */
-        height: 80px !important;    /* ← УВЕЛИЧИВАЕМ ВЫСОТУ */
+        height: 55px !important; /* ← ВЫСОТА КАК У СТРОКИ ПРАЙС-ЛИСТА */
+        border-radius: 6px !important;
+        border-width: 2px !important;
+        transform: scale(1.08) !important;
     }
     
     .magnifier-content {
-        font-size: 26px !important; /* ← УВЕЛИЧИВАЕМ ШРИФТ */
+        font-size: 16px !important;
+        transform: scale(1.4) !important; /* ← БОЛЬШЕ УВЕЛИЧЕНИЕ НА МОБИЛЬНЫХ */
+        padding: 0 10px !important;
+    }
+    
+    .magnified-text {
+        transform: scale(1.5) !important;
+        font-size: 0.9rem !important;
     }
     
     /* УВЕЛИЧИВАЕМ ВСЕ БУКВЫ */
@@ -5189,37 +5210,54 @@ class Magnifier {
     
 updateTextUnderCursor(x, y) {
     try {
-        // Вместо текста под курсором - текст в центре линзы
+        // Получаем позицию линзы
         const lensRect = this.magnifier.getBoundingClientRect();
-        const centerX = lensRect.left + lensRect.width / 2;
-        const centerY = lensRect.top + lensRect.height / 2;
         
-        const element = document.elementFromPoint(centerX, centerY); // ← ЦЕНТР ЛИНЗЫ
-        if (!element) {
+        // Находим строку прайс-листа под линзой
+        const elementsUnderLens = document.elementsFromPoint(
+            lensRect.left + lensRect.width / 2,
+            lensRect.top + lensRect.height / 2
+        );
+        
+        // Ищем строку прайс-листа
+        let priceRow = null;
+        for (const el of elementsUnderLens) {
+            if (el.classList && el.classList.contains('price-item')) {
+                priceRow = el;
+                break;
+            }
+            if (el.closest('.price-item')) {
+                priceRow = el.closest('.price-item');
+                break;
+            }
+        }
+        
+        if (!priceRow) {
             this.content.innerHTML = '';
             return;
         }
         
-        // Остальной код без изменений...
-        const textNode = this.findTextNodeUnderCursor(centerX, centerY, element);
-        if (!textNode || !textNode.textContent) {
-            this.content.innerHTML = '';
-            return;
-        }
+        // Получаем весь текст строки
+        const rowText = priceRow.textContent || priceRow.innerText;
         
-        const fullText = textNode.textContent.trim();
-        if (!fullText) {
-            this.content.innerHTML = '';
-            return;
-        }
+        // Убираем лишние пробелы
+        const cleanText = rowText.replace(/\s+/g, ' ').trim();
         
-        const charIndex = this.getCharIndexAtPoint(textNode, centerX, centerY); // ← ЦЕНТР ЛИНЗЫ
-        if (charIndex === -1) {
-            this.content.innerHTML = '';
-            return;
-        }
-        
-        this.renderTextAtPosition(fullText, charIndex);
+        // Отображаем УВЕЛИЧЕННЫЙ текст всей строки
+        this.content.innerHTML = `
+            <div class="magnified-text" style="
+                font-size: ${window.innerWidth <= 767 ? '14px' : '16px'};
+                font-weight: 700;
+                color: #2c3e50;
+                white-space: nowrap;
+                padding: 0 5px;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                max-width: 95%;
+            ">
+                ${cleanText}
+            </div>
+        `;
         
     } catch (error) {
         console.log('Ошибка обновления текста:', error);
