@@ -4797,72 +4797,19 @@ class Magnifier {
         this.toggleBtn = document.getElementById('magnifierToggle');
         this.hint = document.getElementById('magnifierHint');
         this.isActive = false;
-        this.zoom = 2.5;
-        this.lastText = '';
-        this.lastPosition = 0;
         this.updateTimeout = null;
         
         // Новые свойства для перетаскивания
         this.isDragging = false;
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
-        this.isManualPosition = false; // Флаг ручного позиционирования
+        this.isManualPosition = false;
 
-        // Обработчики для движения мыши (УПРОЩЕННЫЕ)
-        document.addEventListener('mousemove', (e) => {
-            if (!this.isActive || this.isDragging) return;
-            
-            // Позиционирование линзы
-            const x = e.clientX;
-            const y = e.clientY;
-            
-            if (!this.isManualPosition) {
-                this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
-                this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
-            }
-            
-            // Обновляем текст под курсором
-            this.updateTextUnderCursor(x, y);
-        });
-        
-        document.addEventListener('touchmove', (e) => {
-            if (!this.isActive || !e.touches[0] || this.isDragging) return;
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            const x = touch.clientX;
-            const y = touch.clientY;
-            
-            if (!this.isManualPosition) {
-                this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
-                this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
-            }
-            
-            this.updateTextUnderCursor(x, y);
-        }, { passive: false });
-        
         // Размеры линзы
         this.lensWidth = 180;
         this.lensHeight = 70;
-        this.charsToShow = 7;
         
-        // Отступы между буквами + смещение левых букв
-        this.letterSpacing = {
-            center: '0.15em',
-            near: '0.1em',
-            far: '0.08em',
-            leftOffset: '-0.05em'
-        };
-        
-        // Уменьшаем масштабы букв
-        this.letterScale = {
-            center: 2.3,
-            near: 2.0,
-            far: 1.4,
-            veryFar: 1.1
-        };
-        
-        // Флаг для показа подсказки (показываем только 1 раз)
+        // Флаг для показа подсказки
         this.hintShown = false;
         
         this.init();
@@ -4873,21 +4820,19 @@ class Magnifier {
         
         const style = document.createElement('style');
         style.textContent = `
-            /* Стили линзы остаются без изменений */
-            /* ========== НОВАЯ ЛИНЗА ========== */
+            /* ========== ЛИНЗА ========== */
             .magnifier {
                 position: fixed;
-                width: 100%; /* На всю ширину экрана */
+                width: 300px;
                 min-width: 300px;
-                height: auto; /* Автовысота */
+                height: auto;
                 min-height: 60px;
                 border-radius: 12px;
-                pointer-events: auto; /* Важно! Для перетаскивания */
+                pointer-events: auto;
                 z-index: 9999;
                 display: none;
                 border: 4px solid rgba(52, 152, 219, 0.9);
-                box-shadow: 
-                    0 0 40px rgba(52, 152, 219, 0.6),
+                box-shadow: 0 0 40px rgba(52, 152, 219, 0.6),
                     0 0 0 1px rgba(255,255,255,0.8),
                     inset 0 0 20px rgba(255,255,255,0.4);
                 background: rgba(255, 255, 255, 0.95);
@@ -4895,7 +4840,7 @@ class Magnifier {
                 -webkit-backdrop-filter: blur(10px);
                 padding: 15px 20px;
                 box-sizing: border-box;
-                overflow: visible !important;
+                overflow: visible;
                 cursor: grab;
                 user-select: none;
                 transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -4910,21 +4855,19 @@ class Magnifier {
                 width: 100%;
                 font-weight: 700;
                 color: #2c3e50;
-                font-size: 22px;
+                font-size: 20px;
                 line-height: 1.3;
-                white-space: normal !important;
-                word-break: break-word !important;
-                word-wrap: break-word !important;
-                overflow-wrap: break-word !important;
+                white-space: normal;
+                word-break: break-word;
                 text-align: left;
                 padding: 0;
                 margin: 0;
             }
 
-            /* Улучшенные стили для подсказки над кнопкой */
+            /* ========== ПОДСКАЗКА ========== */
             .magnifier-hint {
                 position: fixed;
-                bottom: 280px; /* Над кнопкой лупы */
+                bottom: 280px;
                 right: 20px;
                 background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
                 color: white;
@@ -4969,10 +4912,10 @@ class Magnifier {
                 margin-right: 8px;
             }
             
-            /* Кнопка лупы */
+            /* ========== КНОПКА ЛУПЫ ========== */
             .magnifier-toggle {
                 position: fixed;
-                bottom: 420px;
+                bottom: 220px; /* Поднял на 200px от прежнего */
                 right: 20px;
                 width: 60px;
                 height: 60px;
@@ -5009,24 +4952,28 @@ class Magnifier {
             /* Мобильные версии */
             @media (max-width: 767px) {
                 .magnifier {
-                    width: 95% !important;
-                    min-height: 70px !important;
-                    padding: 12px 15px !important;
-                    border-radius: 10px !important;
-                    border-width: 3px !important;
+                    width: 95%;
+                    min-height: 70px;
+                    padding: 12px 15px;
+                    border-radius: 10px;
+                    border-width: 3px;
                 }
                 
                 .magnifier-toggle {
-                    bottom: 180px;
+                    bottom: 120px;
+                    right: 15px;
+                    width: 50px;
+                    height: 50px;
+                    font-size: 1.4rem;
                 }
                 
                 .magnifier-content {
-                    font-size: 20px !important;
-                    line-height: 1.4 !important;
+                    font-size: 18px;
+                    line-height: 1.4;
                 }
                 
                 .magnifier-hint {
-                    bottom: 260px;
+                    bottom: 180px;
                     right: 15px;
                     max-width: 180px;
                     font-size: 0.75rem;
@@ -5036,21 +4983,13 @@ class Magnifier {
 
             @media (max-width: 480px) {
                 .magnifier {
-                    width: 92% !important;
-                    min-height: 65px !important;
-                    padding: 10px 12px !important;
+                    width: 92%;
+                    min-height: 65px;
+                    padding: 10px 12px;
                 }
                 
                 .magnifier-content {
-                    font-size: 18px !important;
-                }
-                
-                .magnifier-toggle {
-                    bottom: 180px;
-                    right: 15px;
-                    width: 50px;
-                    height: 50px;
-                    font-size: 1.4rem;
+                    font-size: 16px;
                 }
             }
         `;
@@ -5059,18 +4998,45 @@ class Magnifier {
         // Настраиваем перетаскивание
         this.setupDragging();
         
+        // Обработчики движения мыши
+        document.addEventListener('mousemove', (e) => {
+            if (!this.isActive || this.isDragging) return;
+            
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            if (!this.isManualPosition) {
+                this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
+                this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
+                this.magnifier.style.transform = 'none';
+            }
+            
+            this.updateTextUnderCursor(x, y);
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!this.isActive || !e.touches[0] || this.isDragging) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            const x = touch.clientX;
+            const y = touch.clientY;
+            
+            if (!this.isManualPosition) {
+                this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
+                this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
+                this.magnifier.style.transform = 'none';
+            }
+            
+            this.updateTextUnderCursor(x, y);
+        }, { passive: false });
+        
+        // Кнопка включения/выключения
         this.toggleBtn.addEventListener('click', () => this.toggle());
         
-        // Показываем подсказку при наведении на кнопку
-        this.toggleBtn.addEventListener('mouseenter', () => {
-            this.showHint();
-        });
-        
-        this.toggleBtn.addEventListener('mouseleave', () => {
-            this.hideHint();
-        });
-        
-        // На тач-устройствах показываем подсказку при тапе
+        // Показываем подсказку
+        this.toggleBtn.addEventListener('mouseenter', () => this.showHint());
+        this.toggleBtn.addEventListener('mouseleave', () => this.hideHint());
         this.toggleBtn.addEventListener('touchstart', () => {
             this.showHint();
             setTimeout(() => this.hideHint(), 3000);
@@ -5078,7 +5044,7 @@ class Magnifier {
         
         console.log('✅ Линза инициализирована');
         
-        // Автоматически показываем подсказку при первом запуске
+        // Автоматически показываем подсказку
         setTimeout(() => {
             if (!this.hintShown) {
                 this.showHint();
@@ -5099,7 +5065,6 @@ class Magnifier {
             this.isManualPosition = true;
             lens.classList.add('dragging');
             
-            // Вычисляем смещение
             const rect = lens.getBoundingClientRect();
             this.dragOffsetX = e.clientX - rect.left;
             this.dragOffsetY = e.clientY - rect.top;
@@ -5111,16 +5076,13 @@ class Magnifier {
         document.addEventListener('mousemove', (e) => {
             if (!this.isActive || !this.isDragging) return;
             
-            // Вычисляем новую позицию
             const x = e.clientX - this.dragOffsetX;
             const y = e.clientY - this.dragOffsetY;
             
-            // Устанавливаем позицию
             lens.style.left = x + 'px';
             lens.style.top = y + 'px';
             lens.style.transform = 'none';
             
-            // Обновляем текст под линзой
             this.updateTextUnderCursor(x + this.lensWidth / 2, y + this.lensHeight / 2);
         });
         
@@ -5177,17 +5139,15 @@ class Magnifier {
         if (this.hint) {
             this.hint.classList.add('show');
             
-            // Обновляем текст подсказки
             if (this.isActive) {
                 this.hint.innerHTML = `
                     <strong><i class="fas fa-search-plus"></i> Линза активна</strong>
-                    Двигайте курсор по тексту или перетащите линзу.<br>
-                    Нажмите кнопку для выключения.
+                    Двигайте курсор по тексту или перетащите линзу.
                 `;
             } else {
                 this.hint.innerHTML = `
                     <strong><i class="fas fa-search-plus"></i> Увеличительная линза</strong>
-                    Нажмите для включения. Можно перетаскивать линзу.
+                    Нажмите для включения.
                 `;
             }
         }
@@ -5204,12 +5164,10 @@ class Magnifier {
         this.magnifier.style.display = this.isActive ? 'block' : 'none';
         this.toggleBtn.classList.toggle('active', this.isActive);
         
-        // Сбрасываем ручное позиционирование при выключении
         if (!this.isActive) {
             this.isManualPosition = false;
         }
         
-        // Обновляем подсказку
         this.showHint();
         setTimeout(() => this.hideHint(), 2000);
     }
@@ -5218,13 +5176,11 @@ class Magnifier {
         if (!this.isActive || this.isDragging) return;
         
         try {
-            // Дебаунс для устранения зависания
             if (this.updateTimeout) {
                 clearTimeout(this.updateTimeout);
             }
             
             this.updateTimeout = setTimeout(() => {
-                // Находим элемент под курсором
                 const element = document.elementFromPoint(x, y);
                 
                 if (!element) {
@@ -5232,10 +5188,8 @@ class Magnifier {
                     return;
                 }
                 
-                // Ищем строку прайс-листа
                 let priceRow = element.closest('.price-item');
                 
-                // Если не нашли, ищем вокруг
                 if (!priceRow) {
                     const offsets = [-30, -20, -10, 10, 20, 30];
                     for (const offsetY of offsets) {
@@ -5252,7 +5206,6 @@ class Magnifier {
                     return;
                 }
                 
-                // Получаем текст
                 const fullText = priceRow.textContent.trim();
                 
                 if (!fullText) {
@@ -5260,7 +5213,6 @@ class Magnifier {
                     return;
                 }
                 
-                // Отображаем увеличенный текст
                 this.content.innerHTML = `
                     <div style="
                         font-size: ${window.innerWidth <= 767 ? '1.1em' : '1.3em'};
@@ -5269,16 +5221,13 @@ class Magnifier {
                         line-height: 1.4;
                         word-break: break-word;
                         white-space: normal;
-                        overflow: visible;
                         width: 100%;
-                        padding: 0;
-                        margin: 0;
                     ">
                         ${this.escapeHtml(fullText)}
                     </div>
                 `;
                 
-            }, 30); // Уменьшил дебаунс до 30мс
+            }, 30);
         } catch (error) {
             console.log('Ошибка линзы:', error);
             this.content.innerHTML = '';
@@ -5291,7 +5240,31 @@ class Magnifier {
         return div.innerHTML;
     }
 }
-		
+
+// Инициализация
+function initMagnifier() {
+    console.log('🔄 Инициализация линзы...');
+    
+    try {
+        setTimeout(() => {
+            const magnifier = new Magnifier();
+            window.magnifierInstance = magnifier;
+            console.log('✅ Линза готова к работе');            
+        }, 500);
+        
+    } catch (error) {
+        console.error('❌ Ошибка инициализации линзы:', error);
+    }
+}
+
+// Добавляем в DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    checkGoogleAuth();
+    checkSavedToken();
+    
+    // Инициализация линзы
+    initMagnifier();
+});
 function debugEstimateData() {
     console.log('=== DEBUG estimateData ===');
     console.log('Всего строк в массиве:', estimateData.length);
