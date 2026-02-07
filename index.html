@@ -4814,7 +4814,6 @@ class Magnifier {
     }, { passive: false });
     
     // Убираем сложную логику, оставляем только позиционирование
-    this.handleMove = (e) => {
         // Просто обновляем позицию курсора
         this.updateTextUnderCursor(e.clientX, e.clientY);
     };
