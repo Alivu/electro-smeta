@@ -4800,24 +4800,18 @@ class Magnifier {
         this.zoom = 2.5;
         this.lastText = '';
         this.lastPosition = 0;
-		this.updateTimeout = null;
+        this.updateTimeout = null;
 
-		    document.addEventListener('mousemove', (e) => {
-        if (!this.isActive) return;
-        this.handleMove(e);
-    });
-    
-    document.addEventListener('touchmove', (e) => {
-        if (!this.isActive || !e.touches[0]) return;
-        e.preventDefault();
-        this.handleMove(e.touches[0]);
-    }, { passive: false });
-    
-    // Убираем сложную логику, оставляем только позиционирование
-        // Просто обновляем позицию курсора
-        this.updateTextUnderCursor(e.clientX, e.clientY);
-    };
-}
+        document.addEventListener('mousemove', (e) => {
+            if (!this.isActive) return;
+            this.handleMove(e);
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!this.isActive || !e.touches[0]) return;
+            e.preventDefault();
+            this.handleMove(e.touches[0]);
+        }, { passive: false });
         
         // Размеры линзы
         this.lensWidth = 180;
@@ -5179,7 +5173,20 @@ class Magnifier {
         this.showHint();
         setTimeout(() => this.hideHint(), 2000);
     }
-
+// ДОБАВЬТЕ ЭТОТ МЕТОД:
+handleMove(e) {
+    if (!this.isActive) return;
+    
+    // Позиционирование линзы
+    const x = e.clientX;
+    const y = e.clientY;
+    
+    this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
+    this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
+    
+    // Обновляем текст под курсором
+    this.updateTextUnderCursor(x, y);
+}
     
     handleTouch(e) {
         if (!this.isActive || !e.touches[0]) return;
