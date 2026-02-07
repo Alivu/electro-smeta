@@ -4798,19 +4798,24 @@ class Magnifier {
         this.hint = document.getElementById('magnifierHint');
         this.isActive = false;
         this.updateTimeout = null;
+        this.scrollTimeout = null;
         
-        // Новые свойства для перетаскивания
+        // Свойства для перетаскивания
         this.isDragging = false;
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
         this.isManualPosition = false;
 
         // Размеры линзы
-        this.lensWidth = 180;
-        this.lensHeight = 70;
+        this.lensWidth = 250;
+        this.lensHeight = 90;
         
-        // Флаг для показа подсказки
-        this.hintShown = false;
+        // Позиция линзы по умолчанию (правый нижний угол)
+        this.defaultX = window.innerWidth - this.lensWidth - 20;
+        this.defaultY = window.innerHeight - this.lensHeight - 120;
+        
+        // Элемент прайс-листа
+        this.priceList = document.getElementById('priceList');
         
         this.init();
     }
@@ -4823,40 +4828,39 @@ class Magnifier {
             /* ========== ЛИНЗА ========== */
             .magnifier {
                 position: fixed;
-                width: 300px;
-                min-width: 300px;
+                width: 250px;
+                min-width: 250px;
                 height: auto;
-                min-height: 60px;
-                border-radius: 12px;
-                pointer-events: auto;
+                min-height: 90px;
+                border-radius: 15px;
+                pointer-events: auto; /* Для перетаскивания */
                 z-index: 9999;
                 display: none;
                 border: 4px solid rgba(52, 152, 219, 0.9);
-                box-shadow: 0 0 40px rgba(52, 152, 219, 0.6),
-                    0 0 0 1px rgba(255,255,255,0.8),
-                    inset 0 0 20px rgba(255,255,255,0.4);
-                background: rgba(255, 255, 255, 0.95);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                padding: 15px 20px;
+                box-shadow: 0 0 50px rgba(52, 152, 219, 0.7);
+                background: rgba(255, 255, 255, 0.98);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                padding: 20px 25px;
                 box-sizing: border-box;
-                overflow: visible;
                 cursor: grab;
                 user-select: none;
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
+                transition: all 0.3s ease;
+                right: 20px;
+                bottom: 140px;
             }
             
             .magnifier.dragging {
                 cursor: grabbing;
-                box-shadow: 0 0 60px rgba(52, 152, 219, 0.8);
+                box-shadow: 0 0 80px rgba(52, 152, 219, 0.9);
             }
             
             .magnifier-content {
                 width: 100%;
                 font-weight: 700;
                 color: #2c3e50;
-                font-size: 20px;
-                line-height: 1.3;
+                font-size: 18px;
+                line-height: 1.4;
                 white-space: normal;
                 word-break: break-word;
                 text-align: left;
@@ -4867,7 +4871,7 @@ class Magnifier {
             /* ========== ПОДСКАЗКА ========== */
             .magnifier-hint {
                 position: fixed;
-                bottom: 280px;
+                bottom: 260px;
                 right: 20px;
                 background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
                 color: white;
@@ -4915,7 +4919,7 @@ class Magnifier {
             /* ========== КНОПКА ЛУПЫ ========== */
             .magnifier-toggle {
                 position: fixed;
-                bottom: 220px; /* Поднял на 200px от прежнего */
+                bottom: 220px;
                 right: 20px;
                 width: 60px;
                 height: 60px;
@@ -4952,11 +4956,15 @@ class Magnifier {
             /* Мобильные версии */
             @media (max-width: 767px) {
                 .magnifier {
-                    width: 95%;
-                    min-height: 70px;
-                    padding: 12px 15px;
-                    border-radius: 10px;
-                    border-width: 3px;
+                    width: 90%;
+                    min-height: 80px;
+                    padding: 15px 20px;
+                    border-radius: 12px;
+                    right: 5%;
+                    bottom: 120px;
+                    left: 5% !important;
+                    transform: none !important;
+                    margin: 0 auto;
                 }
                 
                 .magnifier-toggle {
@@ -4968,8 +4976,8 @@ class Magnifier {
                 }
                 
                 .magnifier-content {
-                    font-size: 18px;
-                    line-height: 1.4;
+                    font-size: 16px;
+                    line-height: 1.3;
                 }
                 
                 .magnifier-hint {
@@ -4984,12 +4992,13 @@ class Magnifier {
             @media (max-width: 480px) {
                 .magnifier {
                     width: 92%;
-                    min-height: 65px;
-                    padding: 10px 12px;
+                    min-height: 70px;
+                    padding: 12px 15px;
+                    bottom: 110px;
                 }
                 
                 .magnifier-content {
-                    font-size: 16px;
+                    font-size: 15px;
                 }
             }
         `;
@@ -4998,49 +5007,15 @@ class Magnifier {
         // Настраиваем перетаскивание
         this.setupDragging();
         
-        // Обработчики движения мыши
-        document.addEventListener('mousemove', (e) => {
-            if (!this.isActive || this.isDragging) return;
-            
-            const x = e.clientX;
-            const y = e.clientY;
-            
-            if (!this.isManualPosition) {
-                this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
-                this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
-                this.magnifier.style.transform = 'none';
-            }
-            
-            this.updateTextUnderCursor(x, y);
-        });
-        
-        document.addEventListener('touchmove', (e) => {
-            if (!this.isActive || !e.touches[0] || this.isDragging) return;
-            e.preventDefault();
-            
-            const touch = e.touches[0];
-            const x = touch.clientX;
-            const y = touch.clientY;
-            
-            if (!this.isManualPosition) {
-                this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
-                this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
-                this.magnifier.style.transform = 'none';
-            }
-            
-            this.updateTextUnderCursor(x, y);
-        }, { passive: false });
-        
         // Кнопка включения/выключения
         this.toggleBtn.addEventListener('click', () => this.toggle());
         
         // Показываем подсказку
         this.toggleBtn.addEventListener('mouseenter', () => this.showHint());
         this.toggleBtn.addEventListener('mouseleave', () => this.hideHint());
-        this.toggleBtn.addEventListener('touchstart', () => {
-            this.showHint();
-            setTimeout(() => this.hideHint(), 3000);
-        });
+        
+        // Отслеживаем скролл прайс-листа
+        this.setupScrollTracking();
         
         console.log('✅ Линза инициализирована');
         
@@ -5079,11 +5054,18 @@ class Magnifier {
             const x = e.clientX - this.dragOffsetX;
             const y = e.clientY - this.dragOffsetY;
             
-            lens.style.left = x + 'px';
-            lens.style.top = y + 'px';
+            // Ограничиваем перемещение в пределах экрана
+            const maxX = window.innerWidth - this.lensWidth;
+            const maxY = window.innerHeight - this.lensHeight;
+            
+            lens.style.left = Math.max(10, Math.min(x, maxX - 10)) + 'px';
+            lens.style.top = Math.max(10, Math.min(y, maxY - 10)) + 'px';
+            lens.style.right = 'auto';
+            lens.style.bottom = 'auto';
             lens.style.transform = 'none';
             
-            this.updateTextUnderCursor(x + this.lensWidth / 2, y + this.lensHeight / 2);
+            // Обновляем текст под линзой
+            this.updateTextFromPosition(x + this.lensWidth / 2, y + this.lensHeight / 2);
         });
         
         // Окончание перетаскивания
@@ -5118,11 +5100,16 @@ class Magnifier {
             const x = touch.clientX - this.dragOffsetX;
             const y = touch.clientY - this.dragOffsetY;
             
-            lens.style.left = x + 'px';
-            lens.style.top = y + 'px';
+            const maxX = window.innerWidth - this.lensWidth;
+            const maxY = window.innerHeight - this.lensHeight;
+            
+            lens.style.left = Math.max(10, Math.min(x, maxX - 10)) + 'px';
+            lens.style.top = Math.max(10, Math.min(y, maxY - 10)) + 'px';
+            lens.style.right = 'auto';
+            lens.style.bottom = 'auto';
             lens.style.transform = 'none';
             
-            this.updateTextUnderCursor(x + this.lensWidth / 2, y + this.lensHeight / 2);
+            this.updateTextFromPosition(x + this.lensWidth / 2, y + this.lensHeight / 2);
             
             e.preventDefault();
         });
@@ -5135,6 +5122,100 @@ class Magnifier {
         });
     }
     
+    setupScrollTracking() {
+        // Отслеживаем скролл в контейнере прайс-листа
+        const priceContainer = document.querySelector('.price-list-container');
+        if (priceContainer) {
+            priceContainer.addEventListener('scroll', () => {
+                if (!this.isActive) return;
+                
+                // Дебаунс для оптимизации
+                if (this.scrollTimeout) {
+                    clearTimeout(this.scrollTimeout);
+                }
+                
+                this.scrollTimeout = setTimeout(() => {
+                    this.updateVisibleText();
+                }, 50);
+            });
+        }
+    }
+    
+    updateVisibleText() {
+        if (!this.isActive || this.isDragging) return;
+        
+        try {
+            // Получаем позицию линзы
+            const lensRect = this.magnifier.getBoundingClientRect();
+            const centerX = lensRect.left + lensRect.width / 2;
+            const centerY = lensRect.top + lensRect.height / 2;
+            
+            // Находим элемент под линзой
+            this.updateTextFromPosition(centerX, centerY);
+            
+        } catch (error) {
+            console.log('Ошибка обновления текста:', error);
+        }
+    }
+    
+    updateTextFromPosition(x, y) {
+        try {
+            const element = document.elementFromPoint(x, y);
+            
+            if (!element) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            // Ищем строку прайс-листа
+            let priceRow = element.closest('.price-item');
+            
+            // Если не нашли, ищем вокруг
+            if (!priceRow) {
+                const offsets = [-30, -20, -10, 10, 20, 30];
+                for (const offsetY of offsets) {
+                    const testElement = document.elementFromPoint(x, y + offsetY);
+                    if (testElement) {
+                        priceRow = testElement.closest('.price-item');
+                        if (priceRow) break;
+                    }
+                }
+            }
+            
+            if (!priceRow) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            // Получаем текст
+            const fullText = priceRow.textContent.trim();
+            
+            if (!fullText) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            // Отображаем увеличенный текст
+            this.content.innerHTML = `
+                <div style="
+                    font-size: ${window.innerWidth <= 767 ? '16px' : '18px'};
+                    font-weight: 700;
+                    color: #2c3e50;
+                    line-height: 1.4;
+                    word-break: break-word;
+                    white-space: normal;
+                    width: 100%;
+                ">
+                    ${this.escapeHtml(fullText)}
+                </div>
+            `;
+            
+        } catch (error) {
+            console.log('Ошибка линзы:', error);
+            this.content.innerHTML = '';
+        }
+    }
+    
     showHint() {
         if (this.hint) {
             this.hint.classList.add('show');
@@ -5142,12 +5223,13 @@ class Magnifier {
             if (this.isActive) {
                 this.hint.innerHTML = `
                     <strong><i class="fas fa-search-plus"></i> Линза активна</strong>
-                    Двигайте курсор по тексту или перетащите линзу.
+                    Перетащите линзу в удобное место.<br>
+                    Она будет показывать текст под собой.
                 `;
             } else {
                 this.hint.innerHTML = `
                     <strong><i class="fas fa-search-plus"></i> Увеличительная линза</strong>
-                    Нажмите для включения.
+                    Нажмите для включения. Перетащите в нужное место.
                 `;
             }
         }
@@ -5164,74 +5246,20 @@ class Magnifier {
         this.magnifier.style.display = this.isActive ? 'block' : 'none';
         this.toggleBtn.classList.toggle('active', this.isActive);
         
-        if (!this.isActive) {
-            this.isManualPosition = false;
+        if (this.isActive) {
+            // Устанавливаем линзу в начальную позицию
+            this.magnifier.style.right = '20px';
+            this.magnifier.style.bottom = '140px';
+            this.magnifier.style.left = 'auto';
+            this.magnifier.style.top = 'auto';
+            this.magnifier.style.transform = 'none';
+            
+            // Обновляем текст
+            setTimeout(() => this.updateVisibleText(), 100);
         }
         
         this.showHint();
         setTimeout(() => this.hideHint(), 2000);
-    }
-    
-    updateTextUnderCursor(x, y) {
-        if (!this.isActive || this.isDragging) return;
-        
-        try {
-            if (this.updateTimeout) {
-                clearTimeout(this.updateTimeout);
-            }
-            
-            this.updateTimeout = setTimeout(() => {
-                const element = document.elementFromPoint(x, y);
-                
-                if (!element) {
-                    this.content.innerHTML = '';
-                    return;
-                }
-                
-                let priceRow = element.closest('.price-item');
-                
-                if (!priceRow) {
-                    const offsets = [-30, -20, -10, 10, 20, 30];
-                    for (const offsetY of offsets) {
-                        const testElement = document.elementFromPoint(x, y + offsetY);
-                        if (testElement) {
-                            priceRow = testElement.closest('.price-item');
-                            if (priceRow) break;
-                        }
-                    }
-                }
-                
-                if (!priceRow) {
-                    this.content.innerHTML = '';
-                    return;
-                }
-                
-                const fullText = priceRow.textContent.trim();
-                
-                if (!fullText) {
-                    this.content.innerHTML = '';
-                    return;
-                }
-                
-                this.content.innerHTML = `
-                    <div style="
-                        font-size: ${window.innerWidth <= 767 ? '1.1em' : '1.3em'};
-                        font-weight: 700;
-                        color: #2c3e50;
-                        line-height: 1.4;
-                        word-break: break-word;
-                        white-space: normal;
-                        width: 100%;
-                    ">
-                        ${this.escapeHtml(fullText)}
-                    </div>
-                `;
-                
-            }, 30);
-        } catch (error) {
-            console.log('Ошибка линзы:', error);
-            this.content.innerHTML = '';
-        }
     }
     
     escapeHtml(text) {
