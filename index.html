@@ -4968,10 +4968,10 @@ class Magnifier {
                     font-size: 1.4rem;
                 }
                 
-  			  .magnifier-content {
-       			 font-size: 34px; /* Было 16px, увеличил на 37.5% (16 * 1.375 = 22) */
-       			 line-height: 1.3;
-   				 }
+    .magnifier-content {
+        font-size: 34px !important; /* Добавь !important */
+        line-height: 1.3 !important;
+    }
                 
                 .magnifier-hint {
                     bottom: 180px;
@@ -4990,9 +4990,9 @@ class Magnifier {
                     bottom: 110px;
                 }
                 
-                .magnifier-content {
-                    font-size: 30px; /* Было 15px, увеличил на 33% */
-                }
+    .magnifier-content {
+        font-size: 30px !important; /* Добавь !important */
+    }
             }
         `;
         document.head.appendChild(style);
