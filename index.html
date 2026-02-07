@@ -5179,19 +5179,7 @@ class Magnifier {
         this.showHint();
         setTimeout(() => this.hideHint(), 2000);
     }
-    
-    // ... остальные методы без изменений ...
-    handleMove(e) {
-        if (!this.isActive) return;
-        
-        const x = e.clientX;
-        const y = e.clientY;
-        
-        this.magnifier.style.left = (x - this.lensWidth / 2) + 'px';
-        this.magnifier.style.top = (y - this.lensHeight / 2) + 'px';
-        
-        this.updateTextUnderCursor(x, y);
-    }
+
     
     handleTouch(e) {
         if (!this.isActive || !e.touches[0]) return;
