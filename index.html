@@ -1409,7 +1409,7 @@
 </head>
 <body>
 	    <!-- Кнопка переключения линзы -->
-    <button class="magnifier-toggle" id="magnifierToggle" title="Включить увеличительную линзу">
+    <button class="ifier-toggle" id="magnifierToggle" title="Включить увеличительную линзу">
         <i class="fas fa-search-plus"></i>
     </button>
     
@@ -4800,6 +4800,25 @@ class Magnifier {
         this.zoom = 2.5;
         this.lastText = '';
         this.lastPosition = 0;
+		this.updateTimeout = null;
+
+		    document.addEventListener('mousemove', (e) => {
+        if (!this.isActive) return;
+        this.handleMove(e);
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+        if (!this.isActive || !e.touches[0]) return;
+        e.preventDefault();
+        this.handleMove(e.touches[0]);
+    }, { passive: false });
+    
+    // Убираем сложную логику, оставляем только позиционирование
+    this.handleMove = (e) => {
+        // Просто обновляем позицию курсора
+        this.updateTextUnderCursor(e.clientX, e.clientY);
+    };
+}
         
         // Размеры линзы
         this.lensWidth = 180;
@@ -4834,49 +4853,48 @@ class Magnifier {
         const style = document.createElement('style');
         style.textContent = `
             /* Стили линзы остаются без изменений */
+/* ========== НОВАЯ ЛИНЗА ========== */
 .magnifier {
     position: fixed;
-    width: 100%; /* ← ЗАНИМАЕТ ВСЮ ШИРИНУ СТРОКИ */
-    height: 60px; /* ← ВЫСОТА КАК У СТРОКИ */
-    border-radius: 8px; /* ← СКРУГЛЕННЫЕ УГЛЫ */
+    width: 100%; /* На всю ширину экрана */
+    min-width: 300px;
+    height: auto; /* Автовысота */
+    min-height: 60px;
+    border-radius: 12px;
     pointer-events: none;
     z-index: 9999;
-    overflow: hidden;
     display: none;
-    border: 3px solid rgba(52, 152, 219, 0.8);
+    border: 4px solid rgba(52, 152, 219, 0.9);
     box-shadow: 
-        0 0 30px rgba(52, 152, 219, 0.5),
-        0 0 0 1px rgba(255,255,255,0.5),
-        inset 0 0 40px rgba(255,255,255,0.3);
-    background: linear-gradient(
-        135deg,
-        rgba(255,255,255,0.25) 0%,
-        rgba(255,255,255,0.1) 100%
-    );
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    transform-origin: center;
-    transform: scale(1.05); /* ← ЛЕГКОЕ УВЕЛИЧЕНИЕ */
+        0 0 40px rgba(52, 152, 219, 0.6),
+        0 0 0 1px rgba(255,255,255,0.8),
+        inset 0 0 20px rgba(255,255,255,0.4);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 15px 20px;
+    box-sizing: border-box;
+    overflow: visible !important; /* Важно! */
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    top: 50% !important;
+    margin-top: -30px !important;
 }
             
 .magnifier-content {
-    position: absolute;
     width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start; /* ← ТЕКСТ СЛЕВА */
-    font-weight: bold;
+    font-weight: 700;
     color: #2c3e50;
-    font-size: 18px; /* ← БАЗОВЫЙ РАЗМЕР */
-    white-space: nowrap;
-    overflow: visible;
-    text-shadow: 
-        0 2px 4px rgba(255,255,255,0.8),
-        0 0 8px rgba(255,255,255,0.4);
-    padding: 0 15px;
-    transform: scale(1.3); /* ← УВЕЛИЧЕНИЕ ВСЕГО ТЕКСТА */
-    transform-origin: left center;
+    font-size: 22px; /* Базовый размер */
+    line-height: 1.3;
+    white-space: normal !important; /* ПЕРЕНАСЫВАЕМ ТЕКСТ */
+    word-break: break-word !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    text-align: left;
+    padding: 0;
+    margin: 0;
+    transform: none !important; /* Убираем transform */
 }
 
 /* УБИРАЕМ СТАРЫЕ СТИЛИ БУКВ (удалите или закомментируйте) */
@@ -4992,90 +5010,72 @@ class Magnifier {
                 margin-right: 8px;
             }
             
-            /* Кнопка лупы */
-            .magnifier-toggle {
-                position: fixed;
-                bottom: 120px;
-                right: 20px;
-                width: 55px;
-                height: 55px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #3498db, #2c3e50);
-                color: white;
-                border: none;
-                cursor: pointer;
-                z-index: 9999;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.25);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.6rem;
-                transition: all 0.3s ease;
-                border: 2px solid rgba(255,255,255,0.2);
-            }
+/* Кнопка лупы */
+.magnifier-toggle {
+    position: fixed;
+    bottom: 120px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 10000; /* Выше линзы */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    transition: all 0.3s ease;
+    border: 3px solid rgba(255,255,255,0.3);
+}
+
+.magnifier-toggle:hover {
+    transform: scale(1.1);
+}
+
+.magnifier-toggle.active {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
             
-            .magnifier-toggle:hover {
-                transform: scale(1.15) rotate(15deg);
-                box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
-            }
-            
-            .magnifier-toggle.active {
-                background: linear-gradient(135deg, #e74c3c, #c0392b);
-                box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.4), 0 8px 25px rgba(231, 76, 60, 0.3);
-                animation: buttonPulse 2s infinite;
-            }
-            
-            @keyframes buttonPulse {
-                0%, 100% {
-                    box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.4), 0 8px 25px rgba(231, 76, 60, 0.3);
-                }
-                50% {
-                    box-shadow: 0 0 0 6px rgba(231, 76, 60, 0.3), 0 8px 25px rgba(231, 76, 60, 0.4);
-                }
-            }
-            
+/* Мобильные версии */
 @media (max-width: 767px) {
     .magnifier {
-        height: 55px !important; /* ← ВЫСОТА КАК У СТРОКИ ПРАЙС-ЛИСТА */
-        border-radius: 6px !important;
-        border-width: 2px !important;
-        transform: scale(1.08) !important;
+        width: 95% !important;
+        min-height: 70px !important;
+        padding: 12px 15px !important;
+        border-radius: 10px !important;
+        border-width: 3px !important;
+        margin-top: -35px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        top: 50% !important;
     }
     
     .magnifier-content {
-        font-size: 16px !important;
-        transform: scale(1.4) !important; /* ← БОЛЬШЕ УВЕЛИЧЕНИЕ НА МОБИЛЬНЫХ */
-        padding: 0 10px !important;
+        font-size: 20px !important;
+        line-height: 1.4 !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .magnifier {
+        width: 92% !important;
+        min-height: 65px !important;
+        padding: 10px 12px !important;
     }
     
-    .magnified-text {
-        transform: scale(1.5) !important;
-        font-size: 0.9rem !important;
-    }
-    
-    /* УВЕЛИЧИВАЕМ ВСЕ БУКВЫ */
-    .letter-center { 
-        transform: scale(2.8) !important;    /* ← БОЛЬШЕ */
-        letter-spacing: 0.2em !important;
-    }
-    
-    .letter-near { 
-        transform: scale(2.3) !important;    /* ← БОЛЬШЕ */
-        letter-spacing: 0.15em !important;
-    }
-    
-    .letter-far { 
-        transform: scale(1.8) !important;    /* ← БОЛЬШЕ */
-        letter-spacing: 0.1em !important;
-    }
-    
-    .letter-very-far { 
-        transform: scale(1.3) !important;    /* ← БОЛЬШЕ */
-    }
-    
-    /* Увеличиваем количество видимых букв */
-    .magnifier-letter {
-        margin: 0 4px !important;
+    .magnifier-content {
+        font-size: 18px !important;
     }
 }
                 /* Для мобильных делаем подсказку компактнее */
@@ -5209,60 +5209,113 @@ class Magnifier {
     }
     
 updateTextUnderCursor(x, y) {
+    if (!this.isActive) return;
+    
     try {
-        // Получаем позицию линзы
-        const lensRect = this.magnifier.getBoundingClientRect();
-        
-        // Находим строку прайс-листа под линзой
-        const elementsUnderLens = document.elementsFromPoint(
-            lensRect.left + lensRect.width / 2,
-            lensRect.top + lensRect.height / 2
-        );
-        
-        // Ищем строку прайс-листа
-        let priceRow = null;
-        for (const el of elementsUnderLens) {
-            if (el.classList && el.classList.contains('price-item')) {
-                priceRow = el;
-                break;
-            }
-            if (el.closest('.price-item')) {
-                priceRow = el.closest('.price-item');
-                break;
-            }
+        // Дебаунс для устранения зависания
+        if (this.updateTimeout) {
+            clearTimeout(this.updateTimeout);
         }
         
-        if (!priceRow) {
-            this.content.innerHTML = '';
-            return;
-        }
-        
-        // Получаем весь текст строки
-        const rowText = priceRow.textContent || priceRow.innerText;
-        
-        // Убираем лишние пробелы
-        const cleanText = rowText.replace(/\s+/g, ' ').trim();
-        
-        // Отображаем УВЕЛИЧЕННЫЙ текст всей строки
-        this.content.innerHTML = `
-            <div class="magnified-text" style="
-                font-size: ${window.innerWidth <= 767 ? '14px' : '16px'};
-                font-weight: 700;
-                color: #2c3e50;
-                white-space: nowrap;
-                padding: 0 5px;
-                text-overflow: ellipsis;
-                overflow: hidden;
-                max-width: 95%;
-            ">
-                ${cleanText}
-            </div>
-        `;
-        
+        this.updateTimeout = setTimeout(() => {
+            // Позиция линзы (центр экрана)
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const centerX = viewportWidth / 2;
+            const centerY = viewportHeight / 2;
+            
+            // Находим элемент под центром линзы
+            const element = document.elementFromPoint(centerX, centerY);
+            
+            if (!element) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            // Ищем строку прайс-листа
+            let priceRow = element.closest('.price-item');
+            
+            // Если не нашли, ищем вокруг
+            if (!priceRow) {
+                // Проверяем несколько точек вокруг центра
+                const offsets = [-50, -30, -10, 10, 30, 50];
+                for (const offsetY of offsets) {
+                    const testElement = document.elementFromPoint(centerX, centerY + offsetY);
+                    if (testElement) {
+                        priceRow = testElement.closest('.price-item');
+                        if (priceRow) break;
+                    }
+                }
+            }
+            
+            if (!priceRow) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            // Получаем ВСЕ текстовое содержимое строки
+            const rowClone = priceRow.cloneNode(true);
+            
+            // Убираем все дочерние элементы, оставляем только текст
+            const textContent = [];
+            const walker = document.createTreeWalker(rowClone, NodeFilter.SHOW_TEXT);
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.textContent.trim()) {
+                    textContent.push(node.textContent.trim());
+                }
+            }
+            
+            const fullText = textContent.join(' ').replace(/\s+/g, ' ').trim();
+            
+            if (!fullText) {
+                this.content.innerHTML = '';
+                return;
+            }
+            
+            // Отображаем увеличенный текст с переносами
+            this.content.innerHTML = `
+                <div style="
+                    font-size: ${window.innerWidth <= 767 ? '1.1em' : '1.3em'};
+                    font-weight: 700;
+                    color: #2c3e50;
+                    line-height: 1.4;
+                    word-break: break-word;
+                    white-space: normal;
+                    overflow: visible;
+                    width: 100%;
+                    padding: 0;
+                    margin: 0;
+                ">
+                    ${this.escapeHtml(fullText)}
+                </div>
+            `;
+            
+            // Позиционируем линзу по центру экрана
+            this.positionLensAtCenter();
+            
+        }, 50); // Дебаунс 50мс для устранения зависания
     } catch (error) {
-        console.log('Ошибка обновления текста:', error);
+        console.log('Ошибка линзы:', error);
         this.content.innerHTML = '';
     }
+}
+
+// Новая функция для позиционирования линзы по центру
+positionLensAtCenter() {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    this.magnifier.style.left = '50%';
+    this.magnifier.style.top = '50%';
+    this.magnifier.style.transform = 'translate(-50%, -50%)';
+}
+
+// Функция экранирования HTML
+escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
     
     findTextNodeUnderCursor(x, y, startElement) {
