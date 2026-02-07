@@ -5187,39 +5187,45 @@ class Magnifier {
         this.updateTextUnderCursor(x, y);
     }
     
-    updateTextUnderCursor(x, y) {
-        try {
-            const element = document.elementFromPoint(x, y);
-            if (!element) {
-                this.content.innerHTML = '';
-                return;
-            }
-            
-            const textNode = this.findTextNodeUnderCursor(x, y, element);
-            if (!textNode || !textNode.textContent) {
-                this.content.innerHTML = '';
-                return;
-            }
-            
-            const fullText = textNode.textContent.trim();
-            if (!fullText) {
-                this.content.innerHTML = '';
-                return;
-            }
-            
-            const charIndex = this.getCharIndexAtPoint(textNode, x, y);
-            if (charIndex === -1) {
-                this.content.innerHTML = '';
-                return;
-            }
-            
-            this.renderTextAtPosition(fullText, charIndex);
-            
-        } catch (error) {
-            console.log('Ошибка обновления текста:', error);
+updateTextUnderCursor(x, y) {
+    try {
+        // Вместо текста под курсором - текст в центре линзы
+        const lensRect = this.magnifier.getBoundingClientRect();
+        const centerX = lensRect.left + lensRect.width / 2;
+        const centerY = lensRect.top + lensRect.height / 2;
+        
+        const element = document.elementFromPoint(centerX, centerY); // ← ЦЕНТР ЛИНЗЫ
+        if (!element) {
             this.content.innerHTML = '';
+            return;
         }
+        
+        // Остальной код без изменений...
+        const textNode = this.findTextNodeUnderCursor(centerX, centerY, element);
+        if (!textNode || !textNode.textContent) {
+            this.content.innerHTML = '';
+            return;
+        }
+        
+        const fullText = textNode.textContent.trim();
+        if (!fullText) {
+            this.content.innerHTML = '';
+            return;
+        }
+        
+        const charIndex = this.getCharIndexAtPoint(textNode, centerX, centerY); // ← ЦЕНТР ЛИНЗЫ
+        if (charIndex === -1) {
+            this.content.innerHTML = '';
+            return;
+        }
+        
+        this.renderTextAtPosition(fullText, charIndex);
+        
+    } catch (error) {
+        console.log('Ошибка обновления текста:', error);
+        this.content.innerHTML = '';
     }
+}
     
     findTextNodeUnderCursor(x, y, startElement) {
         const walker = document.createTreeWalker(
