@@ -500,6 +500,9 @@
     text-align: center;                  /* Выравнивание по центру */
 }
 
+
+
+		
 /* ========== МОБИЛЬНАЯ ВЕРСИЯ (экраны до 767px) ========== */
 @media (max-width: 767px) {
     /* Уменьшаем размеры для ячеек "Код", "Ед. изм.", "Сумма" */
@@ -507,10 +510,7 @@
     .estimate-table td.unit-cell,
     .estimate-table td.total-cell {
         padding: 4px 6px;                /* Меньшие отступы */
-        font-size: 0.8rem;               /* Меньший шрифт */
-        
-
-        
+        font-size: 0.8rem;               /* Меньший шрифт */       
     }
     
     /* Колонка "Код" - уменьшенные размеры */
@@ -1017,11 +1017,13 @@
 }
             
             .price-item {
-                grid-template-columns: 40px 1fr 40px 70px;
+                grid-template-columns: 35px minmax(100px, 1fr) 45px 60px;
                 gap: 6px;
                 padding: 6px 8px;
                 font-size: 0.8rem;
             }
+
+		
             
             .item-number {
                 font-size: 0.8rem;
