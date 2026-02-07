@@ -4789,6 +4789,8 @@ function checkSavedToken() {
 document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
     checkSavedToken();
+	    // Инициализация линзы
+    initMagnifier();
 });
 class Magnifier {
     constructor() {
@@ -4797,25 +4799,16 @@ class Magnifier {
         this.toggleBtn = document.getElementById('magnifierToggle');
         this.hint = document.getElementById('magnifierHint');
         this.isActive = false;
-        this.updateTimeout = null;
-        this.scrollTimeout = null;
+        this.updateInterval = null;
         
         // Свойства для перетаскивания
         this.isDragging = false;
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
-        this.isManualPosition = false;
 
         // Размеры линзы
         this.lensWidth = 250;
         this.lensHeight = 90;
-        
-        // Позиция линзы по умолчанию (правый нижний угол)
-        this.defaultX = window.innerWidth - this.lensWidth - 20;
-        this.defaultY = window.innerHeight - this.lensHeight - 120;
-        
-        // Элемент прайс-листа
-        this.priceList = document.getElementById('priceList');
         
         this.init();
     }
@@ -4833,7 +4826,7 @@ class Magnifier {
                 height: auto;
                 min-height: 90px;
                 border-radius: 15px;
-                pointer-events: auto; /* Для перетаскивания */
+                pointer-events: auto;
                 z-index: 9999;
                 display: none;
                 border: 4px solid rgba(52, 152, 219, 0.9);
@@ -5014,18 +5007,21 @@ class Magnifier {
         this.toggleBtn.addEventListener('mouseenter', () => this.showHint());
         this.toggleBtn.addEventListener('mouseleave', () => this.hideHint());
         
-        // Отслеживаем скролл прайс-листа
-        this.setupScrollTracking();
+        // Отслеживаем скролл всего окна
+        window.addEventListener('scroll', () => this.updateTextUnderSearchBar());
+        
+        // Также отслеживаем скролл в контейнере прайс-листа
+        const priceContainer = document.querySelector('.price-list-container');
+        if (priceContainer) {
+            priceContainer.addEventListener('scroll', () => this.updateTextUnderSearchBar());
+        }
         
         console.log('✅ Линза инициализирована');
         
         // Автоматически показываем подсказку
         setTimeout(() => {
-            if (!this.hintShown) {
-                this.showHint();
-                setTimeout(() => this.hideHint(), 5000);
-                this.hintShown = true;
-            }
+            this.showHint();
+            setTimeout(() => this.hideHint(), 5000);
         }, 3000);
     }
     
@@ -5037,7 +5033,6 @@ class Magnifier {
             if (!this.isActive) return;
             
             this.isDragging = true;
-            this.isManualPosition = true;
             lens.classList.add('dragging');
             
             const rect = lens.getBoundingClientRect();
@@ -5063,9 +5058,6 @@ class Magnifier {
             lens.style.right = 'auto';
             lens.style.bottom = 'auto';
             lens.style.transform = 'none';
-            
-            // Обновляем текст под линзой
-            this.updateTextFromPosition(x + this.lensWidth / 2, y + this.lensHeight / 2);
         });
         
         // Окончание перетаскивания
@@ -5081,7 +5073,6 @@ class Magnifier {
             if (!this.isActive || !e.touches[0]) return;
             
             this.isDragging = true;
-            this.isManualPosition = true;
             lens.classList.add('dragging');
             
             const touch = e.touches[0];
@@ -5109,8 +5100,6 @@ class Magnifier {
             lens.style.bottom = 'auto';
             lens.style.transform = 'none';
             
-            this.updateTextFromPosition(x + this.lensWidth / 2, y + this.lensHeight / 2);
-            
             e.preventDefault();
         });
         
@@ -5122,93 +5111,88 @@ class Magnifier {
         });
     }
     
-    setupScrollTracking() {
-        // Отслеживаем скролл в контейнере прайс-листа
-        const priceContainer = document.querySelector('.price-list-container');
-        if (priceContainer) {
-            priceContainer.addEventListener('scroll', () => {
-                if (!this.isActive) return;
-                
-                // Дебаунс для оптимизации
-                if (this.scrollTimeout) {
-                    clearTimeout(this.scrollTimeout);
-                }
-                
-                this.scrollTimeout = setTimeout(() => {
-                    this.updateVisibleText();
-                }, 50);
-            });
-        }
-    }
-    
-    updateVisibleText() {
-        if (!this.isActive || this.isDragging) return;
+    // НОВАЯ ФУНКЦИЯ: показывает текст, который уходит под панель поиска
+    updateTextUnderSearchBar() {
+        if (!this.isActive) return;
         
         try {
-            // Получаем позицию линзы
-            const lensRect = this.magnifier.getBoundingClientRect();
-            const centerX = lensRect.left + lensRect.width / 2;
-            const centerY = lensRect.top + lensRect.height / 2;
+            // Находим панель поиска
+            const searchBar = document.querySelector('.search-box');
+            if (!searchBar) return;
             
-            // Находим элемент под линзой
-            this.updateTextFromPosition(centerX, centerY);
+            const searchBarRect = searchBar.getBoundingClientRect();
             
-        } catch (error) {
-            console.log('Ошибка обновления текста:', error);
-        }
-    }
-    
-    updateTextFromPosition(x, y) {
-        try {
-            const element = document.elementFromPoint(x, y);
+            // Линия "под панелью поиска" - это низ панели
+            const lineY = searchBarRect.bottom + 5; // Немного ниже панели
             
-            if (!element) {
-                this.content.innerHTML = '';
-                return;
+            // Ищем все строки прайс-листа
+            const priceItems = document.querySelectorAll('.price-item');
+            
+            let targetItem = null;
+            let minDistance = Infinity;
+            
+            // Находим строку, которая ближе всего к линии "под панелью"
+            priceItems.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const itemCenterY = rect.top + rect.height / 2;
+                
+                // Расстояние от центра строки до линии под панелью
+                const distance = Math.abs(itemCenterY - lineY);
+                
+                // Ищем строку, которая ближе всего к линии
+                if (distance < minDistance && rect.top >= searchBarRect.bottom - 50) {
+                    minDistance = distance;
+                    targetItem = item;
+                }
+            });
+            
+            // Если нашли строку - показываем ее
+            if (targetItem) {
+                const text = targetItem.textContent.trim();
+                if (text) {
+                    this.content.innerHTML = `
+                        <div style="
+                            font-size: ${window.innerWidth <= 767 ? '16px' : '18px'};
+                            font-weight: 700;
+                            color: #2c3e50;
+                            line-height: 1.4;
+                            word-break: break-word;
+                            white-space: normal;
+                            width: 100%;
+                        ">
+                            ${this.escapeHtml(text)}
+                        </div>
+                    `;
+                    return;
+                }
             }
             
-            // Ищем строку прайс-листа
-            let priceRow = element.closest('.price-item');
-            
-            // Если не нашли, ищем вокруг
-            if (!priceRow) {
-                const offsets = [-30, -20, -10, 10, 20, 30];
-                for (const offsetY of offsets) {
-                    const testElement = document.elementFromPoint(x, y + offsetY);
-                    if (testElement) {
-                        priceRow = testElement.closest('.price-item');
-                        if (priceRow) break;
+            // Если не нашли - ищем первую видимую строку под панелью
+            for (let item of priceItems) {
+                const rect = item.getBoundingClientRect();
+                if (rect.top >= searchBarRect.bottom && rect.bottom <= window.innerHeight) {
+                    const text = item.textContent.trim();
+                    if (text) {
+                        this.content.innerHTML = `
+                            <div style="
+                                font-size: ${window.innerWidth <= 767 ? '16px' : '18px'};
+                                font-weight: 700;
+                                color: #2c3e50;
+                                line-height: 1.4;
+                                word-break: break-word;
+                                white-space: normal;
+                                width: 100%;
+                            ">
+                                ${this.escapeHtml(text)}
+                            </div>
+                        `;
+                        return;
                     }
                 }
             }
             
-            if (!priceRow) {
-                this.content.innerHTML = '';
-                return;
-            }
-            
-            // Получаем текст
-            const fullText = priceRow.textContent.trim();
-            
-            if (!fullText) {
-                this.content.innerHTML = '';
-                return;
-            }
-            
-            // Отображаем увеличенный текст
-            this.content.innerHTML = `
-                <div style="
-                    font-size: ${window.innerWidth <= 767 ? '16px' : '18px'};
-                    font-weight: 700;
-                    color: #2c3e50;
-                    line-height: 1.4;
-                    word-break: break-word;
-                    white-space: normal;
-                    width: 100%;
-                ">
-                    ${this.escapeHtml(fullText)}
-                </div>
-            `;
+            // Если ничего не нашли - очищаем
+            this.content.innerHTML = '';
             
         } catch (error) {
             console.log('Ошибка линзы:', error);
@@ -5223,13 +5207,13 @@ class Magnifier {
             if (this.isActive) {
                 this.hint.innerHTML = `
                     <strong><i class="fas fa-search-plus"></i> Линза активна</strong>
-                    Перетащите линзу в удобное место.<br>
-                    Она будет показывать текст под собой.
+                    Показывает текст под панелью поиска.<br>
+                    Перетащите в удобное место.
                 `;
             } else {
                 this.hint.innerHTML = `
                     <strong><i class="fas fa-search-plus"></i> Увеличительная линза</strong>
-                    Нажмите для включения. Перетащите в нужное место.
+                    Нажмите для включения. Будет показывать текст под панелью поиска.
                 `;
             }
         }
@@ -5254,8 +5238,22 @@ class Magnifier {
             this.magnifier.style.top = 'auto';
             this.magnifier.style.transform = 'none';
             
-            // Обновляем текст
-            setTimeout(() => this.updateVisibleText(), 100);
+            // Сразу показываем текст под панелью поиска
+            setTimeout(() => this.updateTextUnderSearchBar(), 100);
+            
+            // Запускаем периодическое обновление
+            if (this.updateInterval) clearInterval(this.updateInterval);
+            this.updateInterval = setInterval(() => {
+                if (this.isActive && !this.isDragging) {
+                    this.updateTextUnderSearchBar();
+                }
+            }, 500);
+        } else {
+            // Останавливаем обновление
+            if (this.updateInterval) {
+                clearInterval(this.updateInterval);
+                this.updateInterval = null;
+            }
         }
         
         this.showHint();
@@ -5284,15 +5282,6 @@ function initMagnifier() {
         console.error('❌ Ошибка инициализации линзы:', error);
     }
 }
-
-// Добавляем в DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
-    checkGoogleAuth();
-    checkSavedToken();
-    
-    // Инициализация линзы
-    initMagnifier();
-});
 function debugEstimateData() {
     console.log('=== DEBUG estimateData ===');
     console.log('Всего строк в массиве:', estimateData.length);
