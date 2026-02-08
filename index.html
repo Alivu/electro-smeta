@@ -4442,9 +4442,16 @@ function registerServiceWorker() {
 
 // Создаем кнопку установки PWA
 let deferredPrompt;
-const installButton = document.createElement('button');
+let installButton = null;
 
 function createInstallButton() {
+    // Проверяем, не создана ли кнопка уже
+    if (document.getElementById('installPWAButton')) {
+        return;
+    }
+    
+    installButton = document.createElement('button');
+    installButton.id = 'installPWAButton';
     installButton.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
     
     // Сначала добавляем кнопку в DOM
@@ -4453,12 +4460,9 @@ function createInstallButton() {
     // Базовые стили
     installButton.style.cssText = `
         position: fixed;
-        bottom: 50px;
-        right: 70px;
         background: linear-gradient(90deg, #27ae60, #2ecc71);
         color: white;
         border: none;
-        padding: 12px 20px;
         border-radius: 30px;
         font-weight: bold;
         box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
@@ -4468,15 +4472,30 @@ function createInstallButton() {
         align-items: center;
         gap: 8px;
         font-size: 14px;
+        padding: 12px 20px;
+        right: 70px;
+        bottom: 50px;
     `;
     
-    // Для мобильных
-    if (window.innerWidth <= 767px) {
-        installButton.style.right = '60px';
-        installButton.style.bottom = '96px';
-        installButton.style.fontSize = '12px';
-        installButton.style.padding = '10px 16px';
-    }
+    // И только ПОСЛЕ этого настраиваем адаптивные стили
+    const updateMobileStyles = () => {
+        if (window.innerWidth <= 767px) {
+            // Для мобильных
+            installButton.style.right = '60px';
+            installButton.style.bottom = '96px';
+            installButton.style.fontSize = '12px';
+            installButton.style.padding = '10px 16px';
+        } else {
+            // Для десктопа
+            installButton.style.right = '70px';
+            installButton.style.bottom = '50px';
+            installButton.style.fontSize = '14px';
+            installButton.style.padding = '12px 20px';
+        }
+    };
+    
+    updateMobileStyles();
+    window.addEventListener('resize', updateMobileStyles);
     
     // Обработчик клика
     installButton.addEventListener('click', async () => {
