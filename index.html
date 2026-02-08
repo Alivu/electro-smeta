@@ -4444,7 +4444,7 @@ function registerServiceWorker() {
 let deferredPrompt;
 const installButton = document.createElement('button');
 
-) {
+function createInstallButton() {
     installButton.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
     installButton.style.cssText = `
         position: fixed;
