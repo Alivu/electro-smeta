@@ -4444,7 +4444,7 @@ function registerServiceWorker() {
 let deferredPrompt;
 const installButton = document.createElement('button');
 
-function createInstallButton() {
+) {
     installButton.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
     installButton.style.cssText = `
         position: fixed;
@@ -4464,11 +4464,12 @@ function createInstallButton() {
         gap: 8px;
         font-size: 14px;
     `;
-	    // Добавляем медиа-запрос для мобильных
+    
+    // Добавляем медиа-запрос для мобильных
     const updateMobileStyles = () => {
         if (window.innerWidth <= 767px) {
             // Для мобильных
-            installButton.style.right = '60px'; // или другое значение
+            installButton.style.right = '60px';
             installButton.style.bottom = '96px';
             installButton.style.fontSize = '12px';
             installButton.style.padding = '10px 16px';
@@ -4510,9 +4511,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
     
     setTimeout(() => {
         installButton.style.display = 'none';
-        }, 10000);
-    });
-}
+    }, 10000);
+});
 // Проверяем режим PWA
 function checkDisplayMode() {
     if (window.matchMedia('(display-mode: standalone)').matches) {
