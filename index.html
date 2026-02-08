@@ -81,6 +81,12 @@
             --warning: #f39c12;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+		@media (max-width: 767px) {
+    button[onclick*="deferredPrompt.prompt"],
+    button[onclick*="installPWA"] {
+        bottom: 96px !important;
+    }
+}
         * {
             margin: 0;
             padding: 0;
@@ -4448,7 +4454,7 @@ function createInstallButton() {
     installButton.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
     installButton.style.cssText = `
         position: fixed;
-        bottom: 100px;
+        bottom: 50px;
         right: 60px;
         background: linear-gradient(90deg, #27ae60, #2ecc71);
         color: white;
