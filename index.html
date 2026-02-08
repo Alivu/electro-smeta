@@ -4446,10 +4446,15 @@ const installButton = document.createElement('button');
 
 function createInstallButton() {
     installButton.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
+    
+    // Сначала добавляем кнопку в DOM
+    document.body.appendChild(installButton);
+    
+    // Базовые стили
     installButton.style.cssText = `
         position: fixed;
         bottom: 50px;
-        right: 60px;
+        right: 70px;
         background: linear-gradient(90deg, #27ae60, #2ecc71);
         color: white;
         border: none;
@@ -4464,10 +4469,16 @@ function createInstallButton() {
         gap: 8px;
         font-size: 14px;
     `;
-    // СНАЧАЛА добавляем кнопку в DOM
-    document.body.appendChild(installButton);
     
-    // ПОТОМ настраиваем обработчики
+    // Для мобильных
+    if (window.innerWidth <= 767px) {
+        installButton.style.right = '60px';
+        installButton.style.bottom = '96px';
+        installButton.style.fontSize = '12px';
+        installButton.style.padding = '10px 16px';
+    }
+    
+    // Обработчик клика
     installButton.addEventListener('click', async () => {
         if (!deferredPrompt) return;
         
@@ -4481,45 +4492,7 @@ function createInstallButton() {
         deferredPrompt = null;
         installButton.style.display = 'none';
     });
-    
-    // И только ПОСЛЕ этого настраиваем стили
-    const updateMobileStyles = () => {
-        if (window.innerWidth <= 767px) {
-            // Для мобильных
-            installButton.style.right = '60px';
-            installButton.style.bottom = '96px';
-            installButton.style.fontSize = '12px';
-            installButton.style.padding = '10px 16px';
-        } else {
-            // Для десктопа
-            installButton.style.right = '70px';
-            installButton.style.bottom = '50px';
-            installButton.style.fontSize = '14px';
-            installButton.style.padding = '12px 20px';
-        }
-    };
-    
-    updateMobileStyles();
-    window.addEventListener('resize', updateMobileStyles);
 }
-    
-    installButton.addEventListener('click', async () => {
-        if (!deferredPrompt) return;
-        
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        
-        if (outcome === 'accepted') {
-            showNotification('Приложение установлено!');
-        }
-        
-        deferredPrompt = null;
-        installButton.style.display = 'none';
-    });
-    
-    document.body.appendChild(installButton);
-}
-
 // Отслеживаем установку PWA
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
