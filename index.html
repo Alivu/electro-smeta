@@ -4510,9 +4510,9 @@ window.addEventListener('beforeinstallprompt', (e) => {
     
     setTimeout(() => {
         installButton.style.display = 'none';
-    }, 10000);
-});
-
+        }, 10000);
+    });
+}
 // Проверяем режим PWA
 function checkDisplayMode() {
     if (window.matchMedia('(display-mode: standalone)').matches) {
