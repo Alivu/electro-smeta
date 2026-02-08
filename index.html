@@ -81,12 +81,6 @@
             --warning: #f39c12;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-		@media (max-width: 767px) {
-    button[onclick*="deferredPrompt.prompt"],
-    button[onclick*="installPWA"] {
-        bottom: 96px !important;
-    }
-}
         * {
             margin: 0;
             padding: 0;
@@ -4470,6 +4464,26 @@ function createInstallButton() {
         gap: 8px;
         font-size: 14px;
     `;
+	    // Добавляем медиа-запрос для мобильных
+    const updateMobileStyles = () => {
+        if (window.innerWidth <= 767px) {
+            // Для мобильных
+            installButton.style.right = '60px'; // или другое значение
+            installButton.style.bottom = '96px';
+            installButton.style.fontSize = '12px';
+            installButton.style.padding = '10px 16px';
+        } else {
+            // Для десктопа
+            installButton.style.right = '70px';
+            installButton.style.bottom = '50px';
+            installButton.style.fontSize = '14px';
+            installButton.style.padding = '12px 20px';
+        }
+    };
+    
+    // Вызываем при загрузке и при изменении размера окна
+    updateMobileStyles();
+    window.addEventListener('resize', updateMobileStyles);
     
     installButton.addEventListener('click', async () => {
         if (!deferredPrompt) return;
