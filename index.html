@@ -4440,12 +4440,10 @@ function registerServiceWorker() {
     }
 }
 
-// Создаем кнопку установки PWA
 let deferredPrompt;
 let installButton = null;
 
 function createInstallButton() {
-    // Проверяем, не создана ли кнопка уже
     if (document.getElementById('installPWAButton')) {
         return;
     }
@@ -4454,10 +4452,8 @@ function createInstallButton() {
     installButton.id = 'installPWAButton';
     installButton.innerHTML = '<i class="fas fa-download"></i> Установить приложение';
     
-    // Сначала добавляем кнопку в DOM
     document.body.appendChild(installButton);
     
-    // Базовые стили
     installButton.style.cssText = `
         position: fixed;
         background: linear-gradient(90deg, #27ae60, #2ecc71);
@@ -4477,26 +4473,23 @@ function createInstallButton() {
         bottom: 50px;
     `;
     
-    // И только ПОСЛЕ этого настраиваем адаптивные стили
     const updateMobileStyles = () => {
         if (window.innerWidth <= 767px) {
-            // Для мобильных
             installButton.style.right = '60px';
             installButton.style.bottom = '96px';
             installButton.style.fontSize = '12px';
             installButton.style.padding = '10px 16px';
         } else {
-            // Для десктопа
             installButton.style.right = '70px';
             installButton.style.bottom = '50px';
             installButton.style.fontSize = '14px';
             installButton.style.padding = '12px 20px';
         }
+    };
     
     updateMobileStyles();
     window.addEventListener('resize', updateMobileStyles);
     
-    // Обработчик клика
     installButton.addEventListener('click', async () => {
         if (!deferredPrompt) return;
         
@@ -4511,17 +4504,23 @@ function createInstallButton() {
         installButton.style.display = 'none';
     });
 }
-// Отслеживаем установку PWA
+
+// ИСПРАВЛЕНО: проверяем существование кнопки
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installButton.style.display = 'flex';
     
-    setTimeout(() => {
-        installButton.style.display = 'none';
-    }, 10000);
+    if (installButton) {
+        installButton.style.display = 'flex';
+        
+        setTimeout(() => {
+            if (installButton) {
+                installButton.style.display = 'none';
+            }
+        }, 10000);
+    }
 });
-// Проверяем режим PWA
+
 function checkDisplayMode() {
     if (window.matchMedia('(display-mode: standalone)').matches) {
         console.log('📱 Запущено как PWA');
@@ -4529,7 +4528,6 @@ function checkDisplayMode() {
     }
 }
 
-// Инициализация PWA
 function initializePWA() {
     registerServiceWorker();
     createInstallButton();
@@ -4540,14 +4538,9 @@ function initializePWA() {
     }
 }
 
-// Запускаем PWA при загрузке
 document.addEventListener('DOMContentLoaded', function() {
-    // Ваш существующий код инициализации остается здесь
-    
-    // Добавляем эту строку в существующий DOMContentLoaded:
     initializePWA();
 });
-
 		// ========== GOOGLE DRIVE СИНХРОНИЗАЦИЯ ==========
 const GOOGLE_CLIENT_ID = '10151274989-sirobiq4o2es78hs82gbotu34lkf11pb.apps.googleusercontent.com';
 
