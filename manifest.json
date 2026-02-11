@@ -6,7 +6,7 @@
   "start_url": "https://alivu.github.io/electro-smeta/",
   "scope": "https://alivu.github.io/electro-smeta/",
   "display": "standalone",
-  "background_color": "#f5f7fa",
+  "background_color": "#ffffff",
   "theme_color": "#2c3e50",
   "orientation": "portrait",
 
@@ -45,7 +45,7 @@
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-384x384.png",
@@ -58,6 +58,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-Maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-Maskable-512x512.png",
