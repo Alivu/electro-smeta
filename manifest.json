@@ -5,8 +5,8 @@
   "start_url": "https://alivu.github.io/electro-smeta/",
   "scope": "https://alivu.github.io/electro-smeta/",
   "display": "standalone",
-  "background_color": "#f5f7fa",
-  "theme_color": "#2c3e50",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "orientation": "portrait",
   "icons": [
     {
