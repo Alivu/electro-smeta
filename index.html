@@ -1429,15 +1429,19 @@
     <div class="container">
 <!-- Шапка -->
 <div class="header">
-    <div class="logo">
-        <!-- Ваша иконка с GitHub -->
-        <img src="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-48x48.png" 
-             alt="ЭлектроСмета" 
-             class="app-icon"
-             id="appLogoIcon">
-        <i class="fas fa-bolt logo-icon" id="fallbackIcon" style="display: none;"></i>
-        <span class="logo-text">𝔼𝕝𝕖𝕜𝕥𝕣𝕠𝕊𝕞𝕖𝕥𝕒 @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡 +𝟟𝟡𝟞𝟛𝟝𝟡𝟠𝟜𝟠𝟜𝟞</span>
-    </div>
+<div class="logo">
+    <!-- ВЕКТОРНАЯ ИКОНКА - ВСЕГДА ВИДНА, НУЛЕВАЯ ЗАГРУЗКА -->
+    <svg width="32" height="32" viewBox="0 0 24 24" style="margin-right: 8px; border-radius: 8px;">
+        <defs>
+            <linearGradient id="boltGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#2c3e50;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        <path fill="url(#boltGradient)" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+    </svg>
+    <span class="logo-text">𝔼𝕝𝕖𝕜𝕥𝕣𝕠𝕊𝕞𝕖𝕥𝕒 @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡 +𝟟𝟡𝟞𝟛𝟝𝟡𝟠𝟜𝟠𝟜𝟞</span>
+</div>
 </div>
         
 <!-- Панель навигации -->
