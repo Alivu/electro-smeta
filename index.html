@@ -5527,8 +5527,12 @@ function refreshEstimate() {
         // ========== НОВЫЙ ФУНКЦИОНАЛ: ВИДЕО ПО НОМЕРУ ==========
         
         // Базовый URL для видео (ваш репозиторий)
-        const VIDEO_BASE_URL = 'https://raw.githubusercontent.com/Alivu/electro-smeta/main/videos/';
-        
+        //const VIDEO_BASE_URL = 'https://i.imgur.com/';
+        const videoLinks = {
+    43: 'https://imgur.com/a/PMcXGfX',
+
+    // и так далее для всех номеров, у которых есть видео
+};
         // Объект для кэширования доступных видео
         const videoCache = new Set();
         
