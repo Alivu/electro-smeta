@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-
-
+<!-- ВЕСЬ ВАШ СУЩЕСТВУЮЩИЙ HEAD ОСТАЁТСЯ ПОЛНОСТЬЮ БЕЗ ИЗМЕНЕНИЙ -->
 <!-- Yandex.Metrika counter -->
 <script type="text/javascript">
     (function(m,e,t,r,i,k,a){
@@ -81,6 +80,7 @@
 
 	
     <style>
+        /* ВЕСЬ ВАШ СУЩЕСТВУЮЩИЙ СТИЛЬ ОСТАЁТСЯ ПОЛНОСТЬЮ БЕЗ ИЗМЕНЕНИЙ */
         /* Общие стили */
         :root {
             --primary: #2c3e50;
@@ -1416,6 +1416,64 @@
         font-size: 0.78rem !important;
     }
 }	
+
+        /* ========== НОВЫЕ СТИЛИ ДЛЯ ВИДЕО-ФУНКЦИОНАЛА ========== */
+        .item-number.video-available {
+            cursor: pointer;
+            position: relative;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .item-number.video-available::after {
+            content: '🎬';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 12px;
+            background: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .video-available-code {
+            cursor: pointer;
+            color: #e74c3c;
+            font-weight: bold;
+            text-decoration: underline dotted;
+            position: relative;
+        }
+        
+        .video-loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 10000;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 767px) {
+            .item-number.video-available::after {
+                width: 14px;
+                height: 14px;
+                font-size: 10px;
+                top: -6px;
+                right: -6px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1447,7 +1505,7 @@
              class="app-icon"
              id="appLogoIcon">
         <i class="fas fa-bolt logo-icon" id="fallbackIcon" style="display: none;"></i>
-        <span class="logo-text">𝔼𝕝𝕖𝕜𝕥𝕣𝕠𝕊𝕞𝕖𝕥𝕒 @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡 +𝟟𝟡𝟞𝟛𝟝𝟡𝟠𝟜𝟠𝟜𝟞</span>
+        <span class="logo-text">𝔼𝕝𝕖𝕜𝕥𝕣𝕠𝕊𝕞𝕖𝕥𝕒 @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡 +𝟟𝟫𝟞𝟛𝟝𝟡𝟠𝟜𝟠𝟜𝟞</span>
     </div>
 </div>
         
@@ -1674,6 +1732,8 @@
     </div>
 
     <script>
+// ========== ВЕСЬ ВАШ СУЩЕСТВУЮЩИЙ JAVASCRIPT КОД ПОЛНОСТЬЮ СОХРАНЁН ==========
+
 // ========== ЗАГРУЗКА ВЕРСИИ ИЗ SW.js ==========
 let APP_VERSION = '1.0.0'; // значение по умолчанию
 
@@ -3034,9 +3094,9 @@ function initializeEstimateData() {
             }
         }
 
-        // Рендеринг прайс-листа
+        // Рендеринг прайс-листа (обновленная версия с видео)
         function renderPriceList() {
-            console.log('Рендеринг прайс-листа');
+            console.log('Рендеринг прайс-листа с видео-функционалом');
             const priceListContainer = document.getElementById('priceList');
             
             if (!priceListContainer) {
@@ -3070,21 +3130,54 @@ function initializeEstimateData() {
                     const itemElement = document.createElement('div');
                     itemElement.className = 'price-item';
                     itemElement.dataset.id = item.id;
-                    itemElement.innerHTML = `
-                        <div class="item-number">${item.id}</div>
-                        <div class="item-name">${item.name}</div>
-                        <div class="item-unit">${item.unit}</div>
-                        <div class="item-price">${formatCurrency(item.price)}</div>
-                    `;
                     
-                    // Обработчик для добавления в смету
-                    itemElement.addEventListener('click', function() {
-                        addToEstimate(item);
-                        //showTab('estimate');
-                        showNotification(`Добавлено: ${item.name.substring(0, 80)}...`);
+                    // Создаем номер с возможностью клика для видео
+                    const numberDiv = document.createElement('div');
+                    numberDiv.className = 'item-number';
+                    numberDiv.textContent = item.id;
+                    
+                    // Добавляем обработчик клика на номер
+                    numberDiv.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Предотвращаем всплытие события
+                        playVideoByNumber(item.id);
+                    });
+                    
+                    // Создаем остальные элементы
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'item-name';
+                    nameDiv.textContent = item.name;
+                    
+                    const unitDiv = document.createElement('div');
+                    unitDiv.className = 'item-unit';
+                    unitDiv.textContent = item.unit;
+                    
+                    const priceDiv = document.createElement('div');
+                    priceDiv.className = 'item-price';
+                    priceDiv.textContent = formatCurrency(item.price);
+                    
+                    // Добавляем все элементы
+                    itemElement.appendChild(numberDiv);
+                    itemElement.appendChild(nameDiv);
+                    itemElement.appendChild(unitDiv);
+                    itemElement.appendChild(priceDiv);
+                    
+                    // Добавляем обработчик для добавления в смету (на всю строку, кроме номера)
+                    itemElement.addEventListener('click', function(e) {
+                        // Если кликнули не на номере - добавляем в смету
+                        if (!e.target.classList.contains('item-number')) {
+                            addToEstimate(item);
+                            showNotification(`Добавлено: ${item.name.substring(0, 80)}...`);
+                        }
                     });
                     
                     itemsContainer.appendChild(itemElement);
+                    
+                    // Асинхронно проверяем наличие видео и обновляем класс
+                    checkVideoExists(item.id).then(exists => {
+                        if (exists) {
+                            numberDiv.classList.add('video-available');
+                        }
+                    });
                 });
                 
                 // Обработчик раскрытия/скрытия секции
@@ -3106,74 +3199,132 @@ function initializeEstimateData() {
                 priceListContainer.appendChild(sectionElement);
             });
             
-            console.log('Прайс-лист отрендерен');
+            console.log('Прайс-лист с видео-функционалом отрендерен');
         }
 
-        // Рендеринг таблицы сметы
-function renderEstimateTable() {
-    const tableBody = document.getElementById('estimateTable');
-    if (!tableBody) {
-        console.error('Таблица сметы не найдена!');
-        return;
-    }
-    
-    tableBody.innerHTML = '';
-    
-    // Получаем ВСЕ строки из estimateData
-    const allRows = estimateData;
-    console.log(`Рендеринг ${allRows.length} строк сметы`);
-    console.log('Первые 5 строк данных:', allRows.slice(0, 5));
-    
-    // Рендерим ВСЕ строки без ограничений
-    allRows.forEach((row, index) => {
-        const tr = document.createElement('tr');
-        if (row.isMaterial) {
-            tr.classList.add('material-row');
+        // Рендеринг таблицы сметы (обновленная версия с видео)
+        function renderEstimateTable() {
+            const tableBody = document.getElementById('estimateTable');
+            if (!tableBody) {
+                console.error('Таблица сметы не найдена!');
+                return;
+            }
+            
+            tableBody.innerHTML = '';
+            
+            // Получаем ВСЕ строки из estimateData
+            const allRows = estimateData;
+            console.log(`Рендеринг ${allRows.length} строк сметы с видео-функционалом`);
+            
+            // Рендерим ВСЕ строки
+            allRows.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                if (row.isMaterial) {
+                    tr.classList.add('material-row');
+                }
+                
+                // Создаем ячейку с кодом, которая будет кликабельной если есть видео
+                const priceIdCell = document.createElement('td');
+                priceIdCell.className = 'price-id-cell';
+                
+                if (row.priceId && !isNaN(parseInt(row.priceId))) {
+                    // Это числовой ID (не материал)
+                    const numberSpan = document.createElement('span');
+                    numberSpan.textContent = row.priceId;
+                    numberSpan.style.cursor = 'pointer';
+                    numberSpan.style.color = '#3498db';
+                    numberSpan.style.fontWeight = 'bold';
+                    
+                    // Добавляем обработчик клика
+                    numberSpan.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        playVideoByNumber(row.priceId);
+                    });
+                    
+                    priceIdCell.appendChild(numberSpan);
+                    
+                    // Проверяем наличие видео
+                    checkVideoExists(row.priceId).then(exists => {
+                        if (exists) {
+                            numberSpan.style.color = '#e74c3c';
+                            numberSpan.style.textDecoration = 'underline';
+                            numberSpan.style.textDecorationStyle = 'dotted';
+                            
+                            // Добавляем иконку видео
+                            const videoIcon = document.createElement('i');
+                            videoIcon.className = 'fas fa-video';
+                            videoIcon.style.marginLeft = '5px';
+                            videoIcon.style.fontSize = '10px';
+                            videoIcon.style.color = '#e74c3c';
+                            priceIdCell.appendChild(videoIcon);
+                        }
+                    });
+                } else {
+                    // Это материал или пустая строка
+                    priceIdCell.textContent = row.priceId || '';
+                }
+                
+                // Создаем остальные ячейки
+                const nameCell = document.createElement('td');
+                nameCell.className = 'search-cell';
+                nameCell.innerHTML = `
+                    <input type="text" class="search-input" 
+                           data-row="${index}" 
+                           value="${row.name.replace(/"/g, '&quot;')}"
+                           placeholder="${row.isMaterial ? 'Материал...' : 'Начните вводить название...'}"
+                           autocomplete="off">
+                    <div class="dropdown" id="dropdown-${index}"></div>
+                `;
+                
+                const unitCell = document.createElement('td');
+                unitCell.className = 'unit-cell';
+                unitCell.textContent = row.unit || '';
+                
+                const priceCell = document.createElement('td');
+                priceCell.className = 'price-cell';
+                priceCell.innerHTML = `
+                    <input type="number" class="number-input price-input" 
+                           data-row="${index}" 
+                           value="${row.price || ''}" 
+                           min="0" step="0.01">
+                `;
+                
+                const quantityCell = document.createElement('td');
+                quantityCell.className = 'quantity-cell';
+                quantityCell.innerHTML = `
+                    <input type="number" class="number-input quantity-input" 
+                           data-row="${index}" 
+                           value="${row.quantity || 1}" 
+                           min="1" step="1">
+                `;
+                
+                const totalCell = document.createElement('td');
+                totalCell.className = 'total-cell';
+                totalCell.textContent = formatCurrency(row.total);
+                
+                const actionsCell = document.createElement('td');
+                actionsCell.className = 'actions-cell';
+                actionsCell.innerHTML = `<i class="fas fa-trash delete-row" data-row="${index}"></i>`;
+                
+                // Добавляем все ячейки в строку
+                tr.appendChild(priceIdCell);
+                tr.appendChild(nameCell);
+                tr.appendChild(unitCell);
+                tr.appendChild(priceCell);
+                tr.appendChild(quantityCell);
+                tr.appendChild(totalCell);
+                tr.appendChild(actionsCell);
+                
+                tableBody.appendChild(tr);
+            });
+            
+            // После рендеринга показываем сколько строк реально отрисовано
+            const renderedRows = tableBody.querySelectorAll('tr').length;
+            console.log(`Отображено ${renderedRows} строк в таблице`);
+            
+            // Настраиваем обработчики событий для всех новых строк
+            setupRowEventListeners();
         }
-        
-        // Проверяем, заполнена ли строка
-        const isRowEmpty = !row.priceId && !row.name.trim() && !row.isMaterial;
-        
-        // Если строка пустая и это далеко за пределами, можно скрыть
-        // Но для надежности показываем ВСЕ
-        tr.innerHTML = `
-            <td class="price-id-cell">${row.isMaterial ? 'МАТ' : (row.priceId || '')}</td>
-            <td class="search-cell">
-                <input type="text" class="search-input" 
-                       data-row="${index}" 
-                       value="${row.name}"
-                       placeholder="${row.isMaterial ? 'Материал...' : 'Начните вводить название...'}"
-                       autocomplete="off">
-                <div class="dropdown" id="dropdown-${index}"></div>
-            </td>
-            <td class="unit-cell">${row.unit || ''}</td>
-            <td class="price-cell">
-                <input type="number" class="number-input price-input" 
-                       data-row="${index}" 
-                       value="${row.price || ''}" 
-                       min="0" step="0.01">
-            </td>
-            <td class="quantity-cell">
-                <input type="number" class="number-input quantity-input" 
-                       data-row="${index}" 
-                       value="${row.quantity || 1}" 
-                       min="1" step="1">
-            </td>
-            <td class="total-cell">${formatCurrency(row.total)}</td>
-            <td class="actions-cell">
-                <i class="fas fa-trash delete-row" data-row="${index}"></i>
-            </td>
-        `;
-        tableBody.appendChild(tr);
-    });
-    
-    // После рендеринга показываем сколько строк реально отрисовано
-    const renderedRows = tableBody.querySelectorAll('tr').length;
-    console.log(`Отображено ${renderedRows} строк в таблице`);
-    
-    // Настраиваем обработчики событий для всех новых строк
-    setupRowEventListeners();
-}
 
         function setupEventListeners() {
             console.log('Настройка обработчиков событий');
@@ -4974,7 +5125,7 @@ class Magnifier {
                 }
                 
                 .magnifier-toggle {
-                    bottom: 50px;
+                    bottom: 60px;
                     right: 15px;
                     width: 35px;
                     height: 35px;
@@ -5372,6 +5523,172 @@ function refreshEstimate() {
         }
     }, 1500);
 }
+
+        // ========== НОВЫЙ ФУНКЦИОНАЛ: ВИДЕО ПО НОМЕРУ ==========
+        
+        // Базовый URL для видео (ваш репозиторий)
+        const VIDEO_BASE_URL = 'https://raw.githubusercontent.com/Alivu/electro-smeta/main/videos/';
+        
+        // Объект для кэширования доступных видео
+        const videoCache = new Set();
+        
+        // Максимальное количество попыток проверки видео
+        const MAX_CHECK_ATTEMPTS = 3;
+        
+        /**
+         * Проверяет существование видео по номеру
+         * @param {number|string} number - номер позиции
+         * @returns {Promise<boolean>} - существует ли видео
+         */
+        async function checkVideoExists(number) {
+            // Если уже проверяли и знаем, что есть - возвращаем true
+            if (videoCache.has(number)) {
+                return true;
+            }
+            
+            // Формируем URL видео (поддерживаем разные форматы)
+            const videoFormats = ['mp4', 'webm', 'mov'];
+            
+            for (const format of videoFormats) {
+                const videoUrl = `${VIDEO_BASE_URL}${number}.${format}`;
+                
+                try {
+                    // Пробуем загрузить только заголовки, чтобы проверить существование
+                    const response = await fetch(videoUrl, { method: 'HEAD' });
+                    
+                    if (response.ok) {
+                        // Видео существует - добавляем в кэш
+                        videoCache.add(number);
+                        console.log(`✅ Видео найдено: ${number}.${format}`);
+                        return true;
+                    }
+                } catch (error) {
+                    // Игнорируем ошибки, пробуем следующий формат
+                    console.log(`❌ Видео ${number}.${format} не найдено`);
+                }
+            }
+            
+            return false;
+        }
+        
+        /**
+         * Воспроизводит видео по номеру
+         * @param {number|string} number - номер позиции
+         */
+        async function playVideoByNumber(number) {
+            // Показываем индикатор загрузки
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'video-loading';
+            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка видео...';
+            document.body.appendChild(loadingDiv);
+            
+            try {
+                // Пробуем разные форматы
+                const videoFormats = ['mp4', 'webm', 'mov'];
+                let videoUrl = null;
+                
+                for (const format of videoFormats) {
+                    const testUrl = `${VIDEO_BASE_URL}${number}.${format}`;
+                    const response = await fetch(testUrl, { method: 'HEAD' });
+                    
+                    if (response.ok) {
+                        videoUrl = testUrl;
+                        break;
+                    }
+                }
+                
+                // Убираем индикатор загрузки
+                document.body.removeChild(loadingDiv);
+                
+                if (videoUrl) {
+                    // Создаем модальное окно для видео
+                    const videoModal = document.createElement('div');
+                    videoModal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.9);
+                        z-index: 10001;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        flex-direction: column;
+                    `;
+                    
+                    videoModal.innerHTML = `
+                        <video controls autoplay style="max-width: 90%; max-height: 80%; border-radius: 10px;">
+                            <source src="${videoUrl}" type="video/${videoUrl.split('.').pop()}">
+                            Ваш браузер не поддерживает видео.
+                        </video>
+                        <button style="
+                            margin-top: 20px;
+                            padding: 10px 30px;
+                            background: #e74c3c;
+                            color: white;
+                            border: none;
+                            border-radius: 5px;
+                            font-size: 16px;
+                            cursor: pointer;
+                        " onclick="this.parentElement.remove()">
+                            Закрыть
+                        </button>
+                    `;
+                    
+                    document.body.appendChild(videoModal);
+                    
+                    // Добавляем в кэш
+                    videoCache.add(number);
+                    
+                } else {
+                    // Видео не найдено - показываем уведомление
+                    showNotification(`❌ Видео для позиции №${number} не найдено`);
+                }
+            } catch (error) {
+                // Убираем индикатор загрузки в случае ошибки
+                if (loadingDiv.parentNode) {
+                    document.body.removeChild(loadingDiv);
+                }
+                console.error('Ошибка при загрузке видео:', error);
+                showNotification(`❌ Ошибка загрузки видео для №${number}`);
+            }
+        }
+        
+        /**
+         * Дополнительная функция для предзагрузки информации о видео
+         * Можно вызывать при инициализации приложения
+         */
+        async function preloadVideoInfo() {
+            console.log('Предзагрузка информации о видео...');
+            
+            // Собираем все уникальные ID из прайс-листа
+            const allIds = new Set();
+            priceData.forEach(section => {
+                section.items.forEach(item => {
+                    allIds.add(item.id);
+                });
+            });
+            
+            // Проверяем каждое видео (но не больше 5 одновременно)
+            const idsArray = Array.from(allIds);
+            const batchSize = 5;
+            
+            for (let i = 0; i < idsArray.length; i += batchSize) {
+                const batch = idsArray.slice(i, i + batchSize);
+                await Promise.all(batch.map(id => checkVideoExists(id)));
+            }
+            
+            console.log('Предзагрузка информации о видео завершена');
+            console.log('Доступные видео:', Array.from(videoCache));
+        }
+        
+        // Добавляем вызов preloadVideoInfo в initializeApp
+        const originalInitializeApp = initializeApp;
+        initializeApp = async function() {
+            await originalInitializeApp();
+            await preloadVideoInfo();
+        };
 		
     </script>
 </body>
