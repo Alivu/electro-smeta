@@ -5528,171 +5528,126 @@ function refreshEstimate() {
         
         // Базовый URL для видео (ваш репозиторий)
         //const VIDEO_BASE_URL = 'https://i.imgur.com/';
-        const videoLinks = {
-    43: 'https://i.imgur.com/0CSBqVf.mp4',
+// ========== НОВЫЙ ФУНКЦИОНАЛ: ВИДЕО ПО НОМЕРУ ==========
 
-    // и так далее для всех номеров, у которых есть видео
+// Словарь ссылок на видео (номер: прямая ссылка)
+const videoLinks = {
+    43: 'https://i.imgur.com/0CSBqVf.mp4',
+    // Добавляйте новые видео так:
+    // 10: 'https://i.imgur.com/ваш_код.mp4',
+    // 25: 'https://i.imgur.com/другой_код.mp4',
 };
-        // Объект для кэширования доступных видео
-        const videoCache = new Set();
+
+// Объект для кэширования доступных видео
+const videoCache = new Set();
+
+/**
+ * Проверяет существование видео по номеру
+ */
+async function checkVideoExists(number) {
+    // Проверяем, есть ли ссылка в словаре
+    if (videoLinks[number]) {
+        videoCache.add(number);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Воспроизводит видео по номеру
+ */
+async function playVideoByNumber(number) {
+    // Показываем индикатор загрузки
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'video-loading';
+    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка видео...';
+    document.body.appendChild(loadingDiv);
+    
+    try {
+        // Получаем ссылку из словаря
+        let videoUrl = videoLinks[number];
         
-        // Максимальное количество попыток проверки видео
-        const MAX_CHECK_ATTEMPTS = 3;
+        // Убираем индикатор загрузки
+        document.body.removeChild(loadingDiv);
         
-        /**
-         * Проверяет существование видео по номеру
-         * @param {number|string} number - номер позиции
-         * @returns {Promise<boolean>} - существует ли видео
-         */
-        async function checkVideoExists(number) {
-            // Если уже проверяли и знаем, что есть - возвращаем true
-            if (videoCache.has(number)) {
-                return true;
-            }
+        if (videoUrl) {
+            // Создаем модальное окно для видео
+            const videoModal = document.createElement('div');
+            videoModal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 10001;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            `;
             
-            // Формируем URL видео (поддерживаем разные форматы)
-            const videoFormats = ['mp4', 'webm', 'mov'];
+            videoModal.innerHTML = `
+                <video controls autoplay style="max-width: 90%; max-height: 80%; border-radius: 10px;">
+                    <source src="${videoUrl}" type="video/${videoUrl.split('.').pop()}">
+                    Ваш браузер не поддерживает видео.
+                </video>
+                <button style="
+                    margin-top: 20px;
+                    padding: 10px 30px;
+                    background: #e74c3c;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: pointer;
+                " onclick="this.parentElement.remove()">
+                    Закрыть
+                </button>
+            `;
             
-            for (const format of videoFormats) {
-                const videoUrl = `${VIDEO_BASE_URL}${number}.${format}`;
-                
-                try {
-                    // Пробуем загрузить только заголовки, чтобы проверить существование
-                    const response = await fetch(videoUrl, { method: 'HEAD' });
-                    
-                    if (response.ok) {
-                        // Видео существует - добавляем в кэш
-                        videoCache.add(number);
-                        console.log(`✅ Видео найдено: ${number}.${format}`);
-                        return true;
-                    }
-                } catch (error) {
-                    // Игнорируем ошибки, пробуем следующий формат
-                    console.log(`❌ Видео ${number}.${format} не найдено`);
-                }
-            }
+            document.body.appendChild(videoModal);
             
-            return false;
+            // Добавляем в кэш
+            videoCache.add(number);
+            
+        } else {
+            // Видео не найдено - показываем уведомление
+            showNotification(`❌ Видео для позиции №${number} не найдено`);
         }
-        
-        /**
-         * Воспроизводит видео по номеру
-         * @param {number|string} number - номер позиции
-         */
-        async function playVideoByNumber(number) {
-            // Показываем индикатор загрузки
-            const loadingDiv = document.createElement('div');
-            loadingDiv.className = 'video-loading';
-            loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка видео...';
-            document.body.appendChild(loadingDiv);
-            
-            try {
-                // Пробуем разные форматы
-                const videoFormats = ['mp4', 'webm', 'mov'];
-                let videoUrl = null;
-                
-                for (const format of videoFormats) {
-                    const testUrl = `${VIDEO_BASE_URL}${number}.${format}`;
-                    const response = await fetch(testUrl, { method: 'HEAD' });
-                    
-                    if (response.ok) {
-                        videoUrl = testUrl;
-                        break;
-                    }
-                }
-                
-                // Убираем индикатор загрузки
-                document.body.removeChild(loadingDiv);
-                
-                if (videoUrl) {
-                    // Создаем модальное окно для видео
-                    const videoModal = document.createElement('div');
-                    videoModal.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0, 0, 0, 0.9);
-                        z-index: 10001;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        flex-direction: column;
-                    `;
-                    
-                    videoModal.innerHTML = `
-                        <video controls autoplay style="max-width: 90%; max-height: 80%; border-radius: 10px;">
-                            <source src="${videoUrl}" type="video/${videoUrl.split('.').pop()}">
-                            Ваш браузер не поддерживает видео.
-                        </video>
-                        <button style="
-                            margin-top: 20px;
-                            padding: 10px 30px;
-                            background: #e74c3c;
-                            color: white;
-                            border: none;
-                            border-radius: 5px;
-                            font-size: 16px;
-                            cursor: pointer;
-                        " onclick="this.parentElement.remove()">
-                            Закрыть
-                        </button>
-                    `;
-                    
-                    document.body.appendChild(videoModal);
-                    
-                    // Добавляем в кэш
-                    videoCache.add(number);
-                    
-                } else {
-                    // Видео не найдено - показываем уведомление
-                    showNotification(`❌ Видео для позиции №${number} не найдено`);
-                }
-            } catch (error) {
-                // Убираем индикатор загрузки в случае ошибки
-                if (loadingDiv.parentNode) {
-                    document.body.removeChild(loadingDiv);
-                }
-                console.error('Ошибка при загрузке видео:', error);
-                showNotification(`❌ Ошибка загрузки видео для №${number}`);
-            }
+    } catch (error) {
+        // Убираем индикатор загрузки в случае ошибки
+        if (loadingDiv.parentNode) {
+            document.body.removeChild(loadingDiv);
         }
-        
-        /**
-         * Дополнительная функция для предзагрузки информации о видео
-         * Можно вызывать при инициализации приложения
-         */
-        async function preloadVideoInfo() {
-            console.log('Предзагрузка информации о видео...');
-            
-            // Собираем все уникальные ID из прайс-листа
-            const allIds = new Set();
-            priceData.forEach(section => {
-                section.items.forEach(item => {
-                    allIds.add(item.id);
-                });
-            });
-            
-            // Проверяем каждое видео (но не больше 5 одновременно)
-            const idsArray = Array.from(allIds);
-            const batchSize = 5;
-            
-            for (let i = 0; i < idsArray.length; i += batchSize) {
-                const batch = idsArray.slice(i, i + batchSize);
-                await Promise.all(batch.map(id => checkVideoExists(id)));
-            }
-            
-            console.log('Предзагрузка информации о видео завершена');
-            console.log('Доступные видео:', Array.from(videoCache));
-        }
-        
-        // Добавляем вызов preloadVideoInfo в initializeApp
-        const originalInitializeApp = initializeApp;
-        initializeApp = async function() {
-            await originalInitializeApp();
-            await preloadVideoInfo();
-        };
+        console.error('Ошибка при загрузке видео:', error);
+        showNotification(`❌ Ошибка загрузки видео для №${number}`);
+    }
+}
+
+/**
+ * Предзагрузка информации о видео
+ */
+async function preloadVideoInfo() {
+    console.log('Предзагрузка информации о видео...');
+    
+    // Получаем все номера из videoLinks
+    const videoNumbers = Object.keys(videoLinks).map(Number);
+    
+    for (const number of videoNumbers) {
+        await checkVideoExists(number);
+    }
+    
+    console.log('Предзагрузка информации о видео завершена');
+    console.log('Доступные видео:', Array.from(videoCache));
+}
+
+// Добавляем вызов preloadVideoInfo в initializeApp
+const originalInitializeApp = initializeApp;
+initializeApp = async function() {
+    await originalInitializeApp();
+    await preloadVideoInfo();
+};
 		
     </script>
 </body>
