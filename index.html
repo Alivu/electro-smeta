@@ -1352,19 +1352,27 @@
 
 /* Для мобильных */
 @media (max-width: 767px) {
-    .app-icon {  /* ← БЫЛО ПРОПУЩЕНО */
-        width: 48px;
+    .app-icon {
+        width: 48px;  /* размер картинки */
         height: 48px;
         margin-right: 2px;
+    }
+    
+    .logo-icon {
+        font-size: 1.1rem;  /* размер молнии (уменьшил) */
     }
 }
 
 /* Для очень маленьких экранов */
 @media (max-width: 480px) {
-    .app-icon {  /* ← БЫЛО ПРОПУЩЕНО */
-        width: 24px;
-        height: 24px;
+    .app-icon {
+        width: 40px;  /* еще меньше */
+        height: 40px;
         margin-right: 2px;
+    }
+    
+    .logo-icon {
+        font-size: 0.9rem;  /* молния еще меньше */
     }
 }
 		/* ========== МОБИЛЬНАЯ ВЕРСИЯ ПРАЙС-ЛИСТА ========== */
