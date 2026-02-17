@@ -1335,38 +1335,38 @@
     }
 }
 
-        /* ========== СТИЛИ ДЛЯ ИКОНКИ ПРИЛОЖЕНИЯ ========== */
-        
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-            border-radius: 8px;
-            margin-right: 12px;
-            vertical-align: middle;
-            transition: all 0.3s ease;
-        }
+/* ========== СТИЛИ ДЛЯ ИКОНКИ ПРИЛОЖЕНИЯ ========== */
+.app-icon {  /* ← БЫЛО ПРОПУЩЕНО */
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-right: 12px;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+}
 
-        .app-icon:hover {
-            transform: scale(1.05);
-        }
+.app-icon:hover {
+    transform: scale(1.05);
+}
 
-        /* Для мобильных */
-        @media (max-width: 767px) {
-            
-                width: 28px;
-                height: 28px;
-                margin-right: 2px;
-            }
-        }
+/* Для мобильных */
+@media (max-width: 767px) {
+    .app-icon {  /* ← БЫЛО ПРОПУЩЕНО */
+        width: 28px;
+        height: 28px;
+        margin-right: 2px;
+    }
+}
 
-        /* Для очень маленьких экранов */
-        @media (max-width: 480px) {
-            
-                width: 24px;
-                height: 24px;
-                margin-right: 2px;
-            }
-        }
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .app-icon {  /* ← БЫЛО ПРОПУЩЕНО */
+        width: 24px;
+        height: 24px;
+        margin-right: 2px;
+    }
+}
 		/* ========== МОБИЛЬНАЯ ВЕРСИЯ ПРАЙС-ЛИСТА ========== */
 @media (max-width: 767px) {
     .price-item {
