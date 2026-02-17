@@ -1,12 +1,29 @@
 // Service Worker для ЭлектроСметы
-const APP_VERSION = '2.1.0'; // ← МЕНЯЙТЕ ПРИ КАЖДОМ ОБНОВЛЕНИИ ПРАЙСА!
+const APP_VERSION = '2.1.2'; // ← МЕНЯЙТЕ ПРИ КАЖДОМ ОБНОВЛЕНИИ ПРАЙСА!
 const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
+
+// Текст уведомления для этой версии
+const VERSION_NOTIFICATION = {
+  version: APP_VERSION,
+  title: '📢 Что нового в версии ' + APP_VERSION,
+  message: '✨ Исправлено отображение Хиджры.'
+};
 
 // Установка
 self.addEventListener('install', event => {
   console.log(`⚡ Установка версии ${APP_VERSION}`);
+  
+  // Сохраняем уведомление в кэш
   event.waitUntil(
-    caches.open(CACHE_NAME)
+    caches.open('app-notifications')
+      .then(cache => {
+        return cache.put('latest-notification', 
+          new Response(JSON.stringify(VERSION_NOTIFICATION), {
+            headers: { 'Content-Type': 'application/json' }
+          })
+        );
+      })
+      .then(() => caches.open(CACHE_NAME))
       .then(cache => cache.addAll(['./', './index.html']))
       .then(() => self.skipWaiting())
   );
@@ -26,6 +43,17 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      // Отправляем уведомление всем открытым клиентам
+      return self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({
+            type: 'VERSION_UPDATE',
+            version: APP_VERSION,
+            notification: VERSION_NOTIFICATION
+          });
+        });
+      });
     }).then(() => {
       // Немедленно забираем контроль
       return self.clients.claim();
@@ -106,5 +134,21 @@ self.addEventListener('message', event => {
   
   if (event.data.action === 'clearCache') {
     caches.delete(CACHE_NAME);
+  }
+  
+  // Клиент запрашивает уведомление
+  if (event.data && event.data.type === 'GET_NOTIFICATION') {
+    caches.open('app-notifications').then(cache => {
+      cache.match('latest-notification').then(response => {
+        if (response) {
+          response.json().then(notification => {
+            event.source.postMessage({
+              type: 'NOTIFICATION_RESPONSE',
+              notification: notification
+            });
+          });
+        }
+      });
+    });
   }
 });
