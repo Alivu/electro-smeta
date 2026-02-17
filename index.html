@@ -1752,6 +1752,12 @@ async function loadVersionFromSW() {
     }
   } catch (error) {
     console.error('❌ Ошибка загрузки версии:', error);
+    // Если нет интернета - оставляем версию из localStorage
+    const savedVersion = localStorage.getItem('app_version');
+    if (savedVersion) {
+      APP_VERSION = savedVersion;
+      console.log(`📴 Офлайн режим: использую сохраненную версию ${APP_VERSION}`);
+    }
   }
   return APP_VERSION;
 }
