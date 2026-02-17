@@ -1756,26 +1756,35 @@ async function loadVersionFromSW() {
   return APP_VERSION;
 }
 
-// Функция для получения сообщения из Service Worker
+// Функция для получения сообщения из Service Worker - С ОТЛАДКОЙ
 async function getVersionMessageFromSW() {
   try {
     const response = await fetch('sw.js?t=' + Date.now());
     const swCode = await response.text();
     
-    // Ищем сообщение в sw.js - исправленный паттерн
-    // Ищем объект VERSION_NOTIFICATION и вытаскиваем message
-    const messageMatch = swCode.match(/VERSION_NOTIFICATION\s*=\s*{\s*version:\s*['"][^'"]+['"],\s*title:\s*['"][^'"]+['"],\s*message:\s*['"]([^'"]+)['"]/s);
+    console.log('🔍 Первые 500 символов sw.js:', swCode.substring(0, 500));
     
-    if (messageMatch && messageMatch[1]) {
-      console.log('✅ Найдено сообщение из SW:', messageMatch[1]);
-      return messageMatch[1]; // Возвращаем message
-    } else {
-      console.log('❌ Сообщение в SW не найдено');
+    // Пробуем разные варианты поиска
+    const patterns = [
+      /message:\s*['"]([^'"]+)['"]/,
+      /message:\s*['"](.+?)['"]/,
+      /VERSION_NOTIFICATION.*?message:\s*['"]([^'"]+)['"]/s
+    ];
+    
+    for (let i = 0; i < patterns.length; i++) {
+      const match = swCode.match(patterns[i]);
+      if (match && match[1]) {
+        console.log(`✅ Паттерн ${i+1} сработал:`, match[1]);
+        return match[1];
+      }
     }
+    
+    console.log('❌ Сообщение в SW не найдено');
+    return null;
   } catch (error) {
     console.error('❌ Ошибка загрузки сообщения из SW:', error);
+    return null;
   }
-  return null;
 }
 
 // ========== УВЕДОМЛЕНИЕ В ЦЕНТРЕ СО ЗВУКОМ ==========
