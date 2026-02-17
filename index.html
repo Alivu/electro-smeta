@@ -2006,11 +2006,15 @@ async function initializeVersion() {
   // ========== СНАЧАЛА ПРОВЕРЯЕМ ИНТЕРНЕТ ==========
   if (!navigator.onLine) {
     console.log('📴 Офлайн режим обнаружен!');
+    
     // Загружаем версию из localStorage
     const savedVersion = localStorage.getItem('app_version');
     if (savedVersion) {
       APP_VERSION = savedVersion;
+      console.log(`📴 Использую сохраненную версию: ${APP_VERSION}`);
     }
+    
+    // Показываем офлайн-уведомление
     setTimeout(() => {
       showCenterNotification('📴 Офлайн-режим');
     }, 1500);
@@ -2024,10 +2028,11 @@ async function initializeVersion() {
           @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡`;
       }
     });
-    return;
+    
+    return; // Выходим из функции, НЕ пытаемся загрузить sw.js
   }
   
-  // ========== ЕСЛИ ЕСТЬ ИНТЕРНЕТ ==========
+  // ========== ЕСЛИ ЕСТЬ ИНТЕРНЕТ - ТОЛЬКО ТОГДА ГРУЗИМ SW ==========
   await loadVersionFromSW();
   const savedVersion = localStorage.getItem('app_version');
   
