@@ -2502,6 +2502,19 @@ const priceData = [
         let savedEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
         let nextMaterialId = 1000;
 		
+// ========== МУСУЛЬМАНСКИЕ ПРАЗДНИКИ ==========
+const islamicHolidays = [
+    { month: 1, day: 10, name: 'День Ашура' },
+    { month: 3, day: 12, name: 'Мавлид ан-Наби (день рождения Пророка ﷺ)' },
+    { month: 7, day: 27, name: 'Ляйлят аль-Мирадж (Ночь Вознесения)' },
+    { month: 8, day: 15, name: 'Ляйлят аль-Бараа (Ночь Освобождения)' },
+    { month: 9, name: 'Рамадан', isRamadan: true },
+    { month: 10, day: 1, name: 'Ид аль-Фитр (Ураза-байрам)' },
+    { month: 12, day: 10, name: 'Ид аль-Адха (Курбан-байрам)' },
+    { month: 12, days: [8,9,10,11,12,13], name: 'Дни Ташрика' }
+];
+
+// ========== ФУНКЦИЯ ПОЛУЧЕНИЯ ДАТЫ ХИДЖРЫ ==========
 async function getHijriDate() {
     // Проверяем кэш
     const cached = localStorage.getItem('hijri_date_cache');
@@ -2526,37 +2539,28 @@ async function getHijriDate() {
             function cleanArabicText(text) {
                 if (!text) return '';
                 
-                // Заменяем арабские символы на латинские аналоги
                 return text
-                    .replace(/ʿ/g, "'")  // арабский айн на апостроф
-                    .replace(/ʾ/g, "'")  // другой тип айна
-                    .replace(/ʼ/g, "'")  // ещё один тип
-                    .replace(/ˈ/g, "'")  // и ещё
-                    .replace(/ā/g, 'a')  // длинная a
-                    .replace(/ū/g, 'u')  // длинная u
-                    .replace(/ī/g, 'i')  // длинная i
-                    .replace(/ḍ/g, 'd')  // d с точкой
-                    .replace(/ḥ/g, 'h')  // h с точкой
-                    .replace(/Ḥ/g, 'H')  // H с точкой
-                    .replace(/ṣ/g, 's')  // s с точкой
-                    .replace(/Ṣ/g, 'S')  // S с точкой
-                    .replace(/ṭ/g, 't')  // t с точкой
-                    .replace(/Ṭ/g, 'T')  // T с точкой
-                    .replace(/ẓ/g, 'z')  // z с точкой
-                    .replace(/Ẓ/g, 'Z')  // Z с точкой
-                    .replace(/ḏ/g, 'd')  // d с линией
-                    .replace(/Ḏ/g, 'D')  // D с линией
+                    .replace(/[ʿʾʼˈ]/g, "'")
+                    .replace(/[ā]/g, 'a')
+                    .replace(/[ū]/g, 'u')
+                    .replace(/[ī]/g, 'i')
+                    .replace(/[ḍ]/g, 'd')
+                    .replace(/[ḥ]/g, 'h')
+                    .replace(/[Ḥ]/g, 'H')
+                    .replace(/[ṣ]/g, 's')
+                    .replace(/[Ṣ]/g, 'S')
+                    .replace(/[ṭ]/g, 't')
+                    .replace(/[Ṭ]/g, 'T')
+                    .replace(/[ẓ]/g, 'z')
+                    .replace(/[Ẓ]/g, 'Z')
+                    .replace(/[ḏ]/g, 'd')
+                    .replace(/[Ḏ]/g, 'D')
                     .trim();
             }
             
-            // Получаем и очищаем название месяца
             const monthRaw = hijri.month.en;
             const monthCleaned = cleanArabicText(monthRaw);
             
-            console.log("Месяц исходный:", monthRaw);
-            console.log("Месяц очищенный:", monthCleaned);
-            
-            // Словарь для преобразования (после очистки)
             const hijriMonths = {
                 "Muharram": "Мухаррам",
                 "Safar": "Сафар",
@@ -2575,7 +2579,6 @@ async function getHijriDate() {
                 "Rajab": "Раджаб",
                 "Sha'ban": "Шаабан",
                 "Shaaban": "Шаабан",
-                "Sha'ban": "Шаабан",
                 "Ramadan": "Рамадан",
                 "Shawwal": "Шавваль",
                 "Dhu al-Qi'dah": "Зуль-каада",
@@ -2589,42 +2592,28 @@ async function getHijriDate() {
                 "Dhul-Hijjah": "Зуль-хиджа"
             };
             
-            // Ищем перевод
             let monthRu = hijriMonths[monthCleaned] || hijriMonths[monthRaw];
             
-            // Если не нашли, пытаемся найти по частичному совпадению
             if (!monthRu) {
                 const monthLower = monthCleaned.toLowerCase();
                 
-                // Прямой поиск по ключам
-                for (const [key, value] of Object.entries(hijriMonths)) {
-                    if (key.toLowerCase() === monthLower) {
-                        monthRu = value;
-                        break;
-                    }
-                }
-                
-                // Если все еще не нашли, ищем частичное совпадение
-                if (!monthRu) {
-                    if (monthLower.includes("sha") && monthLower.includes("ban")) {
-                        monthRu = "Шаабан";
-                    } else if (monthLower.includes("rabi") && monthLower.includes("awwal")) {
-                        monthRu = "Раби аль-авваль";
-                    } else if (monthLower.includes("rabi") && (monthLower.includes("akhir") || monthLower.includes("thani"))) {
-                        monthRu = "Раби ас-сани";
-                    } else if (monthLower.includes("jumada") && monthLower.includes("awwal")) {
-                        monthRu = "Джумада аль-уля";
-                    } else if (monthLower.includes("jumada") && (monthLower.includes("akhir") || monthLower.includes("thani"))) {
-                        monthRu = "Джумада ас-сания";
-                    } else if (monthLower.includes("dhu") && monthLower.includes("qi'dah")) {
-                        monthRu = "Зуль-каада";
-                    } else if (monthLower.includes("dhu") && monthLower.includes("hijjah")) {
-                        monthRu = "Зуль-хиджа";
-                    }
+                if (monthLower.includes("sha") && monthLower.includes("ban")) {
+                    monthRu = "Шаабан";
+                } else if (monthLower.includes("rabi") && monthLower.includes("awwal")) {
+                    monthRu = "Раби аль-авваль";
+                } else if (monthLower.includes("rabi") && (monthLower.includes("akhir") || monthLower.includes("thani"))) {
+                    monthRu = "Раби ас-сани";
+                } else if (monthLower.includes("jumada") && monthLower.includes("awwal")) {
+                    monthRu = "Джумада аль-уля";
+                } else if (monthLower.includes("jumada") && (monthLower.includes("akhir") || monthLower.includes("thani"))) {
+                    monthRu = "Джумада ас-сания";
+                } else if (monthLower.includes("dhu") && monthLower.includes("qi'dah")) {
+                    monthRu = "Зуль-каада";
+                } else if (monthLower.includes("dhu") && monthLower.includes("hijjah")) {
+                    monthRu = "Зуль-хиджа";
                 }
             }
             
-            // Если все еще не нашли, используем очищенный английский вариант
             if (!monthRu) {
                 monthRu = monthCleaned;
                 console.warn("Не найден перевод для месяца:", monthRaw, "->", monthCleaned);
@@ -2638,7 +2627,6 @@ async function getHijriDate() {
                 display: `${hijri.day} ${monthRu} ${hijri.year} г.х.`
             };
             
-            // Сохраняем в кэш
             localStorage.setItem('hijri_date_cache', JSON.stringify({
                 date: today,
                 data: result
@@ -2650,7 +2638,6 @@ async function getHijriDate() {
         console.error('Ошибка получения даты Хиджры:', error);
     }
     
-    // Резервный вариант для 23 января 2026
     return {
         year: 1447,
         month: 'Шаабан',
@@ -2660,19 +2647,7 @@ async function getHijriDate() {
     };
 }
 
-// 2. Мусульманские праздники
-const islamicHolidays = [
-    { month: 1, day: 10, name: 'День Ашура' },
-    { month: 3, day: 12, name: 'Мавлид ан-Наби (день рождения Пророка ﷺ)' },
-    { month: 7, day: 27, name: 'Ляйлят аль-Мирадж (Ночь Вознесения)' },
-    { month: 8, day: 15, name: 'Ляйлят аль-Бараа (Ночь Освобождения)' },
-    { month: 9, name: 'Рамадан', isRamadan: true },
-    { month: 10, day: 1, name: 'Ид аль-Фитр (Ураза-байрам)' },
-    { month: 12, day: 10, name: 'Ид аль-Адха (Курбан-байрам)' },
-    { month: 12, days: [8,9,10,11,12,13], name: 'Дни Ташрика' }
-];
-		// ========== СИСТЕМА УВЕДОМЛЕНИЙ ==========
-
+// ========== СИСТЕМА УВЕДОМЛЕНИЙ (ИСПРАВЛЕННАЯ) ==========
 const notificationSystem = {
     getTimeGreeting: function() {
         const hour = new Date().getHours();
@@ -2700,23 +2675,27 @@ const notificationSystem = {
         return 'Пятница - лучший день недели! Совершите больше благих дел! 📿';
     },
     
-    getHolidayMessage: function() {
-        const hijri = getHijriDate();
-        
-        for (let holiday of islamicHolidays) {
-            if (holiday.month === hijri.monthIndex) {
-                if (holiday.isRamadan && hijri.monthIndex === 9) {
-                    return `🌙 Благословенный месяц Рамадан! Да примет Аллах ваш пост и молитвы!`;
-                }
-                
-                if (holiday.day && hijri.day === holiday.day) {
-                    return `🎉 ${holiday.name}! С праздником! Да примет Аллах ваше поклонение!`;
-                }
-                
-                if (holiday.days && holiday.days.includes(hijri.day)) {
-                    return `📿 ${holiday.name} (${hijri.day} день). Запрещено поститься в эти дни!`;
+    getHolidayMessage: async function() {
+        try {
+            const hijri = await getHijriDate();
+            
+            for (let holiday of islamicHolidays) {
+                if (holiday.month === hijri.monthIndex) {
+                    if (holiday.isRamadan && hijri.monthIndex === 9) {
+                        return `🌙 Благословенный месяц Рамадан! Да примет Аллах ваш пост и молитвы!`;
+                    }
+                    
+                    if (holiday.day && hijri.day === holiday.day) {
+                        return `🎉 ${holiday.name}! С праздником! Да примет Аллах ваше поклонение!`;
+                    }
+                    
+                    if (holiday.days && holiday.days.includes(hijri.day)) {
+                        return `📿 ${holiday.name} (${hijri.day} день). Запрещено поститься в эти дни!`;
+                    }
                 }
             }
+        } catch (error) {
+            console.error('Ошибка при проверке праздника:', error);
         }
         
         return null;
@@ -2733,11 +2712,11 @@ const notificationSystem = {
         return promos[Math.floor(Math.random() * promos.length)];
     },
     
-    getNextNotification: function() {
+    getNextNotification: async function() {
         const fridayMsg = this.getFridayReminder();
         if (fridayMsg) return fridayMsg;
         
-        const holidayMsg = this.getHolidayMessage();
+        const holidayMsg = await this.getHolidayMessage();
         if (holidayMsg) return holidayMsg;
         
         const timeMsg = this.getTimeGreeting();
@@ -2751,11 +2730,9 @@ const notificationSystem = {
     }
 };
 
-// ========== КОНЕЦ СИСТЕМЫ УВЕДОМЛЕНИЙ ==========
 // ========== ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ ХИДЖРЫ ==========
-
 async function displayHijriDate() {
-    const hijri = await getHijriDate(); // ← ДОБАВЬТЕ await
+    const hijri = await getHijriDate();
     const hijriElement = document.createElement('div');
     hijriElement.id = 'hijri-date';
     hijriElement.style.cssText = `
@@ -2776,12 +2753,10 @@ async function displayHijriDate() {
         box-sizing: border-box;
     `;
     
-    // Сначала определим день недели
     const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
     const today = new Date();
     const dayOfWeek = daysOfWeek[today.getDay()];
 
-    // Используем hijri.display вместо ручной сборки
     hijriElement.innerHTML = `
         <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: nowrap; line-height: 1;">
             <div style="display: flex; align-items: center; white-space: nowrap;">
@@ -2791,7 +2766,7 @@ async function displayHijriDate() {
             <span style="color: #ddd; margin: 0 5px;">|</span>
             <div style="display: flex; align-items: center; white-space: nowrap;">
                 <i class="fas fa-mosque" style="color: #27ae60; margin-right: 6px; font-size: 0.95em;"></i>
-                <span>${hijri.display}</span> <!-- ← ИСПОЛЬЗУЕМ hijri.display -->
+                <span>${hijri.display}</span>
             </div>
         </div>
     `;
@@ -2800,13 +2775,15 @@ async function displayHijriDate() {
     if (header && header.parentNode) {
         header.parentNode.insertBefore(hijriElement, header.nextSibling);
     }
+    
+    await adaptHijriDateForMobile();
 }
 
-async function adaptHijriDateForMobile() { // ← ДОБАВЬТЕ async
+async function adaptHijriDateForMobile() {
     const hijriElement = document.getElementById('hijri-date');
     if (!hijriElement) return;
     
-    const hijri = await getHijriDate(); // ← ДОБАВЬТЕ await
+    const hijri = await getHijriDate();
     const today = new Date();
     const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
     
@@ -2824,12 +2801,11 @@ async function adaptHijriDateForMobile() { // ← ДОБАВЬТЕ async
                 <span style="color: #ddd; margin: 0 3px;">|</span>
                 <div style="display: flex; align-items: center; white-space: nowrap;">
                     <i class="fas fa-mosque" style="color: #27ae60; margin-right: 4px; font-size: 0.85em;"></i>
-                    <span style="font-size: 0.95em;">${hijri.display}</span> <!-- ← ИСПОЛЬЗУЕМ hijri.display -->
+                    <span style="font-size: 0.95em;">${hijri.display}</span>
                 </div>
             </div>
         `;
     } else if (window.innerWidth <= 992) {
-        // Для планшетов
         hijriElement.style.fontSize = '0.85rem';
         hijriElement.style.padding = '5px';
         hijriElement.style.minHeight = '26px';
@@ -2843,12 +2819,11 @@ async function adaptHijriDateForMobile() { // ← ДОБАВЬТЕ async
                 <span style="color: #ddd; margin: 0 4px;">|</span>
                 <div style="display: flex; align-items: center; white-space: nowrap;">
                     <i class="fas fa-mosque" style="color: #27ae60; margin-right: 5px; font-size: 0.9em;"></i>
-                    <span>${hijri.display}</span> <!-- ← ИСПОЛЬЗУЕМ hijri.display -->
+                    <span>${hijri.display}</span>
                 </div>
             </div>
         `;
     } else {
-        // Для десктопа
         hijriElement.style.fontSize = '0.9rem';
         hijriElement.style.padding = '5px';
         hijriElement.style.minHeight = '28px';
@@ -2862,44 +2837,33 @@ async function adaptHijriDateForMobile() { // ← ДОБАВЬТЕ async
                 <span style="color: #ddd; margin: 0 5px;">|</span>
                 <div style="display: flex; align-items: center; white-space: nowrap;">
                     <i class="fas fa-mosque" style="color: #27ae60; margin-right: 6px; font-size: 0.95em;"></i>
-                    <span>${hijri.display}</span> <!-- ← ИСПОЛЬЗУЕМ hijri.display -->
+                    <span>${hijri.display}</span>
                 </div>
             </div>
         `;
     }
 }
-		
 
-// ========== КОНЕЦ ФУНКЦИЙ ХИДЖРЫ ==========
 // ========== ИНИЦИАЛИЗАЦИЯ ИСЛАМСКИХ ФУНКЦИЙ ==========
-
-async function initializeIslamicFeatures() { // ← ДОБАВЬТЕ async
-    // 1. Отображаем дату по Хиджре
-    await displayHijriDate(); // ← ДОБАВЬТЕ await
-    
-    // 2. Адаптируем для мобильных (не вызываем здесь, она уже вызвана в displayHijriDate)
-    // adaptHijriDateForMobile(); // ← УБЕРИТЕ эту строку
+async function initializeIslamicFeatures() {
+    await displayHijriDate();
     window.addEventListener('resize', () => adaptHijriDateForMobile());
     
-    // 3. Первое уведомление
-    setTimeout(() => {
-        const message = notificationSystem.getNextNotification();
-        showNotification(message);
+    setTimeout(async () => {
+        const message = await notificationSystem.getNextNotification();
+        if (message) showNotification(message);
     }, 1000);
     
-    // 4. Периодические уведомления (каждые 2 часа)
-    setInterval(() => {
-        const message = notificationSystem.getNextNotification();
-        showNotification(message);
+    setInterval(async () => {
+        const message = await notificationSystem.getNextNotification();
+        if (message) showNotification(message);
     }, 2 * 60 * 60 * 1000);
     
-    // 5. Пятничные напоминания
     setInterval(() => {
         const now = new Date();
         if (now.getDay() === 5 && now.getHours() === 11) {
             showNotification('🕌 Напоминание: Джума-намаз скоро! Приготовьтесь к коллективной молитве.');
         }
-        
         if (now.getDay() === 5 && now.getHours() === 15) {
             showNotification('🕋 Сейчас последний час пятницы! Особое время для принятия дуа!');
         }
