@@ -2006,7 +2006,13 @@ async function initializeVersion() {
   await loadVersionFromSW();
   const savedVersion = localStorage.getItem('app_version');
   
-  if (savedVersion !== APP_VERSION) {
+  // ========== ПРОВЕРКА ОФЛАЙН РЕЖИМА ==========
+  if (!navigator.onLine) {
+    console.log('📴 Офлайн режим обнаружен!');
+    setTimeout(() => {
+      showCenterNotification('📴 Офлайн-режим');
+    }, 1500);
+  } else if (savedVersion !== APP_VERSION) {
     console.log(`🔄 ОБНОВЛЕНИЕ: ${savedVersion || 'нет'} → ${APP_VERSION}`);
     localStorage.setItem('app_version', APP_VERSION);
     
@@ -2024,7 +2030,6 @@ async function initializeVersion() {
     // ========== ПОДСВЕТКА КНОПКИ "ОБНОВИТЬ СМЕТУ" ==========
     const refreshBtn = document.getElementById('refreshEstimateBtn');
     if (refreshBtn) {
-        // Меняем текст и стиль кнопки
         refreshBtn.innerHTML = `
             <i class="fas fa-bolt" style="color: #f39c12;"></i> 
             Новая версия ${APP_VERSION}
@@ -2041,39 +2046,19 @@ async function initializeVersion() {
             </span>
         `;
         
-        // Меняем стиль кнопки
         refreshBtn.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
         refreshBtn.style.color = 'white';
         refreshBtn.style.fontWeight = 'bold';
         refreshBtn.style.border = 'none';
         
-        // Сохраняем информацию для обработчика
         refreshBtn.dataset.oldVersion = savedVersion || 'нет';
         refreshBtn.dataset.newVersion = APP_VERSION;
     }
-    // ========== КОНЕЦ ПОДСВЕТКИ ==========
     
-  // Показываем уведомление через 1 секунду
+    // Показываем уведомление через 1 секунду
     setTimeout(() => {
         showCenterNotification(notificationText);
     }, 1000);
-  } else {
-    // ========== ПРОВЕРКА ОФЛАЙН РЕЖИМА (только если версия не обновлялась) ==========
-    if (!navigator.onLine) {
-        // Если нет интернета
-        setTimeout(() => {
-            showCenterNotification('📴 Офлайн-режим');
-        }, 1500);
-    } else {
-        // Если есть интернет, но версия из кеша
-        const performanceEntries = performance.getEntriesByType('navigation');
-        if (performanceEntries.length > 0 && performanceEntries[0].type === 'back_forward') {
-            // Загружено из кеша браузера
-            setTimeout(() => {
-                showCenterNotification('💾 Загружено из кеша');
-            }, 1500);
-        }
-    }
   }
   
   // Показываем версию в интерфейсе
