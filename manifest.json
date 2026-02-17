@@ -27,7 +27,8 @@
     {
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/el-128x128.png",
       "sizes": "128x128",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-128x128.png",
@@ -48,7 +49,7 @@
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-        "purpose": "any"
+      "purpose": "any"
     },
     {
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-384x384.png",
@@ -59,7 +60,7 @@
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-        "purpose": "any"
+      "purpose": "any"
     },
     {
       "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-Maskable-192x192.png",
@@ -79,21 +80,5 @@
       "type": "image/png",
       "purpose": "monochrome"
     }
-  ],
-  "screenshots": [
-    {
-      "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/screen-640x480.png",
-      "sizes": "640x480",
-      "type": "image/png"
-    },
-    {
-      "src": "https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/screen-1280x720.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
-  ],
-  "categories": ["business", "productivity"],
-  "related_applications": []
-  "prefer_related_applications": false
+  ]
 }
