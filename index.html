@@ -2066,7 +2066,7 @@ async function initializeVersion() {
         }, 1500);
     } else {
         // Если есть интернет, но версия из кеша
-        const performanceEntries = performance.getElementsByType('navigation');
+        const performanceEntries = performance.getEntriesByType('navigation');
         if (performanceEntries.length > 0 && performanceEntries[0].type === 'back_forward') {
             // Загружено из кеша браузера
             setTimeout(() => {
