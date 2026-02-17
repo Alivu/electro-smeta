@@ -2053,22 +2053,26 @@ async function initializeVersion() {
     }, 1000);
   } else {
     // ========== ПРОВЕРКА ОФЛАЙН РЕЖИМА (только если версия не обновлялась) ==========
-    if (!navigator.onLine) {
-        // Если нет интернета
-        setTimeout(() => {
-            showCenterNotification('📴 Офлайн-режим\nЗагружена сохраненная версия');
-        }, 1500);
-    } else {
-        // Если есть интернет, но версия из кеша
-        const performanceEntries = performance.getEntriesByType('navigation');
-        if (performanceEntries.length > 0 && performanceEntries[0].type === 'back_forward') {
-            // Загружено из кеша браузера
+if (!navigator.onLine) {
+    console.log('✅ Офлайн режим обнаружен!');
+    setTimeout(() => {
+        showCenterNotification('📴 Офлайн');
+    }, 1500);
+} else {
+    console.log('✅ Есть интернет');
+    const performanceEntries = performance.getEntriesByType('navigation');
+    console.log('performanceEntries:', performanceEntries);
+    
+    if (performanceEntries.length > 0) {
+        console.log('Тип загрузки:', performanceEntries[0].type);
+        if (performanceEntries[0].type === 'back_forward') {
+            console.log('✅ Загружено из кеша!');
             setTimeout(() => {
-                showCenterNotification('💾 Загружена версия из кеша');
+                showCenterNotification('💾 Кеш');
             }, 1500);
         }
     }
-  }
+}
   
   // Показываем версию в интерфейсе
   document.addEventListener('DOMContentLoaded', function() {
