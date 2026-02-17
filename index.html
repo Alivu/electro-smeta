@@ -2003,16 +2003,35 @@ function fallbackSound() {
 
 // ========== ОСНОВНАЯ ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ ВЕРСИИ ==========
 async function initializeVersion() {
-  await loadVersionFromSW();
-  const savedVersion = localStorage.getItem('app_version');
-  
-  // ========== ПРОВЕРКА ОФЛАЙН РЕЖИМА ==========
+  // ========== СНАЧАЛА ПРОВЕРЯЕМ ИНТЕРНЕТ ==========
   if (!navigator.onLine) {
     console.log('📴 Офлайн режим обнаружен!');
+    // Загружаем версию из localStorage
+    const savedVersion = localStorage.getItem('app_version');
+    if (savedVersion) {
+      APP_VERSION = savedVersion;
+    }
     setTimeout(() => {
       showCenterNotification('📴 Офлайн-режим');
     }, 1500);
-  } else if (savedVersion !== APP_VERSION) {
+    
+    // Показываем версию в интерфейсе
+    document.addEventListener('DOMContentLoaded', function() {
+      const logo = document.querySelector('.logo-text');
+      if (logo) {
+        logo.innerHTML = `𝔼𝕝𝕖𝕜𝕥𝕣𝕠𝕊𝕞𝕖𝕥𝕒 
+          <span style="color:#3498db; font-weight:bold">v${APP_VERSION}</span> 
+          @𝔼𝕝𝕖𝕔𝕥𝕣𝕚𝕔_𝔾𝕣𝕠𝕦𝕡`;
+      }
+    });
+    return;
+  }
+  
+  // ========== ЕСЛИ ЕСТЬ ИНТЕРНЕТ ==========
+  await loadVersionFromSW();
+  const savedVersion = localStorage.getItem('app_version');
+  
+  if (savedVersion !== APP_VERSION) {
     console.log(`🔄 ОБНОВЛЕНИЕ: ${savedVersion || 'нет'} → ${APP_VERSION}`);
     localStorage.setItem('app_version', APP_VERSION);
     
