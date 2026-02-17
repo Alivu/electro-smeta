@@ -11,7 +11,7 @@ const VERSION_NOTIFICATION = {
 
 // Установка
 self.addEventListener('install', event => {
-  console.log(`⚡ Установка версии ${APP_VERSION}`);
+  console.log(`Установка версии ${APP_VERSION}`);
   
   // Сохраняем уведомление в кэш
   event.waitUntil(
