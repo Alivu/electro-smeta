@@ -1824,10 +1824,41 @@ function showCenterNotification(message) {
         white-space: pre-line;
     `;
     
-    // Добавляем бренд Electric Group сверху
+// Добавляем бренд Electric Group сверху
+if (isMobile) {
+    // Для мобильных - компактно
     notification.innerHTML = `
         <div style="
-            font-size: ${isMobile ? '20px' : '24px'};
+            font-size: 18px;
+            font-weight: bold;
+            color: #f1c40f;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        ">
+            <i class="fas fa-bolt" style="font-size: 16px;"></i>
+            Electric Group
+            <i class="fas fa-bolt" style="font-size: 16px;"></i>
+        </div>
+        
+        <div style="
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #f1c40f, transparent);
+            margin: 2px 0 5px;
+        "></div>
+        
+        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 14px;">
+            <i class="fas fa-bolt" style="color: #f1c40f; font-size: 14px;"></i>
+            <div>${message}</div>
+        </div>
+    `;
+} else {
+    // Для десктопа - стандартно
+    notification.innerHTML = `
+        <div style="
+            font-size: 24px;
             font-weight: bold;
             color: #f1c40f;
             margin-bottom: 5px;
@@ -1842,17 +1873,17 @@ function showCenterNotification(message) {
         </div>
         
         <div style="
-            height: 2px;
+            height: 1px;
             background: linear-gradient(90deg, transparent, #f1c40f, transparent);
             margin: 5px 0 8px;
         "></div>
         
-        <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-            <i class="fas fa-bolt" style="color: #f1c40f; font-size: 1.3em;"></i>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fas fa-bolt" style="color: #f1c40f; font-size: 1.1em;"></i>
             <div>${message}</div>
         </div>
     `;
-    
+}
     document.body.appendChild(notification);
     
     // Анимации
