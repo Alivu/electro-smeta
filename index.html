@@ -2047,32 +2047,11 @@ async function initializeVersion() {
     }
     // ========== КОНЕЦ ПОДСВЕТКИ ==========
     
-  // Показываем уведомление через 1 секунду
+    // Показываем уведомление через 1 секунду
     setTimeout(() => {
         showCenterNotification(notificationText);
     }, 1000);
-  } else {
-    // ========== ПРОВЕРКА ОФЛАЙН РЕЖИМА (только если версия не обновлялась) ==========
-if (!navigator.onLine) {
-    console.log('✅ Офлайн режим обнаружен!');
-    setTimeout(() => {
-        showCenterNotification('📴 Офлайн');
-    }, 1500);
-} else {
-    console.log('✅ Есть интернет');
-    const performanceEntries = performance.getEntriesByType('navigation');
-    console.log('performanceEntries:', performanceEntries);
-    
-    if (performanceEntries.length > 0) {
-        console.log('Тип загрузки:', performanceEntries[0].type);
-        if (performanceEntries[0].type === 'back_forward') {
-            console.log('✅ Загружено из кеша!');
-            setTimeout(() => {
-                showCenterNotification('💾 Кеш');
-            }, 1500);
-        }
-    }
-}
+  }
   
   // Показываем версию в интерфейсе
   document.addEventListener('DOMContentLoaded', function() {
