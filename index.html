@@ -1918,7 +1918,7 @@ if (isMobile) {
                 notification.remove();
             }
         }, 400);
-    }, 5000);
+    }, 3000);
     
     // Закрытие по клику
     notification.addEventListener('click', function() {
@@ -5248,10 +5248,10 @@ class Magnifier {
         console.log('✅ Линза инициализирована');
         
         // Автоматически показываем подсказку
-        setTimeout(() => {
-            this.showHint();
-            setTimeout(() => this.hideHint(), 5000);
-        }, 3000);
+      //   setTimeout(() => {
+       //      this.showHint();
+        //     setTimeout(() => this.hideHint(), 5000);
+       //  }, 3000);
     }
     
     setupDragging() {
