@@ -1850,7 +1850,7 @@ if (isMobile) {
             gap: 5px;
         ">
             <i class="fas fa-bolt" style="font-size: 16px;"></i>
-           ⚡Electric Group⚡
+           Electric Group
             <i class="fas fa-bolt" style="font-size: 16px;"></i>
         </div>
         
@@ -1860,10 +1860,9 @@ if (isMobile) {
             margin: 0px 0 2px;
         "></div>
         
-        <div style="display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 14px; margin-top: 2px;">
-            <i class="fas fa-bolt" style="color: #f1c40f; font-size: 14px;"></i>
-            <div>${message}</div>
-        </div>
+<div style="display: flex; align-items: center; justify-content: center; gap: 5px; font-size: 14px; margin-top: 2px;">
+    <span>${message}</span>
+</div>
     `;
 } else {
     // Для десктопа - стандартно
@@ -1889,10 +1888,9 @@ if (isMobile) {
             margin: 0px 0 3px;
         "></div>
         
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 3px;">
-            <i class="fas fa-bolt" style="color: #f1c40f; font-size: 1.1em;"></i>
-            <div>${message}</div>
-        </div>
+<div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 3px;">
+    <span>${message}</span>
+</div>
     `;
 }
     document.body.appendChild(notification);
