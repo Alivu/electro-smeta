@@ -1762,11 +1762,15 @@ async function getVersionMessageFromSW() {
     const response = await fetch('sw.js?t=' + Date.now());
     const swCode = await response.text();
     
-    // Ищем сообщение в sw.js (VERSION_NOTIFICATION объект)
-    const messageMatch = swCode.match(/VERSION_NOTIFICATION\s*=\s*{\s*version:\s*['"]([^'"]+)['"],\s*title:\s*['"]([^'"]+)['"],\s*message:\s*['"]([^'"]+)['"]/s);
+    // Ищем сообщение в sw.js - исправленный паттерн
+    // Ищем объект VERSION_NOTIFICATION и вытаскиваем message
+    const messageMatch = swCode.match(/VERSION_NOTIFICATION\s*=\s*{\s*version:\s*['"][^'"]+['"],\s*title:\s*['"][^'"]+['"],\s*message:\s*['"]([^'"]+)['"]/s);
     
-    if (messageMatch && messageMatch[3]) {
-      return messageMatch[3]; // Возвращаем только message
+    if (messageMatch && messageMatch[1]) {
+      console.log('✅ Найдено сообщение из SW:', messageMatch[1]);
+      return messageMatch[1]; // Возвращаем message
+    } else {
+      console.log('❌ Сообщение в SW не найдено');
     }
   } catch (error) {
     console.error('❌ Ошибка загрузки сообщения из SW:', error);
