@@ -5581,8 +5581,20 @@ function initMagnifier() {
 document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
     checkSavedToken();
-document.getElementById('magnifierToggle').style.opacity = '0';
-initMagnifier();
+// ========== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ==========
+document.addEventListener('DOMContentLoaded', function() {
+    checkGoogleAuth();
+    checkSavedToken();
+    
+    // Скрываем кнопку сразу
+    const toggleBtn = document.getElementById('magnifierToggle');
+    if (toggleBtn) {
+        toggleBtn.style.opacity = '0';
+        toggleBtn.style.pointerEvents = 'none';
+    }
+    
+    initMagnifier();
+});
 });
 function debugEstimateData() {
     console.log('=== DEBUG estimateData ===');
