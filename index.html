@@ -5236,7 +5236,19 @@ class Magnifier {
         this.setupButtonDragging();
         
         // Кнопка включения/выключения
-        this.toggleBtn.addEventListener('click', () => this.toggle());
+// Кнопка включения/выключения - для мобильных и десктопа
+this.toggleBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.toggle();
+});
+
+// Для мобильных - дополнительно на touch
+this.toggleBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    this.toggle();
+}, { passive: false });
         
         // Показываем подсказку
         this.toggleBtn.addEventListener('mouseenter', () => this.showHint());
@@ -5500,6 +5512,11 @@ class Magnifier {
     }
     
     toggle() {
+		    // Для мобильных - убедимся что линза существует
+    if (!this.magnifier) {
+        console.error('Линза не найдена');
+        return;
+    }
         this.isActive = !this.isActive;
         this.magnifier.style.display = this.isActive ? 'block' : 'none';
         this.toggleBtn.classList.toggle('active', this.isActive);
