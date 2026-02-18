@@ -5014,13 +5014,6 @@ function checkSavedToken() {
     return null;
 }
 
-// 5. Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', function() {
-    checkGoogleAuth();
-    checkSavedToken();
-	    // Инициализация линзы
-    initMagnifier();
-});
 class Magnifier {
     constructor() {
         this.magnifier = document.getElementById('magnifier');
@@ -5560,6 +5553,27 @@ class Magnifier {
         return div.innerHTML;
     }
 }
+
+// ========== ФУНКЦИЯ ИНИЦИАЛИЗАЦИИ ЛИНЗЫ ==========
+function initMagnifier() {
+    console.log('🔄 Инициализация линзы...');
+    try {
+        setTimeout(() => {
+            const magnifier = new Magnifier();
+            window.magnifierInstance = magnifier;
+            console.log('✅ Линза готова к работе');            
+        }, 500);
+    } catch (error) {
+        console.error('❌ Ошибка инициализации линзы:', error);
+    }
+}
+
+// ========== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ==========
+document.addEventListener('DOMContentLoaded', function() {
+    checkGoogleAuth();
+    checkSavedToken();
+    initMagnifier();
+});
 function debugEstimateData() {
     console.log('=== DEBUG estimateData ===');
     console.log('Всего строк в массиве:', estimateData.length);
