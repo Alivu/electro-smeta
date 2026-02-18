@@ -5034,6 +5034,11 @@ class Magnifier {
         this.isDragging = false;
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
+        
+        // NEW - свойства для перетаскивания кнопки
+        this.isDraggingBtn = false;
+        this.dragBtnOffsetX = 0;
+        this.dragBtnOffsetY = 0;
 
         // Размеры линзы
         this.lensWidth = 250;
@@ -5198,7 +5203,7 @@ class Magnifier {
                 }
                 
     .magnifier-content {
-        font-size: 34px !important; /* Добавь !important */
+        font-size: 34px !important;
         line-height: 1.3 !important;
     }
                 
@@ -5220,7 +5225,7 @@ class Magnifier {
                 }
                 
     .magnifier-content {
-        font-size: 30px !important; /* Добавь !important */
+        font-size: 30px !important;
     }
             }
         `;
@@ -5228,6 +5233,9 @@ class Magnifier {
         
         // Настраиваем перетаскивание
         this.setupDragging();
+        
+        // NEW - настраиваем перетаскивание кнопки
+        this.setupButtonDragging();
         
         // Кнопка включения/выключения
         this.toggleBtn.addEventListener('click', () => this.toggle());
@@ -5248,16 +5256,15 @@ class Magnifier {
         console.log('✅ Линза инициализирована');
         
         // Автоматически показываем подсказку
-      //   setTimeout(() => {
-       //      this.showHint();
-        //     setTimeout(() => this.hideHint(), 5000);
-       //  }, 3000);
+        setTimeout(() => {
+            this.showHint();
+            setTimeout(() => this.hideHint(), 5000);
+        }, 3000);
     }
     
     setupDragging() {
         const lens = this.magnifier;
         
-        // Начало перетаскивания
         lens.addEventListener('mousedown', (e) => {
             if (!this.isActive) return;
             
@@ -5271,14 +5278,12 @@ class Magnifier {
             e.preventDefault();
         });
         
-        // Перетаскивание
         document.addEventListener('mousemove', (e) => {
             if (!this.isActive || !this.isDragging) return;
             
             const x = e.clientX - this.dragOffsetX;
             const y = e.clientY - this.dragOffsetY;
             
-            // Ограничиваем перемещение в пределах экрана
             const maxX = window.innerWidth - this.lensWidth;
             const maxY = window.innerHeight - this.lensHeight;
             
@@ -5289,7 +5294,6 @@ class Magnifier {
             lens.style.transform = 'none';
         });
         
-        // Окончание перетаскивания
         document.addEventListener('mouseup', () => {
             if (this.isDragging) {
                 this.isDragging = false;
@@ -5297,7 +5301,6 @@ class Magnifier {
             }
         });
         
-        // Для тач-устройств
         lens.addEventListener('touchstart', (e) => {
             if (!this.isActive || !e.touches[0]) return;
             
@@ -5340,42 +5343,110 @@ class Magnifier {
         });
     }
     
-    // НОВАЯ ФУНКЦИЯ: показывает текст, который уходит под панель поиска
+    // NEW - метод для перетаскивания кнопки
+    setupButtonDragging() {
+        const btn = this.toggleBtn;
+        
+        btn.addEventListener('mousedown', (e) => {
+            // Разрешаем перетаскивание ТОЛЬКО когда линза выключена
+            if (this.isActive) return;
+            
+            this.isDraggingBtn = true;
+            const rect = btn.getBoundingClientRect();
+            this.dragBtnOffsetX = e.clientX - rect.left;
+            this.dragBtnOffsetY = e.clientY - rect.top;
+            btn.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!this.isDraggingBtn) return;
+            
+            const btn = this.toggleBtn;
+            const x = e.clientX - this.dragBtnOffsetX;
+            const y = e.clientY - this.dragBtnOffsetY;
+            
+            const maxX = window.innerWidth - btn.offsetWidth;
+            const maxY = window.innerHeight - btn.offsetHeight;
+            
+            btn.style.position = 'fixed';
+            btn.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            btn.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+            btn.style.right = 'auto';
+            btn.style.bottom = 'auto';
+        });
+        
+        document.addEventListener('mouseup', () => {
+            if (this.isDraggingBtn) {
+                this.isDraggingBtn = false;
+                this.toggleBtn.style.cursor = '';
+            }
+        });
+        
+        btn.addEventListener('touchstart', (e) => {
+            if (this.isActive || !e.touches[0]) return;
+            
+            this.isDraggingBtn = true;
+            const touch = e.touches[0];
+            const rect = btn.getBoundingClientRect();
+            this.dragBtnOffsetX = touch.clientX - rect.left;
+            this.dragBtnOffsetY = touch.clientY - rect.top;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('touchmove', (e) => {
+            if (!this.isDraggingBtn || !e.touches[0]) return;
+            
+            const btn = this.toggleBtn;
+            const touch = e.touches[0];
+            const x = touch.clientX - this.dragBtnOffsetX;
+            const y = touch.clientY - this.dragBtnOffsetY;
+            
+            const maxX = window.innerWidth - btn.offsetWidth;
+            const maxY = window.innerHeight - btn.offsetHeight;
+            
+            btn.style.position = 'fixed';
+            btn.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+            btn.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+            btn.style.right = 'auto';
+            btn.style.bottom = 'auto';
+            
+            e.preventDefault();
+        });
+        
+        document.addEventListener('touchend', () => {
+            if (this.isDraggingBtn) {
+                this.isDraggingBtn = false;
+            }
+        });
+    }
+    
     updateTextUnderSearchBar() {
         if (!this.isActive) return;
         
         try {
-            // Находим панель поиска
             const searchBar = document.querySelector('.search-box');
             if (!searchBar) return;
             
             const searchBarRect = searchBar.getBoundingClientRect();
+            const lineY = searchBarRect.bottom + 5;
             
-            // Линия "под панелью поиска" - это низ панели
-            const lineY = searchBarRect.bottom + 5; // Немного ниже панели
-            
-            // Ищем все строки прайс-листа
             const priceItems = document.querySelectorAll('.price-item');
             
             let targetItem = null;
             let minDistance = Infinity;
             
-            // Находим строку, которая ближе всего к линии "под панелью"
             priceItems.forEach(item => {
                 const rect = item.getBoundingClientRect();
                 const itemCenterY = rect.top + rect.height / 2;
-                
-                // Расстояние от центра строки до линии под панелью
                 const distance = Math.abs(itemCenterY - lineY);
                 
-                // Ищем строку, которая ближе всего к линии
                 if (distance < minDistance && rect.top >= searchBarRect.bottom - 50) {
                     minDistance = distance;
                     targetItem = item;
                 }
             });
             
-            // Если нашли строку - показываем ее
             if (targetItem) {
                 const text = targetItem.textContent.trim();
                 if (text) {
@@ -5396,7 +5467,6 @@ class Magnifier {
                 }
             }
             
-            // Если не нашли - ищем первую видимую строку под панелью
             for (let item of priceItems) {
                 const rect = item.getBoundingClientRect();
                 if (rect.top >= searchBarRect.bottom && rect.bottom <= window.innerHeight) {
@@ -5420,7 +5490,6 @@ class Magnifier {
                 }
             }
             
-            // Если ничего не нашли - очищаем
             this.content.innerHTML = '';
             
         } catch (error) {
@@ -5460,17 +5529,14 @@ class Magnifier {
         this.toggleBtn.classList.toggle('active', this.isActive);
         
         if (this.isActive) {
-            // Устанавливаем линзу в начальную позицию
             this.magnifier.style.right = '20px';
             this.magnifier.style.bottom = '140px';
             this.magnifier.style.left = 'auto';
             this.magnifier.style.top = 'auto';
             this.magnifier.style.transform = 'none';
             
-            // Сразу показываем текст под панелью поиска
             setTimeout(() => this.updateTextUnderSearchBar(), 100);
             
-            // Запускаем периодическое обновление
             if (this.updateInterval) clearInterval(this.updateInterval);
             this.updateInterval = setInterval(() => {
                 if (this.isActive && !this.isDragging) {
@@ -5478,7 +5544,6 @@ class Magnifier {
                 }
             }, 500);
         } else {
-            // Останавливаем обновление
             if (this.updateInterval) {
                 clearInterval(this.updateInterval);
                 this.updateInterval = null;
@@ -5493,22 +5558,6 @@ class Magnifier {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    }
-}
-
-// Инициализация
-function initMagnifier() {
-    console.log('🔄 Инициализация линзы...');
-    
-    try {
-        setTimeout(() => {
-            const magnifier = new Magnifier();
-            window.magnifierInstance = magnifier;
-            console.log('✅ Линза готова к работе');            
-        }, 500);
-        
-    } catch (error) {
-        console.error('❌ Ошибка инициализации линзы:', error);
     }
 }
 function debugEstimateData() {
