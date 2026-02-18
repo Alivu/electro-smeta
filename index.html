@@ -5131,42 +5131,50 @@ class Magnifier {
                 margin-right: 8px;
             }
             
-            /* ========== КНОПКА ЛУПЫ ========== */
-            .magnifier-toggle {
-                position: fixed;
-                bottom: 50px;
-                right: 20px;
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #3498db, #2c3e50);
-                color: white;
-                border: none;
-                cursor: pointer;
-                z-index: 10000;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.25);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 1.8rem;
-                transition: all 0.3s ease;
-                border: 3px solid rgba(255,255,255,0.3);
-            }
+/* ========== КНОПКА ЛУПЫ ========== */
+.magnifier-toggle {
+    position: fixed;
+    bottom: 50px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    border: 3px solid rgba(255,255,255,0.3);
+    
+    /* Эти две строки скрывают кнопку до готовности */
+    opacity: 0;
+    pointer-events: none;
+}
 
-            .magnifier-toggle:hover {
-                transform: scale(1.1);
-            }
+.magnifier-toggle.ready {
+    opacity: 1;
+    pointer-events: auto;
+}
 
-            .magnifier-toggle.active {
-                background: linear-gradient(135deg, #e74c3c, #c0392b);
-                animation: pulse 2s infinite;
-            }
+.magnifier-toggle:hover {
+    transform: scale(1.1);
+}
 
-            @keyframes pulse {
-                0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
-                70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
-                100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
-            }
+.magnifier-toggle.active {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+}
             
             /* Мобильные версии */
             @media (max-width: 767px) {
@@ -5332,83 +5340,80 @@ class Magnifier {
     }
     
     // NEW - метод для перетаскивания кнопки
-    setupButtonDragging() {
-        const btn = this.toggleBtn;
-        
-        btn.addEventListener('mousedown', (e) => {
-            // Разрешаем перетаскивание ТОЛЬКО когда линза выключена
-            if (this.isActive) return;
-            
-            this.isDraggingBtn = true;
-            const rect = btn.getBoundingClientRect();
-            this.dragBtnOffsetX = e.clientX - rect.left;
-            this.dragBtnOffsetY = e.clientY - rect.top;
-            btn.style.cursor = 'grabbing';
-            e.preventDefault();
-        });
-        
-        document.addEventListener('mousemove', (e) => {
-            if (!this.isDraggingBtn) return;
-            
-            const btn = this.toggleBtn;
-            const x = e.clientX - this.dragBtnOffsetX;
-            const y = e.clientY - this.dragBtnOffsetY;
-            
-            const maxX = window.innerWidth - btn.offsetWidth;
-            const maxY = window.innerHeight - btn.offsetHeight;
-            
-            btn.style.position = 'fixed';
-            btn.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-            btn.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
-            btn.style.right = 'auto';
-            btn.style.bottom = 'auto';
-        });
-        
-        document.addEventListener('mouseup', () => {
-            if (this.isDraggingBtn) {
-                this.isDraggingBtn = false;
-                this.toggleBtn.style.cursor = '';
-            }
-        });
-        
-        btn.addEventListener('touchstart', (e) => {
-            if (this.isActive || !e.touches[0]) return;
-            
-            this.isDraggingBtn = true;
-            const touch = e.touches[0];
-            const rect = btn.getBoundingClientRect();
-            this.dragBtnOffsetX = touch.clientX - rect.left;
-            this.dragBtnOffsetY = touch.clientY - rect.top;
-            e.preventDefault();
-        });
-        
-        document.addEventListener('touchmove', (e) => {
-            if (!this.isDraggingBtn || !e.touches[0]) return;
-            
-            const btn = this.toggleBtn;
-            const touch = e.touches[0];
-            const x = touch.clientX - this.dragBtnOffsetX;
-            const y = touch.clientY - this.dragBtnOffsetY;
-            
-            const maxX = window.innerWidth - btn.offsetWidth;
-            const maxY = window.innerHeight - btn.offsetHeight;
-            
-            btn.style.position = 'fixed';
-            btn.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
-            btn.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
-            btn.style.right = 'auto';
-            btn.style.bottom = 'auto';
-            
-            e.preventDefault();
-        });
-        
-        document.addEventListener('touchend', () => {
-            if (this.isDraggingBtn) {
-                this.isDraggingBtn = false;
-            }
-        });
-    }
+ setupButtonDragging() {
+    const btn = this.toggleBtn;
     
+    btn.addEventListener('mousedown', (e) => {
+        if (this.isActive) return;
+        
+        this.isDraggingBtn = true;
+        const rect = btn.getBoundingClientRect();
+        this.dragBtnOffsetX = e.clientX - rect.left;
+        this.dragBtnOffsetY = e.clientY - rect.top;
+        btn.style.cursor = 'grabbing';
+        e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+        if (!this.isDraggingBtn) return;
+        
+        const x = e.clientX - this.dragBtnOffsetX;
+        const y = e.clientY - this.dragBtnOffsetY;
+        
+        const maxX = window.innerWidth - btn.offsetWidth;
+        const maxY = window.innerHeight - btn.offsetHeight;
+        
+        btn.style.position = 'fixed';
+        btn.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+        btn.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+    });
+    
+    document.addEventListener('mouseup', () => {
+        if (this.isDraggingBtn) {
+            this.isDraggingBtn = false;
+            this.toggleBtn.style.cursor = '';
+        }
+    });
+    
+    // Touch события для мобильных
+    btn.addEventListener('touchstart', (e) => {
+        if (this.isActive || !e.touches[0]) return;
+        
+        this.isDraggingBtn = true;
+        const touch = e.touches[0];
+        const rect = btn.getBoundingClientRect();
+        this.dragBtnOffsetX = touch.clientX - rect.left;
+        this.dragBtnOffsetY = touch.clientY - rect.top;
+        e.preventDefault();
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+        if (!this.isDraggingBtn || !e.touches[0]) return;
+        
+        const touch = e.touches[0];
+        const x = touch.clientX - this.dragBtnOffsetX;
+        const y = touch.clientY - this.dragBtnOffsetY;
+        
+        const maxX = window.innerWidth - btn.offsetWidth;
+        const maxY = window.innerHeight - btn.offsetHeight;
+        
+        btn.style.position = 'fixed';
+        btn.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+        btn.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
+        
+        e.preventDefault();
+    });
+    
+    document.addEventListener('touchend', () => {
+        if (this.isDraggingBtn) {
+            this.isDraggingBtn = false;
+        }
+    });
+}
     updateTextUnderSearchBar() {
         if (!this.isActive) return;
         
@@ -5556,13 +5561,22 @@ function initMagnifier() {
         setTimeout(() => {
             const magnifier = new Magnifier();
             window.magnifierInstance = magnifier;
+            
+            // ПОКАЗЫВАЕМ КНОПКУ через 300мс после инициализации
+            setTimeout(() => {
+                const btn = document.getElementById('magnifierToggle');
+                if (btn) {
+                    btn.classList.add('ready');
+                    console.log('✅ Кнопка лупы готова');
+                }
+            }, 300);
+            
             console.log('✅ Линза готова к работе');            
         }, 500);
     } catch (error) {
         console.error('❌ Ошибка инициализации линзы:', error);
     }
 }
-
 // ========== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ==========
 document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
