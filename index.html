@@ -12,6 +12,7 @@
 
     ym(106281592, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
 </script>
+<meta charset="UTF-8">
 <noscript><div><img src="https://mc.yandex.ru/watch/106281592" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
 
@@ -30,8 +31,8 @@
 <meta name="twitter:image" content="https://raw.githubusercontent.com/Alivu/electro-smeta/main//-512x512.png">
 
 
-	
-<meta charset="UTF-8">
+    
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
        
     <!-- PWA Configuration -->
@@ -53,19 +54,19 @@
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-16x16.png">
     <link rel="icon" type="image/png" sizes="48x48" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-48x48.png">
-	<link rel="icon" type="image/png" sizes="72x72" 
+    <link rel="icon" type="image/png" sizes="72x72" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-72x72.png">
-	<link rel="icon" type="image/png" sizes="96x96" 
+    <link rel="icon" type="image/png" sizes="96x96" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-96x96.png">
-		<link rel="icon" type="image/png" sizes="128x128" 
+        <link rel="icon" type="image/png" sizes="128x128" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-128x128.png">
-	    <link rel="icon" type="image/png" sizes="144x144" 
+        <link rel="icon" type="image/png" sizes="144x144" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-144x144.png">
-	<link rel="icon" type="image/png" sizes="152x152" 
+    <link rel="icon" type="image/png" sizes="152x152" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-152x152.png">
     <link rel="icon" type="image/png" sizes="192x192" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-192x192.png">
-	    <link rel="icon" type="image/png" sizes="384x384" 
+        <link rel="icon" type="image/png" sizes="384x384" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-384x384.png">
     <link rel="icon" type="image/png" sizes="512x512" 
           href="https://raw.githubusercontent.com/Alivu/electro-smeta/main/Icon/icon-512x512.png">
@@ -77,7 +78,7 @@
     <title>ЭлектроСмета профессиональный расчет от Electric_Group для Братьев</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-	
+    
     <style>
         /* Общие стили */
         :root {
@@ -89,7 +90,236 @@
             --success: #27ae60;
             --warning: #f39c12;
             --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            
+            /* Переменная для масштабирования */
+            --scale-factor: 1;
         }
+        
+        /* Контейнер для масштабирования с полосой прокрутки */
+        .estimate-scale-container {
+            overflow: auto;
+            max-height: calc(100vh - 300px);
+            width: 100%;
+			display: flex;           /* Добавить */
+			justify-content: center; /* Добавить */
+			-webkit-overflow-scrolling: touch;
+        }
+        
+        /* Новые стили для коэффициентов и скидок */
+        .coefficient-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 5px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .discount-badge {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 5px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .comment-badge {
+            display: inline-block;
+            background: #f39c12;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-left: 5px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+		.row-modifiers {
+			margin-top: 3px;
+			font-size: 11px;
+			color: #666;
+			display: flex;
+			flex-wrap: wrap;
+			gap: 3px;
+			min-height: 20px; /* Фиксированная минимальная высота */
+		}
+		.estimate-table td.price-cell,
+		.estimate-table td.quantity-cell {
+			vertical-align: middle;
+		}
+        
+        .row-modifier {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border-left: 3px solid #3498db;
+        }
+        
+/* ========== ПАНЕЛЬ ГЛОБАЛЬНЫХ НАСТРОЕК ========== */
+.global-modifiers-panel {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+        
+        .global-modifier-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        
+        .global-modifier-item label {
+            font-size: 13px;
+            color: #ecf0f1;
+        }
+        
+        .global-modifier-item input {
+            width: 70px;
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            background: white;
+        }
+        
+        .global-modifier-item input[type="text"] {
+            width: 150px;
+        }
+        
+        /* Кнопки масштабирования */
+        .zoom-controls {
+            display: flex;
+            gap: 5px;
+            margin-left: auto;
+        }
+        
+        .zoom-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .zoom-reset {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        /* Модальное окно для коэффициента/скидки */
+        .row-settings-modal {
+            max-width: 400px;
+        }
+        
+        .settings-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .settings-tab {
+            padding: 8px 15px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .settings-tab.active {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .settings-content {
+            display: none;
+        }
+        
+        .settings-content.active {
+            display: block;
+        }
+        
+        .settings-field {
+            margin-bottom: 15px;
+        }
+        
+        .settings-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .settings-field input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .settings-field small {
+            color: #666;
+            font-size: 11px;
+            display: block;
+            margin-top: 3px;
+        }
+        
+        .row-total-preview {
+            background: #f0f8ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: right;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .base-price {
+            font-size: 12px;
+            color: #666;
+            margin-right: 10px;
+        }
+        
+        /* Другие ваши существующие стили */
         * {
             margin: 0;
             padding: 0;
@@ -112,8 +342,6 @@
             margin: 0 auto;
             padding: 15px;
         }
-
-		
 
         /* Шапка */
         .header {
@@ -162,7 +390,7 @@
             display: flex;
             flex: 1;
             min-width: 200px;
-			height: 40px; /* Высота контейнера вкладок */
+            height: 40px;
         }
 
         .tab {
@@ -235,7 +463,7 @@
             position: relative;
             width: 100%;
             height: 31px;
-			top: -2px;
+            top: -2px;
         }
 
         @media (min-width: 768px) {
@@ -358,7 +586,6 @@
             font-size: 0.85rem;
         }
 
-
 /* Вкладка 2: Смета */
 .estimate-table-container {
     height: calc(100vh - 300px);
@@ -374,11 +601,6 @@
     font-size: 0.85rem;
 }
 
-        /* ========== КОЛОНКИ КАК ПОЛЯ ВВОДА ========== */
-/* 
-   Стили для ячеек "Код", "Ед. изм." и "Сумма, руб." 
-   Делаем их похожими на поля ввода, но без возможности редактирования
-*/
 .estimate-table td.unit-cell,
 .estimate-table td.total-cell,
 .estimate-table td.price-id-cell {
@@ -397,7 +619,6 @@
     max-height: 34px;                    /* Максимальная высота */
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.1); /* Внутренняя тень как у полей ввода */
 }
-
 /* Колонка "Код" - дополнительные стили */
 .estimate-table td.price-id-cell {
     width: 40px;                         /* Фиксированная ширина */
@@ -437,8 +658,6 @@
     max-width: 40px;                     /* Максимальная ширина */
     text-align: center;                  /* Выравнивание по центру */
 }
-
-/* Колонка 2: "Наименование" - остается гибкой (без стилей) */
 
 /* Колонка 3: "Ед. изм." - заголовок и ячейки */
 .estimate-table th:nth-child(3),         /* Третий th (заголовок) */
@@ -489,7 +708,6 @@
     font-size: 0.9rem !important;
     margin-left: -6px !important
 }
-        
 
 /* Колонка 6: "Сумма, руб." - заголовок и ячейки */
 .estimate-table th:nth-child(6),         /* Шестой th (заголовок) */
@@ -509,9 +727,6 @@
     text-align: center;                  /* Выравнивание по центру */
 }
 
-
-
-		
 /* ========== МОБИЛЬНАЯ ВЕРСИЯ (экраны до 767px) ========== */
 @media (max-width: 767px) {
     /* Уменьшаем размеры для ячеек "Код", "Ед. изм.", "Сумма" */
@@ -587,7 +802,6 @@
         max-width: 90px;
     }
 }
-
 
         .estimate-table {
             width: 100%;
@@ -921,114 +1135,101 @@
         /* Адаптивность для мобильных */
         @media (max-width: 767px) {
             .container {
-                padding: 2px 2px; /* СНИЖАЕМ ВЕРХНИЙ И НИЖНИЙ ОТСТУП С 10px ДО 5px */
+                padding: 2px 2px;
             }
             
             .header {
-				min-height: 20px !important; /* ЗАДАЕМ МИНИМАЛЬНУЮ ВЫСОТУ 30px ВМЕСТО СТАНДАРТНОЙ */
-				padding: 2px 0; /* УБИРАЕМ ЛИШНИЕ ВЕРТИКАЛЬНЫЕ ОТСТУПЫ */
-				margin-bottom: 2px; /* УМЕНЬШАЕМ ОТСТУП ПОД ШАПКОЙ С 5px ДО 2px */
+                min-height: 20px !important;
+                padding: 2px 0;
+                margin-bottom: 2px;
                 flex-direction: column;
                 gap: 10px;
                 text-align: center;
             }
 
- 			   /* УБИРАЕМ transform - он ломает центрирование */
-  		  .logo {
-      			transform: none !important; /* Убираем scale */
-        		display: flex;
-        		align-items: center;
-        		justify-content: center;
-        		gap: 2px !important;
-    		}
+            .logo {
+                transform: none !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 2px !important;
+            }
     
-
-    
-   			 .logo-text {
-       			 font-size: 0.8rem !important; /* Ещё меньше */
-       			 text-align: center !important; /* Центрируем текст */
-       			 display: block !important; /* Делаем блочным */
-				 vertical-align: middle !important;
-   			 }
-				/* УМЕНЬШАЕМ ПАНЕЛЬ С ВКЛАДКАМИ (Прайс-лист / Смета) */
-    .nav-panel {
-        flex-direction: column !important;   /* ← ОДНА НАД ДРУГОЙ */
-        align-items: stretch !important;     /* ← Растянуть на всю ширину */
-        padding: 0 !important;               /* ← НИКАКИХ внутренних отступов */
-        margin: 0 !important;                /* ← НИКАКИХ внешних отступов */
-        gap: 0 !important;                   /* ← НУЛЕВОЕ расстояние между строками */
-        row-gap: 0 !important;               /* ← НУЛЕВОЙ вертикальный gap */
-    }
-			
-			
+            .logo-text {
+                font-size: 0.8rem !important;
+                text-align: center !important;
+                display: block !important;
+                vertical-align: middle !important;
+            }
+            
+            .nav-panel {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                gap: 0 !important;
+                row-gap: 0 !important;
+            }
+            
             .tabs {
                 width: 100%;
-				height: 32px !important; /* БЫЛО 40px - УМЕНЬШАЕМ ВЫСОТУ НА 20% */
+                height: 32px !important;
             }
             
             .tab {
-                padding: 6px 8px !important; /* БЫЛО 12px - УБИРАЕМ ЛИШНИЕ ОТСТУПЫ */
-                font-size: 0.8rem !important; /* МЕЛЧЕ ТЕКСТ НА ВКЛАДКАХ */
+                padding: 6px 8px !important;
+                font-size: 0.8rem !important;
+            }
             
-			}
- 			/* УМЕНЬШАЕМ ВСЕ КНОПКИ УПРАВЛЕНИЯ (Печать, Управление и т.д.) */
-    		.btn {
-       		 padding: 6px 10px !important; /* БЫЛО 10px 15px - МЕНЬШЕ РАЗМЕР */
-        	font-size: 0.8rem !important; /* МЕЛЧЕ ТЕКСТ НА КНОПКАХ */
-    		}
-
-
-
-			
-    .estimate-controls {
-        display: grid;
-        grid-template-columns: 50% 50%;   /* ← ДВЕ РАВНЫЕ колонки */
-        gap: 0;
-        margin-bottom: 1px;
-    }
-    
-    .estimate-controls .btn {
-        border-radius: 0;
-        margin: 0;
-        padding: 8px 2px !important;      /* ← Маленькие горизонтальные отступы */
-        white-space: nowrap !important;   /* ← Текст НЕ ПЕРЕНАСЫВАЕТСЯ! */
-        overflow: hidden !important;      /* ← Обрезать если не помещается */
-        text-overflow: ellipsis !important; /* ← "..." если длинный текст */
-        font-size: 0.75rem !important;    /* ← Ещё меньше текст */
-        text-align: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 32px !important;          /* ← Фиксированная высота */
-        min-height: 32px !important;
-        line-height: 1 !important;        /* ← Межстрочный = 1 */
-    }
-    
-    /* Особо для длинного текста "Печать прайса" */
-    #printPriceBtn {
-        font-size: 0.7rem !important;     /* ← Ещё меньше для этой кнопки */
-        padding: 8px 1px !important;      /* ← Минимальные отступы */
-    }
-    
-    /* Для иконок внутри кнопок */
-    .btn i {
-        font-size: 0.8rem !important;
-        margin-right: 3px !important;     /* ← Маленький отступ от иконки */
-    }
-    
-    .dropdown-toggle {
-        min-width: 100%;
-        justify-content: center;
-    }
+            .btn {
+                padding: 6px 10px !important;
+                font-size: 0.8rem !important;
+            }
             
+            .estimate-controls {
+                display: grid;
+                grid-template-columns: 50% 50%;
+                gap: 0;
+                margin-bottom: 1px;
+            }
+            
+            .estimate-controls .btn {
+                border-radius: 0;
+                margin: 0;
+                padding: 8px 2px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                font-size: 0.75rem !important;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 32px !important;
+                min-height: 32px !important;
+                line-height: 1 !important;
+            }
+            
+            #printPriceBtn {
+                font-size: 0.7rem !important;
+                padding: 8px 1px !important;
+            }
+            
+            .btn i {
+                font-size: 0.8rem !important;
+                margin-right: 3px !important;
+            }
+            
+            .dropdown-toggle {
+                min-width: 100%;
+                justify-content: center;
+            } 
             .price-item {
                 grid-template-columns: 35px minmax(100px, 1fr) 45px 60px;
                 gap: 6px;
                 padding: 6px 8px;
                 font-size: 0.8rem;
             }
-
-		
             
             .item-number {
                 font-size: 0.8rem;
@@ -1061,20 +1262,22 @@
                 font-size: 0.8rem;
             }
 
-                /* ДОБАВЬТЕ ЭТУ СЕКЦИЮ - уменьшаем колонку "Код" */
-            .estimate-table th:nth-child(1),
-            .estimate-table td:nth-child(1) {
-                width: 40px;       /* Уменьшили ширину */
-                min-width: 40px;
-                max-width: 40px;
-                padding: 6px 2px;  /* Меньше горизонтальные отступы */
-                font-size: 0.75rem; /* Меньше текст */
-                border-left: 2px solid #f8f9fa;
-                padding-left: 6px !important;  /* чуть больше */
-                text-indent: 2px;
-                border-left: 1px solid #ddd;    /* левая граница */
-                border-right: 1px solid #ddd;   /* правая граница */
-            }
+    /* Уменьшение колонки Код */
+    .estimate-table th:nth-child(1),
+    .estimate-table td:nth-child(1) {
+        width: 40px;
+        min-width: 40px;
+        max-width: 40px;
+        padding: 6px 2px;
+        font-size: 0.75rem;
+        border-left: 2px solid #f8f9fa;
+        padding-left: 6px !important;
+        text-indent: 2px;
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+    }
+
+            
             .search-input {
                 font-size: 0.8rem;
                 padding: 5px 6px;
@@ -1117,7 +1320,7 @@
 
         /* Исправления для iOS */
         input, textarea, select {
-            font-size: 16px !important; /* Предотвращает масштабирование в iOS */
+            font-size: 16px !important;
         }
         
         .no-scroll {
@@ -1127,299 +1330,252 @@
             height: 100%;
         }
 
-/* ========== ОТСТУПЫ ТОЛЬКО ДЛЯ 3 КОЛОНОК ========== */
-
-/* Вариант 1: Через margin-top и margin-bottom */
-.estimate-table td.price-id-cell,
-.estimate-table td.unit-cell,
-.estimate-table td.total-cell {
-    /* Твои основные стили... */
-    
-    /* Большие вертикальные отступы */
-    margin-top: 10px !important;     /* 10px сверху */
-    margin-bottom: 10px !important;  /* 10px снизу */
-    
-    /* Итого 20px между строками для этих ячеек */
-    display: inline-block !important; /* Чтобы margin работал */
-}
-
-/* Вариант 2: Через transform (сдвигаем вниз) */
-.estimate-table td.price-id-cell,
-.estimate-table td.unit-cell,
-.estimate-table td.total-cell {
-    /* Твои основные стили... */
-    
-    transform: translateY(-10px) !important; /* Сдвигаем на 10px вниз */
-    position: relative;
-    top: 10px !important;                  /* Еще +10px вниз */
-    
-    /* padding-top и padding-bottom тоже увеличь */
-    padding-top: 12px !important;          /* Вместо 6px */
-    padding-bottom: 12px !important;       /* Вместо 6px */
-}
-
-/* Вариант 3: Через увеличенную высоту */
-.estimate-table td.price-id-cell,
-.estimate-table td.unit-cell,
-.estimate-table td.total-cell {
-    /* Твои основные стили... */
-    
-    height: 44px !important;          /* Вместо 34px (34 + 20) */
-    line-height: 24px !important;     /* Увеличиваем line-height */
-    padding-top: 4px !important;
-    padding-bottom: 6px !important;
-    }
-
+        .estimate-table td.price-id-cell,
+        .estimate-table td.unit-cell,
+        .estimate-table td.total-cell {
+            margin-top: 10px !important;
+            margin-bottom: 10px !important;
+            display: inline-block !important;
+        }
 
         @media (max-width: 767px) {   
-    /* Колонка "Код" - уменьшенные размеры */
-    .estimate-table td.price-id-cell {
-        text-align: center;                  /* Выравнивание по центру */
-    }
-    .estimate-table th:nth-child(1),
-    .estimate-table td:nth-child(1) {
-         text-indent: -3px;  /* Сдвигает текст на 2px влево */
- }  
-/* ========== ФИНАЛЬНАЯ ПАНЕЛЬ СТАТИСТИКИ ========== */
-.stats-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
-    color: white;
-    padding: 10px 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.85rem;
-    z-index: 9999;
-    border-top: 3px solid #3498db;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-}
+            .estimate-table td.price-id-cell {
+                text-align: center;
+            }
+            .estimate-table th:nth-child(1),
+            .estimate-table td:nth-child(1) {
+                text-indent: -3px;
+            }  
+            
+            .stats-bar {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(90deg, #2c3e50 0%, #34495e 100%);
+                color: white;
+                padding: 10px 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 0.85rem;
+                z-index: 9999;
+                border-top: 3px solid #3498db;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            }
 
-.stats-left {
-    display: flex;
-    gap: 20px;
-}
+            .stats-left {
+                display: flex;
+                gap: 20px;
+            }
 
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-}
+            .stat-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 500;
+            }
 
-.stat-item i {
-    color: #3498db;
-    font-size: 1rem;
-}
+            .stat-item i {
+                color: #3498db;
+                font-size: 1rem;
+            }
 
-.stat-item strong {
-    color: #f1c40f;
-    font-weight: 700;
-}
+            .stat-item strong {
+                color: #f1c40f;
+                font-weight: 700;
+            }
 
-.like-btn {
-    background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transition: all 0.3s;
-    box-shadow: 0 2px 5px rgba(39, 174, 96, 0.3);
-}
+            .like-btn {
+                background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 6px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.85rem;
+                font-weight: 600;
+                transition: all 0.3s;
+                box-shadow: 0 2px 5px rgba(39, 174, 96, 0.3);
+            }
 
-.like-btn:hover {
-    background: linear-gradient(90deg, #219653 0%, #27ae60 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
-}
+            .like-btn:hover {
+                background: linear-gradient(90deg, #219653 0%, #27ae60 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(39, 174, 96, 0.4);
+            }
 
-.like-btn.liked {
-    background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
-    cursor: not-allowed;
-}
+            .like-btn.liked {
+                background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+                cursor: not-allowed;
+            }
 
-/* ========== ОБНОВЛЕННЫЙ CSS ДЛЯ МОБИЛЬНЫХ ========== */
+            @media (max-width: 767px) {
+                .stats-bar {
+                    flex-direction: row !important;
+                    padding: 6px 8px !important;
+                    height: 40px !important;
+                }
+                
+                .stats-left {
+                    display: flex !important;
+                    gap: 8px !important;
+                    flex: 1 !important;
+                    overflow-x: auto !important;
+                    -webkit-overflow-scrolling: touch !important;
+                    padding-right: 5px !important;
+                }
+                
+                .stat-item {
+                    flex-shrink: 0 !important;
+                    font-size: 0.7rem !important;
+                    gap: 3px !important;
+                    white-space: nowrap !important;
+                }
+                
+                .stat-item i {
+                    font-size: 0.8rem !important;
+                }
+                
+                .stat-item strong {
+                    font-size: 0.75rem !important;
+                }
+                
+                @media (max-width: 350px) {
+                    .stat-item:nth-child(1) span:not(strong),
+                    .stat-item:nth-child(2) span:not(strong) {
+                        display: none !important;
+                    }
+                    
+                    .stat-item {
+                        gap: 2px !important;
+                    }
+                }
+                
+                .like-btn {
+                    width: auto !important;
+                    padding: 4px 10px !important;
+                    font-size: 0.75rem !important;
+                    flex-shrink: 0 !important;
+                    margin-left: auto !important;
+                }
+                
+                .stats-bar > div > button[onclick*="location.reload"] {
+                    display: none !important;
+                }
+            }
 
-@media (max-width: 767px) {
-    .stats-bar {
-        flex-direction: row !important; /* Все в одну строку */
-        padding: 6px 8px !important;
-        height: 40px !important; /* Фиксированная высота */
-    }
-    
-    .stats-left {
-        display: flex !important;
-        gap: 8px !important;
-        flex: 1 !important;
-        overflow-x: auto !important; /* Горизонтальный скролл если не помещается */
-        -webkit-overflow-scrolling: touch !important;
-        padding-right: 5px !important;
-    }
-    
-    .stat-item {
-        flex-shrink: 0 !important; /* Не сжимаются */
-        font-size: 0.7rem !important; /* Еще меньше текст */
-        gap: 3px !important;
-        white-space: nowrap !important; /* Не переносится */
-    }
-    
-    .stat-item i {
-        font-size: 0.8rem !important;
-    }
-    
-    .stat-item strong {
-        font-size: 0.75rem !important;
-    }
-    
-    /* Скрываем текст в некоторых элементах на очень маленьких экранах */
-    @media (max-width: 350px) {
-        .stat-item:nth-child(1) span:not(strong),
-        .stat-item:nth-child(2) span:not(strong) {
-            display: none !important;
+            @media (max-width: 480px) {
+                .stats-bar {
+                    padding: 5px 6px !important;
+                    height: 38px !important;
+                }
+                
+                .stats-left {
+                    gap: 6px !important;
+                }
+                
+                .stat-item {
+                    font-size: 0.65rem !important;
+                }
+                
+                .stat-item i {
+                    font-size: 0.75rem !important;
+                }
+                
+                .like-btn {
+                    padding: 3px 8px !important;
+                    font-size: 0.7rem !important;
+                }
+            }
         }
-        
-        .stat-item {
-            gap: 2px !important;
+
+        /* Стили для иконки приложения */
+        .app-icon {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-right: 12px;
+            vertical-align: middle;
+            transition: all 0.3s ease;
         }
-    }
-    
-    /* Кнопка лайка */
-    .like-btn {
-        width: auto !important; /* Не на всю ширину */
-        padding: 4px 10px !important;
-        font-size: 0.75rem !important;
-        flex-shrink: 0 !important; /* Не сжимается */
-        margin-left: auto !important; /* Прижимаем к правому краю */
-    }
-    
-    /* Убираем кнопку обновить */
-    .stats-bar > div > button[onclick*="location.reload"] {
-        display: none !important;
-    }
-}
 
-/* Еще более компактно для очень маленьких экранов */
-@media (max-width: 480px) {
-    .stats-bar {
-        padding: 5px 6px !important;
-        height: 38px !important;
-    }
-    
-    .stats-left {
-        gap: 6px !important;
-    }
-    
-    .stat-item {
-        font-size: 0.65rem !important;
-    }
-    
-    .stat-item i {
-        font-size: 0.75rem !important;
-    }
-    
-    .like-btn {
-        padding: 3px 8px !important;
-        font-size: 0.7rem !important;
-    }
-}
+        .app-icon:hover {
+            transform: scale(1.05);
+        }
 
-/* ========== СТИЛИ ДЛЯ ИКОНКИ ПРИЛОЖЕНИЯ ========== */
-.app-icon {  /* ← БЫЛО ПРОПУЩЕНО */
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
-    border-radius: 8px;
-    margin-right: 12px;
-    vertical-align: middle;
-    transition: all 0.3s ease;
-}
+        @media (max-width: 767px) {
+            .app-icon {
+                width: 48px;
+                height: 48px;
+                margin-right: 4px;
+            }
+            
+            .logo-icon {
+                font-size: 1.1rem;
+            }
+        }
 
-.app-icon:hover {
-    transform: scale(1.05);
-}
+        @media (max-width: 480px) {
+            .app-icon {
+                width: 40px;
+                height: 40px;
+                margin-right: 2px;
+            }
+            
+            .logo-icon {
+                font-size: 0.9rem;
+            }
+        }
 
-/* Для мобильных */
-@media (max-width: 767px) {
-    .app-icon {
-        width: 48px;  /* размер картинки */
-        height: 48px;
-        margin-right: 4px;
-    }
-    
-    .logo-icon {
-        font-size: 1.1rem;  /* размер молнии (уменьшил) */
-    }
-}
+        @media (max-width: 767px) {
+            .price-item {
+                grid-template-columns: 38px minmax(150px, 1fr) 40px 56px !important;
+                gap: 4px !important;
+                padding: 8px 10px !important;
+                font-size: 0.85rem !important;
+            }
+            
+            .item-name {
+                font-size: 0.82rem !important;
+                line-height: 1.3 !important;
+                word-break: break-word !important;
+            }
+            
+            .item-unit {
+                font-size: 0.75rem !important;
+                white-space: nowrap !important;
+                min-width: 45px !important;
+                text-align: center !important;
+            }
+            
+            .item-price {
+                font-size: 0.85rem !important;
+                font-weight: 600 !important;
+            }
+        }
 
-/* Для очень маленьких экранов */
-@media (max-width: 480px) {
-    .app-icon {
-        width: 40px;  /* еще меньше */
-        height: 40px;
-        margin-right: 2px;
-    }
-    
-    .logo-icon {
-        font-size: 0.9rem;  /* молния еще меньше */
-    }
-}
-		/* ========== МОБИЛЬНАЯ ВЕРСИЯ ПРАЙС-ЛИСТА ========== */
-@media (max-width: 767px) {
-    .price-item {
-        grid-template-columns: 38px minmax(150px, 1fr) 40px 56px !important;
-        gap: 4px !important;
-        padding: 8px 10px !important;
-        font-size: 0.85rem !important;
-    }
-    
-    .item-name {
-        font-size: 0.82rem !important;
-        line-height: 1.3 !important;
-        word-break: break-word !important;
-    }
-    
-    .item-unit {
-        font-size: 0.75rem !important;
-        white-space: nowrap !important;
-        min-width: 45px !important;
-        text-align: center !important;
-    }
-    
-    .item-price {
-        font-size: 0.85rem !important;
-        font-weight: 600 !important;
-    }
-}
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .price-item {
+                grid-template-columns: 45px minmax(150px, 1fr) 55px 85px !important;
+                gap: 10px !important;
+                padding: 10px 12px !important;
+            }
+        }
 
-/* ========== ПЛАНШЕТЫ ========== */
-@media (min-width: 768px) and (max-width: 1024px) {
-    .price-item {
-        grid-template-columns: 45px minmax(150px, 1fr) 55px 85px !important;
-        gap: 10px !important;
-        padding: 10px 12px !important;
-    }
-}
+        @media (max-width: 480px) {
+            .price-item {
+                grid-template-columns: 30px minmax(80px, 1fr) 40px 56px !important;
+                gap: 2px !important;
+                padding: 6px 8px !important;
+                font-size: 0.78rem !important;
+            }
+        }
 
-/* ========== МАЛЕНЬКИЕ ТЕЛЕФОНЫ ========== */
-@media (max-width: 480px) {
-    .price-item {
-        grid-template-columns: 30px minmax(80px, 1fr) 40px 56px !important;
-        gap: 2px !important;
-        padding: 6px 8px !important;
-        font-size: 0.78rem !important;
-    }
-}	
-
-        /* ========== НОВЫЕ СТИЛИ ДЛЯ ВИДЕО-ФУНКЦИОНАЛА ========== */
         .item-number.video-available {
             cursor: pointer;
             position: relative;
@@ -1469,7 +1625,7 @@
         
         @media (max-width: 767px) {
             .item-number.video-available::after {
-				right: 2px !important;
+                right: 2px !important;
                 width: 14px;
                 height: 14px;
                 font-size: 10px;
@@ -1477,11 +1633,520 @@
                 right: -6px;
             }
         }
+
+/* ========== АДАПТАЦИЯ ПАНЕЛИ ГЛОБАЛЬНЫХ НАСТРОЕК ========== */
+@media (max-width: 767px) {
+  
+    .global-modifier-item {
+        width: 100% !important;
+        justify-content: space-between !important;
+        background: rgba(255,255,255,0.15) !important;
+        padding: 8px 12px !important;
+    }
+    
+    .global-modifier-item label {
+        font-size: 14px !important;
+        white-space: nowrap !important;
+    }
+    
+    .global-modifier-item input {
+        width: 120px !important;
+        height: 36px !important;
+        font-size: 16px !important;
+    }
+    
+    .global-modifier-item input[type="text"] {
+        width: 180px !important;
+    }
+    
+    .zoom-controls {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-left: 0 !important;
+        margin-top: 5px !important;
+    }
+}
+
+/* ========== ИСПРАВЛЕНИЕ МАСШТАБИРОВАНИЯ ========== */
+:root {
+    --min-zoom: 0.5;
+    --max-zoom: 1.5;
+}
+
+.estimate-scale-container {
+    overflow: auto !important;
+    max-height: calc(100vh - 300px) !important;
+    width: 100% !important;
+}
+
+/* ========== МАСШТАБИРОВАНИЕ СМЕТЫ ========== */
+.estimate-scalable {
+    transform: scale(var(--scale-factor, 1));
+    transform-origin: top left;  /* Привязка к левому верхнему углу */
+    width: fit-content;
+    min-width: 100%;
+    transition: transform 0.2s ease;
+    margin: 0;  /* Убираем центрирование */
+}
+/* Для мобильных устройств - оставляем то же поведение */
+@media (max-width: 767px) {
+    .estimate-scalable {
+        transform-origin: top left;  /* Привязка к левому верхнему углу */
+    }
+}
+/* Фиксированная ширина таблицы */
+.estimate-table {
+    min-width: 800px !important;  /* Минимальная ширина для мобильных */
+    width: auto !important;
+    table-layout: auto !important;
+}
+
+/* Разрешаем перенос для названия при необходимости */
+.estimate-table td.search-cell {
+    white-space: normal !important;
+    word-break: break-word !important;
+}
+/* ========== АДАПТАЦИЯ ПАНЕЛИ ГЛОБАЛЬНЫХ НАСТРОЕК ========== */
+@media (max-width: 767px) {
+    .global-modifiers-panel {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        padding: 8px !important;
+    }
+    
+    .global-modifier-item {
+        width: 100% !important;
+        justify-content: space-between !important;
+        background: rgba(255,255,255,0.15) !important;
+        padding: 8px 12px !important;
+    }
+    
+    .global-modifier-item label {
+        font-size: 14px !important;
+        white-space: nowrap !important;
+    }
+    
+    .global-modifier-item input {
+        width: 120px !important;
+        height: 36px !important;
+        font-size: 16px !important;
+    }
+    
+    .global-modifier-item input[type="text"] {
+        width: 180px !important;
+    }
+    
+    .zoom-controls {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-left: 0 !important;
+        margin-top: 5px !important;
+    }
+}
+/* Скрытие панели */
+.global-modifiers-panel.hidden {
+    display: none !important;
+}
+@media (max-width: 767px) {
+    #toggleGlobalPanel {
+        padding: 8px 10px !important;
+        font-size: 0.8rem !important;
+        min-height: 32px !important;
+        touch-action: manipulation; /* Улучшает отзывчивость на тач */
+    }
+}
+
+
+/* ========== ЗАГОЛОВКИ ТАБЛИЦЫ СМЕТЫ ========== */
+
+.estimate-table thead tr {
+    background: var(--primary) !important;  /* Темно-синий фон */
+    height: 30px !important;  /* Общая высота заголовка */
+}
+
+.estimate-table th {
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0 6px !important;  /* Убираем вертикальные отступы, только горизонтальные */
+    font-size: 10px !important;
+    white-space: nowrap !important;
+	    /* Выравнивание по центру вертикали */
+    vertical-align: middle !important;
+    line-height: 1 !important;  /* Убираем лишний межстрочный интервал */
+    
+    /* Для flex-выравнивания если потребуется */
+    display: table-cell !important;
+}
+
+/* Индивидуальные ширины колонок */
+.estimate-table th:nth-child(1) {  /* Код */
+    width: 30px !important;
+	
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(2) {  /* Наименование */
+    text-align: left !important;
+}
+
+.estimate-table th:nth-child(3) {  /* Ед. изм. */
+    width: 70px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(4) {  /* Цена, руб. */
+    width: 80px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(5) {  /* Кол-во */
+    width: 60px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(6) {  /* Сумма, руб. */
+    width: 110px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(7) {  /* Кнопка удалить */
+    width: 40px !important;
+    text-align: center !important;
+}
+
+/* ========== АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ ========== */
+@media (max-width: 767px) {
+    .estimate-table thead tr {
+        height: 32px !important;  /* Чуть ниже на мобильных */
+    }
+    .estimate-table th {
+        font-size: 9px !important;
+        padding: 0 3px !important;
+    }
+    
+    .estimate-table th:nth-child(1) { width: 35px !important; }
+    .estimate-table th:nth-child(3) { width: 45px !important; }
+    .estimate-table th:nth-child(4) { width: 60px !important; }
+    .estimate-table th:nth-child(5) { width: 40px !important; }
+    .estimate-table th:nth-child(6) { width: 70px !important; }
+    }
+}
+/* ========== АДАПТАЦИЯ ШАПКИ ДЛЯ ТЕЛЕФОНА ========== */
+@media (max-width: 767px) {
+    .global-modifiers-panel {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+        padding: 6px !important;
+    }
+    
+    .global-modifier-item {
+        width: 100% !important;
+        justify-content: space-between !important;
+        padding: 6px 8px !important;
+    }
+    
+    .global-modifier-item input {
+        width: 100px !important;
+    }
+    
+    .global-modifier-item input[type="text"] {
+        width: 160px !important;
+    }
+    
+    .zoom-controls {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-left: 0 !important;
+        margin-top: 5px !important;
+    }
+}
+/* ========== АДАПТАЦИЯ СМЕТЫ ДЛЯ ТЕЛЕФОНА ========== */
+@media (max-width: 767px) {
+    /* Контейнер с прокруткой */
+    .estimate-scale-container {
+        max-height: calc(100vh - 250px) !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Уменьшаем шрифты еще больше */
+    .estimate-table {
+        font-size: 8px !important;
+        min-width: 600px !important; /* Минимальная ширина для горизонтального скролла */
+    }
+    
+    .estimate-table th {
+        padding: 3px 2px !important;
+        font-size: 8px !important;
+    }
+    
+    .estimate-table td {
+        padding: 2px 1px !important;
+        font-size: 8px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+    }
+    
+    /* Поля ввода на телефоне */
+    .estimate-table input {
+        height: 22px !important;
+        font-size: 8px !important;
+        padding: 1px !important;
+    }
+    
+    /* Колонки на телефоне */
+    .estimate-table .price-id-cell {
+        width: 30px !important;
+        min-width: 30px !important;
+        padding: 1px 6 !important;
+    }
+    
+    .estimate-table .unit-cell {
+        width: 35px !important;
+        min-width: 35px !important;
+    }
+    
+    .estimate-table .total-cell {
+        width: 60px !important;
+        min-width: 60px !important;
+    }
+    
+    .estimate-table th:nth-child(4),
+    .estimate-table td:nth-child(4) {
+        width: 50px !important;
+        min-width: 50px !important;
+    }
+    
+    .estimate-table th:nth-child(5),
+    .estimate-table td:nth-child(5) {
+        width: 35px !important;
+        min-width: 35px !important;
+    }
+    
+    .estimate-table th:nth-child(6),
+    .estimate-table td:nth-child(6) {
+        width: 60px !important;
+        min-width: 60px !important;
+    }
+    
+    /* Наименование на телефоне */
+    .estimate-table th:nth-child(2),
+    .estimate-table td:nth-child(2) {
+        min-width: 250px !important;
+    }
+    
+    /* Значки коэффициентов */
+    .row-modifiers span {
+        font-size: 6px !important;
+        padding: 1px 2px !important;
+        height: 12px !important;
+        line-height: 10px !important;
+    }
+    
+    /* Итоги на телефоне */
+    .estimate-totals {
+        padding: 5px !important;
+    }
+    
+    .estimate-totals .total-row {
+        font-size: 8px !important;
+        margin-bottom: 2px !important;
+    }
+    
+    .estimate-totals .total-row:last-child {
+        font-size: 10px !important;
+        padding-top: 3px !important;
+    }
+}
+
+
+/* ========== ВЫПАДАЮЩЕЕ МЕНЮ ========== */
+
+/* Контейнер меню */
+.dropdown-menu {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    background: white !important;
+    border: 1px solid #ddd !important;
+    border-radius: 6px !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+    min-width: 220px !important;
+    z-index: 9999 !important;
+    margin-top: 5px !important;
+    padding: 5px 0 !important;
+    font-size: 12px !important;
+}
+
+/* Элементы меню */
+.dropdown-menu .dropdown-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 8px 15px !important;
+    color: #333 !important;
+    text-decoration: none !important;
+    transition: background 0.2s !important;
+    border: none !important;
+    background: none !important;
+    width: 100% !important;
+    text-align: left !important;
+    cursor: pointer !important;
+    font-size: 12px !important;
+}
+
+/* Иконки в меню */
+.dropdown-menu .dropdown-item i {
+    width: 18px !important;
+    color: #3498db !important;
+    font-size: 14px !important;
+}
+
+/* Разделитель */
+.dropdown-menu .dropdown-divider {
+    height: 1px !important;
+    background: #eee !important;
+    margin: 5px 0 !important;
+}
+
+/* Адаптация для мобильных */
+@media (max-width: 767px) {
+    .dropdown-menu {
+        position: fixed !important;
+        top: auto !important;
+        left: 5% !important;
+        right: 5% !important;
+        bottom: 10px !important;
+        max-height: 70vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-radius: 10px !important;
+        box-shadow: 0 -5px 20px rgba(0,0,0,0.2) !important;
+    }
+    
+    .dropdown-menu .dropdown-item {
+        padding: 12px 15px !important;
+        font-size: 14px !important;
+    }
+}
+/* ========== ЗАГОЛОВКИ ТАБЛИЦЫ СМЕТЫ ========== */
+.estimate-table thead tr {
+    background: var(--primary) !important;  /* Темно-синий фон */
+    height: 40px !important;  /* Общая высота заголовка */
+}
+
+.estimate-table th {
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 0 6px !important;  /* Убираем вертикальные отступы, только горизонтальные */
+    font-size: 11px !important;
+    white-space: nowrap !important;
+    
+    /* Выравнивание по центру вертикали */
+    vertical-align: middle !important;
+    line-height: 1 !important;  /* Убираем лишний межстрочный интервал */
+    
+    /* Для flex-выравнивания если потребуется */
+    display: table-cell !important;
+}
+
+/* Индивидуальные ширины колонок */
+.estimate-table th:nth-child(1) {  /* Код */
+    width: 40px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(2) {  /* Наименование */
+    text-align: left !important;
+}
+
+.estimate-table th:nth-child(3) {  /* Ед. изм. */
+    width: 70px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(4) {  /* Цена, руб. */
+    width: 80px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(5) {  /* Кол-во */
+    width: 60px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(6) {  /* Сумма, руб. */
+    width: 110px !important;
+    text-align: center !important;
+}
+
+.estimate-table th:nth-child(7) {  /* Кнопка удалить */
+    width: 40px !important;
+    text-align: center !important;
+}
+
+/* ========== МОБИЛЬНАЯ ВЕРСИЯ ========== */
+@media (max-width: 767px) {
+    .estimate-table thead tr {
+        height: 32px !important;  /* Чуть ниже на мобильных */
+    }
+    
+    .estimate-table th {
+        font-size: 9px !important;
+        padding: 0 3px !important;
+    }
+}
+
+/* Исправление ширины наименования */
+.estimate-table th:nth-child(2),
+.estimate-table td:nth-child(2) {
+    min-width: 600px !important;
+}
+.estimate-table td:nth-child(2) input {
+    min-width: 580px !important;
+}
+
+/* ========== СТИЛИ ДЛЯ СКРЫТИЯ ПАНЕЛИ ========== */
+.global-modifiers-panel.hidden {
+    display: none !important;
+}
+
+/* Когда панель скрыта, следующий за ней контейнер сметы занимает больше места */
+.global-modifiers-panel.hidden + .estimate-scale-container {
+    max-height: calc(100vh - 250px) !important;
+}
+
+/* Анимация */
+.global-modifiers-panel {
+    transition: all 0.3s ease;
+    margin-bottom: 15px; /* Добавляем отступ снизу */
+}
+
+/* На мобильных устройствах */
+@media (max-width: 767px) {
+    .global-modifiers-panel.hidden + .estimate-scale-container {
+        max-height: calc(100vh - 220px) !important;
+    }
+    
+    /* Убедимся, что панель всегда сверху */
+    .global-modifiers-panel {
+        order: 1;
+    }
+    
+    .estimate-scale-container {
+        order: 2;
+    }
+    
+    .estimate-totals {
+        order: 3;
+    }
+}
     </style>
 </head>
 <body>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <div class="container">
 <!-- Шапка -->
 <div class="header">
@@ -1518,10 +2183,10 @@
     
     <!-- Управление -->
     <div class="estimate-controls">
-        <!-- Кнопка печати прайса -->
-        <button class="btn btn-info" id="printPriceBtn">
-            <i class="fas fa-print"></i> Печать прайса
-        </button>
+
+<button class="btn btn-info" id="toggleGlobalPanel" style="margin-right: 5px;">
+    <i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>
+</button>
         
         <!-- Меню управления сметой -->
         <div class="dropdown-controls">
@@ -1530,12 +2195,10 @@
                 <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
             </button>
             <div class="dropdown-menu" id="controlsMenu">
-
-    			<!-- ВСТАВЬТЕ СЮДА НОВУЮ КНОПКУ: -->
-    			<button class="dropdown-item" id="refreshEstimateBtn">
-        			<i class="fas fa-sync-alt"></i> Обновить смету
-    			</button>
-				
+                <button class="dropdown-item" id="refreshEstimateBtn">
+                    <i class="fas fa-sync-alt"></i> Обновить смету
+                </button>
+                
                 <button class="dropdown-item" id="addRowBtn">
                     <i class="fas fa-plus"></i> Добавить строку
                 </button>
@@ -1562,20 +2225,18 @@
                         onclick="window.open('https://github.com/Alivu/electro-smeta/raw/main/Price_Electric_GrouP.pdf', '_blank')">
                     <i class="fas fa-download"></i> Скачать PDF прайс-лист
                 </button>
-				<button class="dropdown-item" onclick="window.open('https://accounts.google.com/o/oauth2/auth?client_id=10151274989-sirobiq4o2es78hs82gbotu34lkf11pb.apps.googleusercontent.com&redirect_uri=https://alivu.github.io/electro-smeta&response_type=token&scope=https://www.googleapis.com/auth/drive.file&state=electro_smeta', '_blank')">
-    				<i class="fab fa-google"></i> Тест Google Login
-				</button>
+                <button class="dropdown-item" onclick="window.open('https://accounts.google.com/o/oauth2/auth?client_id=10151274989-sirobiq4o2es78hs82gbotu34lkf11pb.apps.googleusercontent.com&redirect_uri=https://alivu.github.io/electro-smeta&response_type=token&scope=https://www.googleapis.com/auth/drive.file&state=electro_smeta', '_blank')">
+                    <i class="fab fa-google"></i> Тест Google Login
+                </button>
 
-
-				<!-- ДОБАВЬТЕ ЭТИ ДВЕ КНОПКИ: -->
-				<button class="dropdown-item" onclick="saveToDrive()" id="saveToDriveBtn" style="display:none">
-    				<i class="fab fa-google-drive"></i> Сохранить в Drive
-				</button>
-				<button class="dropdown-item" onclick="loadFromDrive()" id="loadFromDriveBtn" style="display:none">
-    				<i class="fas fa-download"></i> Загрузить из Drive
-				</button>
-				
-				
+                <!-- ДОБАВЬТЕ ЭТИ ДВЕ КНОПКИ: -->
+                <button class="dropdown-item" onclick="saveToDrive()" id="saveToDriveBtn" style="display:none">
+                    <i class="fab fa-google-drive"></i> Сохранить в Drive
+                </button>
+                <button class="dropdown-item" onclick="loadFromDrive()" id="loadFromDriveBtn" style="display:none">
+                    <i class="fas fa-download"></i> Загрузить из Drive
+                </button>
+                
                 <!-- Кнопка возврата -->
                 <button class="dropdown-item" 
                         onclick="window.open('https://alivu.github.io/', '_blank')">
@@ -1603,35 +2264,76 @@
         
         <!-- Вкладка 2: Смета -->
         <div class="tab-content" id="estimate-tab">
-            <div class="estimate-table-container">
-                <table class="estimate-table">
-                    <thead>
-                        <tr>
-                            <th width="40">Код</th>
-                            <th>Наименование</th>
-                            <th width="70">Ед. изм.</th>
-                            <th width="80">Цена, руб.</th>
-                            <th width="60">Кол-во</th>
-                            <th width="110">Сумма, руб.</th>
-                            <th width="40"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="estimateTable">
-                        <!-- Строки сметы будут загружены здесь -->
-                    </tbody>
-                </table>
+            <!-- Панель глобальных настроек -->
+            <div class="global-modifiers-panel">
+                <div class="global-modifier-item">
+                    <label><i class="fas fa-percentage"></i> Скидка %:</label>
+                    <input type="number" id="globalDiscount" min="0" max="100" step="0.1" value="0" placeholder="0%">
+                </div>
+                <div class="global-modifier-item">
+                    <label><i class="fas fa-calculator"></i> Коэф.:</label>
+                    <input type="number" id="globalCoefficient" min="0.1" step="0.1" value="1" placeholder="1.0">
+                </div>
+                <div class="global-modifier-item">
+                    <label><i class="fas fa-comment"></i> Коммент.:</label>
+                    <input type="text" id="globalComment" placeholder="Общий комментарий...">
+                </div>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" id="zoomOut" title="Уменьшить"><i class="fas fa-search-minus"></i></button>
+                    <span id="zoomPercent" style="color: white; font-size: 13px; padding: 0 5px;">100%</span>
+                    <button class="zoom-btn" id="zoomIn" title="Увеличить"><i class="fas fa-search-plus"></i></button>
+                    <button class="zoom-reset" id="zoomReset" title="Сбросить масштаб"><i class="fas fa-undo-alt"></i> 100%</button>
+                </div>
             </div>
             
-            <div class="estimate-totals">    
-                <div class="total-row">
-                    <span>Общая сумма сметы:</span>
+            <div class="estimate-scale-container" id="estimateScaleContainer">
+                <div class="estimate-scalable" id="estimateScalable" style="transform: scale(1);">
+                    <div class="estimate-table-container" style="max-height: none; height: auto; padding: 0;">
+                        <table class="estimate-table">
+                            <thead>
+                                <tr>
+                                    <th width="30">Код</th>
+                                    <th>Наименование</th>
+                                    <th width="50">Ед. изм.</th>
+                                    <th width="60">Цена, руб.</th>
+                                    <th width="50">Кол-во</th>
+                                    <th width="90">Сумма, руб.</th>
+                                    <th width="30"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="estimateTable">
+                                <!-- Строки сметы будут загружены здесь -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="estimate-totals">
+                <div class="total-row" id="baseTotalRow" style="font-size: 0.9rem; color: #666;">
+                    <span>Базовая сумма:</span>
+                    <span class="total-value" id="baseTotalAmount">0</span>
+                </div>
+                <div class="total-row" id="discountRow" style="font-size: 0.9rem; color: #e74c3c; display: none;">
+                    <span>Скидка <span id="discountPercent">0</span>%:</span>
+                    <span class="total-value" id="discountAmount">-0</span>
+                </div>
+                <div class="total-row" id="coefficientRow" style="font-size: 0.9rem; color: #3498db; display: none;">
+                    <span>Коэффициент <span id="coefficientValue">1</span>:</span>
+                    <span class="total-value" id="coefficientAdjustment">0</span>
+                </div>
+                <div class="total-row" id="globalCommentRow" style="font-size: 0.9rem; color: #f39c12; font-style: italic; display: none;">
+                    <span colspan="2" id="globalCommentText"></span>
+                </div>
+                <div class="total-row" style="font-size: 1.2rem; font-weight: 700; color: var(--primary); padding-top: 10px; border-top: 2px solid #ddd; margin-top: 5px;">
+                    <span>ИТОГО:</span>
                     <span class="total-value" id="totalAmount">0</span>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- Модальные окна -->
+    <!-- Модальное окно для материалов -->
     <div class="modal" id="materialModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1672,16 +2374,50 @@
         </div>
     </div>
     
-    <div class="modal" id="printModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-print"></i> Печать сметы</h3>
-                <button class="close-modal" id="closePrintModal">&times;</button>
-            </div>
-            <div class="modal-body">
+<!-- Модальное окно для печати -->
+<div class="modal" id="printModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-print"></i> Печать сметы</h3>
+            <button class="close-modal" id="closePrintModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- ИНФОРМАЦИЯ ОБ ИСПОЛНИТЕЛЕ (сохраняется) -->
+            <div style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #3498db;">
+                <h4 style="margin: 0 0 10px 0; color: #2c3e50;"><i class="fas fa-building"></i> Исполнитель</h4>
                 <div class="form-group">
-                    <label for="clientName">Клиент:</label>
-                    <input type="text" id="clientName" class="form-control" placeholder="Введите имя клиента" autocomplete="off">
+                    <label for="executorName">Организация / ИП:</label>
+                    <input type="text" id="executorName" class="form-control" placeholder="Например: ООО ЭлектроСмета" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="executorInn">ИНН:</label>
+                    <input type="text" id="executorInn" class="form-control" placeholder="1234567890" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="executorPhone">Телефон:</label>
+                    <input type="text" id="executorPhone" class="form-control" placeholder="+7 (999) 123-45-67" autocomplete="off">
+                </div>
+            </div>
+            
+            <!-- ИНФОРМАЦИЯ О КЛИЕНТЕ -->
+            <div style="background: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #27ae60;">
+                <h4 style="margin: 0 0 10px 0; color: #2c3e50;"><i class="fas fa-user"></i> Заказчик</h4>
+                <div class="form-group">
+                    <label for="clientName">Клиент (ФИО или организация):</label>
+                    <input type="text" id="clientName" class="form-control" placeholder="Введите имя клиента или название организации" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="clientContacts">Контакты клиента:</label>
+                    <input type="text" id="clientContacts" class="form-control" placeholder="Телефон, email..." autocomplete="off">
+                </div>
+            </div>
+            
+            <!-- ИНФОРМАЦИЯ О ПРОЕКТЕ -->
+            <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #f39c12;">
+                <h4 style="margin: 0 0 10px 0; color: #2c3e50;"><i class="fas fa-project-diagram"></i> Проект</h4>
+                <div class="form-group">
+                    <label for="projectName">Название объекта/проекта:</label>
+                    <input type="text" id="projectName" class="form-control" placeholder="Например: Коттедж в Московской области" autocomplete="off">
                 </div>
                 <div class="form-group">
                     <label for="estimateNumber">Номер сметы:</label>
@@ -1691,19 +2427,31 @@
                     <label for="estimateDate">Дата:</label>
                     <input type="date" id="estimateDate" class="form-control">
                 </div>
+            </div>
+            
+            <!-- ПРИМЕЧАНИЯ -->
+            <div style="background: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                <h4 style="margin: 0 0 10px 0; color: #2c3e50;"><i class="fas fa-sticky-note"></i> Примечания</h4>
                 <div class="form-group">
-                    <label for="notes">Примечания:</label>
-                    <textarea id="notes" class="form-control" rows="3" placeholder="Дополнительная информация..." autocomplete="off"></textarea>
+                    <label for="notes">Дополнительная информация:</label>
+                    <textarea id="notes" class="form-control" rows="3" placeholder="Условия оплаты, гарантии и т.д." autocomplete="off"></textarea>
                 </div>
-                <div class="form-group">
-                    <button class="btn btn-success" id="generatePrint" style="width: 100%;">
-                        <i class="fas fa-file-pdf"></i> Сформировать для печати
-                    </button>
-                </div>
+            </div>
+            
+            <!-- КНОПКИ СОХРАНЕНИЯ -->
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-success" id="saveExecutorData" style="flex: 1;">
+                    <i class="fas fa-save"></i> Сохранить данные исполнителя
+                </button>
+                <button class="btn btn-info" id="generatePrint" style="flex: 1;">
+                    <i class="fas fa-file-pdf"></i> Сформировать
+                </button>
             </div>
         </div>
     </div>
+</div>
     
+    <!-- Модальное окно для загрузки -->
     <div class="modal" id="loadModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -1713,6 +2461,64 @@
             <div class="modal-body">
                 <div id="savedEstimatesList">
                     <!-- Список сохраненных смет будет загружен здесь -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- НОВОЕ: Модальное окно для настройки строки (коэффициент/скидка/комментарий) -->
+    <div class="modal" id="rowSettingsModal">
+        <div class="modal-content row-settings-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-sliders-h"></i> Настройки позиции</h3>
+                <button class="close-modal" id="closeRowSettingsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="settings-tab active" data-tab="coefficient">Коэффициент</button>
+                    <button class="settings-tab" data-tab="discount">Скидка</button>
+                    <button class="settings-tab" data-tab="comment">Комментарий</button>
+                </div>
+                
+                <div class="settings-content active" id="coefficientTab">
+                    <div class="settings-field">
+                        <label>Коэффициент:</label>
+                        <input type="number" id="rowCoefficient" min="0.1" step="0.1" value="1.0">
+                        <small>Умножает цену на указанное значение (например, 1.5 = +50%)</small>
+                    </div>
+                    <div class="settings-field">
+                        <label>Комментарий к коэффициенту:</label>
+                        <input type="text" id="rowCoeffComment" placeholder="Например: Демонтаж">
+                    </div>
+                </div>
+                
+                <div class="settings-content" id="discountTab">
+                    <div class="settings-field">
+                        <label>Скидка %:</label>
+                        <input type="number" id="rowDiscount" min="0" max="100" step="0.1" value="0">
+                        <small>Процент скидки на эту позицию</small>
+                    </div>
+                    <div class="settings-field">
+                        <label>Комментарий к скидке:</label>
+                        <input type="text" id="rowDiscountComment" placeholder="Например: Акция">
+                    </div>
+                </div>
+                
+                <div class="settings-content" id="commentTab">
+                    <div class="settings-field">
+                        <label>Комментарий к позиции:</label>
+                        <input type="text" id="rowComment" placeholder="Любой текст...">
+                        <small>Будет добавлен к наименованию</small>
+                    </div>
+                </div>
+                
+                <div class="row-total-preview" id="rowTotalPreview">
+                    Итоговая сумма: 0 руб.
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-success" id="applyRowSettings" style="flex: 1;">Применить</button>
+                    <button class="btn btn-danger" id="clearRowSettings" style="flex: 1;">Очистить</button>
                 </div>
             </div>
         </div>
@@ -1830,9 +2636,9 @@ if (isMobile) {
             justify-content: center;
             gap: 5px;
         ">
-  			<i class="fas fa-bolt" style="vertical-align: middle;"></i>
-    		<span style="vertical-align: middle;">Electric Group</span>
-   			<i class="fas fa-bolt" style="vertical-align: middle;"></i>
+            <i class="fas fa-bolt" style="vertical-align: middle;"></i>
+            <span style="vertical-align: middle;">Electric Group</span>
+            <i class="fas fa-bolt" style="vertical-align: middle;"></i>
         </div>
         
         <div style="
@@ -1858,9 +2664,9 @@ if (isMobile) {
             justify-content: center;
             gap: 8px;
         ">
-  			<i class="fas fa-bolt" style="vertical-align: middle;"></i>
-    		<span style="vertical-align: middle;">Electric Group</span>
-   			<i class="fas fa-bolt" style="vertical-align: middle;"></i>
+            <i class="fas fa-bolt" style="vertical-align: middle;"></i>
+            <span style="vertical-align: middle;">Electric Group</span>
+            <i class="fas fa-bolt" style="vertical-align: middle;"></i>
         </div>
         
         <div style="
@@ -2085,7 +2891,7 @@ initializeVersion();
 // ========== КОНЕЦ БЛОКА ВЕРСИОНИРОВАНИЯ ==========
         // Проверяем iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-		// Обработчик для кнопки "Скачать PDF" в окне печати
+        // Обработчик для кнопки "Скачать PDF" в окне печати
 // Обработчик для кнопки "Скачать PDF" в окне печати
 window.addEventListener('message', function(event) {
     if (event.data.action === 'savePDFFromPrint') {
@@ -2266,36 +3072,47 @@ function createPricePDF() {
             tempContainer.innerHTML = pdfContent;
             document.body.appendChild(tempContainer);
             
-            // Даем время на рендеринг
-            setTimeout(() => {
-                html2canvas(tempContainer, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff'
-                }).then(canvas => {
-                    const imgData = canvas.toDataURL('image/jpeg', 0.85); // JPEG для меньшего размера
-                    const imgWidth = 180;
-                    const imgHeight = canvas.height * imgWidth / canvas.width;
-                    
-                    // Если это не первая страница, добавляем новую
-                    if (pageNum > 1) {
-                        pdf.addPage();
-                    }
-                    
-                    // Добавляем изображение на страницу
-                    pdf.addImage(imgData, 'JPEG', 15, 10, imgWidth, imgHeight);
-                    
-                    // Удаляем временный контейнер
-                    document.body.removeChild(tempContainer);
-                    
-                    resolve();
-                }).catch(error => {
-                    console.error('Ошибка при создании страницы PDF:', error);
-                    document.body.removeChild(tempContainer);
-                    resolve();
-                });
-            }, 100);
+// Даем время на рендеринг
+setTimeout(() => {
+    html2canvas(tempContainer, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: tempContainer.scrollWidth,  // Добавить
+        windowHeight: tempContainer.scrollHeight  // Добавить
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/jpeg', 0.95); // Увеличил качество
+        
+        // ПОЛУЧАЕМ РЕАЛЬНЫЕ РАЗМЕРЫ
+        const imgWidth = 210; // Вся ширина A4 (210мм)
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        
+        // Создаем PDF с правильной ориентацией
+        const pdf = new jspdf.jsPDF({
+            orientation: imgHeight > imgWidth ? 'portrait' : 'landscape',
+            unit: 'mm',
+            format: 'a4'
+        });
+        
+        // Добавляем изображение на всю страницу
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+        
+        // Сохраняем
+        pdf.save(`Смета_${estimateNumber}.pdf`);
+        
+        // Удаляем временный контейнер
+        document.body.removeChild(tempContainer);
+        loadingDiv.remove();
+        
+        resolve();
+    }).catch(error => {
+        console.error('Ошибка при создании PDF:', error);
+        document.body.removeChild(tempContainer);
+        loadingDiv.remove();
+        resolve();
+    });
+}, 500); // Увеличил время до 500ms
         });
     }
     
@@ -2323,8 +3140,8 @@ function createPricePDF() {
         showNotification('Ошибка при создании PDF прайс-листа');
     });
 }
-		
-		// Проверяем загрузку библиотек PDF
+        
+        // Проверяем загрузку библиотек PDF
 function checkPDFLibraries() {
     if (typeof jspdf === 'undefined') {
         console.error('jsPDF не загружен!');
@@ -2580,11 +3397,17 @@ const priceData = [
         ]
     }
 ];
-		// Глобальные переменные
+        // Глобальные переменные
         let estimateData = [];
         let savedEstimates = JSON.parse(localStorage.getItem('electroEstimates')) || [];
         let nextMaterialId = 1000;
-		
+        
+        // НОВЫЕ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        let currentRowIndex = -1; // Индекс текущей редактируемой строки
+        let zoomFactor = 1.0; // Коэффициент масштабирования
+        const MIN_ZOOM = 0.5; // Минимальный масштаб (50%)
+        const MAX_ZOOM = 1.5; // Максимальный масштаб (150%)
+        
 // ========== МУСУЛЬМАНСКИЕ ПРАЗДНИКИ ==========
 const islamicHolidays = [
     { month: 1, day: 10, name: 'День Ашура' },
@@ -2953,10 +3776,14 @@ async function initializeIslamicFeatures() {
     }, 60 * 1000);
 }
 // ========== КОНЕЦ ИНИЦИАЛИЗАЦИИ ==========
-		// Функция форматирования валюты
+        // Функция форматирования валюты
 function formatCurrency(amount) {
     if (isNaN(amount)) return '0';
-    return new Intl.NumberFormat('ru-RU').format(parseFloat(amount).toFixed(2));
+    // Убираем parseFloat и toFixed, используем настройки для отображения копеек
+    return new Intl.NumberFormat('ru-RU', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount);
 }
 
 function showNotification(message) {
@@ -3097,11 +3924,14 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
     await initializeIslamicFeatures(); // ← ДОБАВЬТЕ await
     showTab('price');
     
+    // Загружаем сохраненный масштаб
+    loadZoomFactor();
+    
     console.log('Приложение инициализировано');
 }
 
 function initializeEstimateData() {
-    // Создаем 50 пустых строк для сметы (больше чем нужно)
+    // Создаем 50 пустых строк для сметы с новыми полями
     estimateData = Array(50).fill().map((_, i) => ({
         id: i + 1,
         priceId: "",
@@ -3111,10 +3941,19 @@ function initializeEstimateData() {
         quantity: 1,
         total: 0,
         notes: "",
-        isMaterial: false
+        isMaterial: false,
+        
+        // НОВЫЕ ПОЛЯ
+        coefficient: 1.0,
+        coeffComment: "",
+        discount: 0,
+        discountComment: "",
+        rowComment: "",
+        
+        // Кэшируем исходные значения для расчетов
+        originalPrice: 0
     }));
 }
-
         // Функции для вкладок
         function showTab(tabName) {
             // Скрываем все вкладки
@@ -3250,128 +4089,654 @@ function initializeEstimateData() {
             console.log('Прайс-лист с видео-функционалом отрендерен');
         }
 
-        // Рендеринг таблицы сметы (обновленная версия с видео)
-        function renderEstimateTable() {
-            const tableBody = document.getElementById('estimateTable');
-            if (!tableBody) {
-                console.error('Таблица сметы не найдена!');
+        // НОВАЯ ФУНКЦИЯ: Расчет итога строки с учетом коэффициента и скидки
+        function calculateRowTotal(row) {
+            if (!row.priceId && !row.isMaterial && !row.name) return 0;
+            
+            // Сохраняем оригинальную цену при первом расчете
+            if (row.originalPrice === 0 && row.price > 0) {
+                row.originalPrice = row.price;
+            }
+            
+            // Используем оригинальную цену для расчетов, если она есть
+            const basePrice = row.originalPrice > 0 ? row.originalPrice : row.price;
+            let priceWithCoeff = basePrice * (row.coefficient || 1.0);
+            let total = priceWithCoeff * (row.quantity || 1);
+            
+            // Применяем скидку (в процентах)
+            if (row.discount && row.discount > 0) {
+                total = total * (1 - row.discount / 100);
+            }
+            
+            return total;
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Формирование отображаемого имени с комментариями
+        function getDisplayName(row) {
+            let displayName = row.name || '';
+            
+            // Добавляем комментарий к коэффициенту
+            if (row.coefficient && row.coefficient !== 1.0 && row.coeffComment) {
+                displayName += ` (${row.coeffComment})`;
+            } else if (row.coefficient && row.coefficient !== 1.0) {
+                displayName += ` (коэф. ${row.coefficient})`;
+            }
+            
+            // Добавляем комментарий к скидке
+            if (row.discount && row.discount > 0 && row.discountComment) {
+                displayName += ` [${row.discountComment} -${row.discount}%]`;
+            } else if (row.discount && row.discount > 0) {
+                displayName += ` [скидка ${row.discount}%]`;
+            }
+            
+            // Добавляем общий комментарий
+            if (row.rowComment) {
+                displayName += ` — ${row.rowComment}`;
+            }
+            
+            return displayName;
+        }
+        // НОВАЯ ФУНКЦИЯ: Расчет итога строки с учетом коэффициента и скидки
+        function calculateRowTotal(row) {
+            if (!row.priceId && !row.isMaterial && !row.name) return 0;
+            
+            // Сохраняем оригинальную цену при первом расчете
+            if (row.originalPrice === 0 && row.price > 0) {
+                row.originalPrice = row.price;
+            }
+            
+            // Используем оригинальную цену для расчетов, если она есть
+            const basePrice = row.originalPrice > 0 ? row.originalPrice : row.price;
+            let priceWithCoeff = basePrice * (row.coefficient || 1.0);
+            let total = priceWithCoeff * (row.quantity || 1);
+            
+            // Применяем скидку (в процентах)
+            if (row.discount && row.discount > 0) {
+                total = total * (1 - row.discount / 100);
+            }
+            
+            return total;
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Формирование отображаемого имени с комментариями
+        function getDisplayName(row) {
+            let displayName = row.name || '';
+            
+            // Добавляем комментарий к коэффициенту
+            if (row.coefficient && row.coefficient !== 1.0 && row.coeffComment) {
+                displayName += ` (${row.coeffComment})`;
+            } else if (row.coefficient && row.coefficient !== 1.0) {
+                displayName += ` (коэф. ${row.coefficient})`;
+            }
+            
+            // Добавляем комментарий к скидке
+            if (row.discount && row.discount > 0 && row.discountComment) {
+                displayName += ` [${row.discountComment} -${row.discount}%]`;
+            } else if (row.discount && row.discount > 0) {
+                displayName += ` [скидка ${row.discount}%]`;
+            }
+            
+            // Добавляем общий комментарий
+            if (row.rowComment) {
+                displayName += ` — ${row.rowComment}`;
+            }
+            
+            return displayName;
+        }
+        // Рендеринг таблицы сметы (обновленная версия с коэффициентами)
+// Рендеринг таблицы сметы (обновленная версия с коэффициентами)
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ РЕНДЕРИНГА ТАБЛИЦЫ СМЕТЫ ==========
+function renderEstimateTable() {
+    const tableBody = document.getElementById('estimateTable');
+    if (!tableBody) {
+        console.error('Таблица сметы не найдена!');
+        return;
+    }
+    
+    tableBody.innerHTML = '';
+    
+    // Получаем ВСЕ строки из estimateData
+    const allRows = estimateData;
+    console.log(`Рендеринг ${allRows.length} строк сметы с коэффициентами`);
+    
+    // Рендерим ВСЕ строки
+    allRows.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        if (row.isMaterial) {
+            tr.classList.add('material-row');
+        }
+        
+        // ========== ИСПРАВЛЕННАЯ ЯЧЕЙКА С КОДОМ ==========
+        const priceIdCell = document.createElement('td');
+        priceIdCell.className = 'price-id-cell';
+        priceIdCell.style.cssText = `
+            text-align: center;
+            vertical-align: middle;
+            height: 36px;
+            padding: 2px 4px;
+        `;
+        
+        if (row.priceId && !isNaN(parseInt(row.priceId))) {
+            // Создаем контейнер для номера и иконки
+            const numberContainer = document.createElement('div');
+            numberContainer.style.cssText = `
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                width: 100%;
+                height: 32px;
+            `;
+            
+            // Создаем кликабельный номер
+            const numberSpan = document.createElement('span');
+            numberSpan.textContent = row.priceId;
+            numberSpan.style.cssText = `
+                cursor: pointer;
+                color: ${videoLinks[row.priceId] ? '#e74c3c' : '#3498db'};
+                font-weight: bold;
+                text-decoration: ${videoLinks[row.priceId] ? 'underline' : 'none'};
+                text-decoration-style: dotted;
+                padding: 2px 4px;
+                display: inline-block;
+                line-height: 1;
+            `;
+            
+            // Добавляем обработчик клика
+            numberSpan.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(`👆 Клик по номеру в смете: ${row.priceId}`);
+                playVideoByNumber(row.priceId);
+                return false;
+            };
+            
+            numberSpan.ontouchstart = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(`👆 Touch по номеру в смете: ${row.priceId}`);
+                playVideoByNumber(row.priceId);
+                return false;
+            };
+            
+            numberContainer.appendChild(numberSpan);
+            
+            // Добавляем иконку видео если есть
+            if (videoLinks[row.priceId]) {
+                const videoIcon = document.createElement('i');
+                videoIcon.className = 'fas fa-video';
+                videoIcon.style.cssText = `
+                    margin-left: 2px;
+                    font-size: 10px;
+                    color: #e74c3c;
+                    pointer-events: none;
+                `;
+                numberContainer.appendChild(videoIcon);
+            }
+            
+            priceIdCell.appendChild(numberContainer);
+        } else {
+            priceIdCell.textContent = row.priceId || '';
+            priceIdCell.style.lineHeight = '32px';
+        }
+        
+        // ========== ИСПРАВЛЕННАЯ ЯЧЕЙКА С НАИМЕНОВАНИЕМ ==========
+        const nameCell = document.createElement('td');
+        nameCell.className = 'search-cell';
+        nameCell.style.cssText = `
+            position: relative;
+            height: 36px;
+            padding: 2px 4px;
+        `;
+        
+        const nameContainer = document.createElement('div');
+        nameContainer.style.cssText = `
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            height: 32px;
+            width: 100%;
+            gap: 4px;
+        `;
+        
+        // Основное поле ввода
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.className = 'search-input';
+        searchInput.dataset.row = index;
+        searchInput.value = row.name || '';
+        searchInput.placeholder = row.isMaterial ? 'Материал...' : 'Начните вводить название...';
+        searchInput.autocomplete = 'off';
+        searchInput.style.cssText = `
+            flex: 1;
+            height: 28px;
+            padding: 0 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            line-height: 28px;
+            box-sizing: border-box;
+        `;
+        
+        // Контейнер для значков коэффициентов/скидок
+        const badgesContainer = document.createElement('div');
+        badgesContainer.className = 'row-modifiers';
+        badgesContainer.style.cssText = `
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 2px;
+            height: 28px;
+            align-items: center;
+        `;
+        
+        // Добавляем значки если есть модификаторы
+        if (row.coefficient && row.coefficient !== 1.0) {
+            const coeffBadge = document.createElement('span');
+            coeffBadge.className = 'coefficient-badge';
+            coeffBadge.title = row.coeffComment || `Коэффициент ${row.coefficient}`;
+            coeffBadge.textContent = `×${row.coefficient}`;
+            coeffBadge.style.cssText = `
+                display: inline-block;
+                background: #3498db;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-size: 10px;
+                font-weight: normal;
+                cursor: pointer;
+                height: 20px;
+                line-height: 16px;
+                white-space: nowrap;
+            `;
+            badgesContainer.appendChild(coeffBadge);
+        }
+        
+        if (row.discount && row.discount > 0) {
+            const discBadge = document.createElement('span');
+            discBadge.className = 'discount-badge';
+            discBadge.title = row.discountComment || `Скидка ${row.discount}%`;
+            discBadge.textContent = `-${row.discount}%`;
+            discBadge.style.cssText = `
+                display: inline-block;
+                background: #e74c3c;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-size: 10px;
+                font-weight: normal;
+                cursor: pointer;
+                height: 20px;
+                line-height: 16px;
+                white-space: nowrap;
+            `;
+            badgesContainer.appendChild(discBadge);
+        }
+        
+        if (row.rowComment) {
+            const commentBadge = document.createElement('span');
+            commentBadge.className = 'comment-badge';
+            commentBadge.title = row.rowComment;
+            commentBadge.innerHTML = '<i class="fas fa-comment"></i>';
+            commentBadge.style.cssText = `
+                display: inline-block;
+                background: #f39c12;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 10px;
+                font-size: 10px;
+                font-weight: normal;
+                cursor: pointer;
+                height: 20px;
+                line-height: 16px;
+                white-space: nowrap;
+            `;
+            badgesContainer.appendChild(commentBadge);
+        }
+        
+        nameContainer.appendChild(searchInput);
+        nameContainer.appendChild(badgesContainer);
+        
+        // Добавляем выпадающий список
+        const dropdown = document.createElement('div');
+        dropdown.className = 'dropdown';
+        dropdown.id = `dropdown-${index}`;
+        dropdown.style.cssText = `
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: none;
+        `;
+        
+        nameCell.appendChild(nameContainer);
+        nameCell.appendChild(dropdown);
+        
+        // Ячейка единицы измерения
+        const unitCell = document.createElement('td');
+        unitCell.className = 'unit-cell';
+        unitCell.textContent = row.unit || '';
+        unitCell.style.cssText = `
+            text-align: center;
+            vertical-align: middle;
+            height: 36px;
+            padding: 2px 4px;
+            line-height: 32px;
+        `;
+        
+        // Ячейка цены
+        const priceCell = document.createElement('td');
+        priceCell.className = 'price-cell';
+        priceCell.style.cssText = `
+            padding: 2px;
+            height: 36px;
+            vertical-align: middle;
+        `;
+        priceCell.innerHTML = `
+            <input type="number" class="number-input price-input" 
+                   data-row="${index}" 
+                   value="${row.price || ''}" 
+                   min="0" step="0.01"
+                   style="width: 100%; height: 32px; padding: 2px 4px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 0.85rem; box-sizing: border-box;">
+        `;
+        
+        // Ячейка количества
+        const quantityCell = document.createElement('td');
+        quantityCell.className = 'quantity-cell';
+        quantityCell.style.cssText = `
+            padding: 2px;
+            height: 36px;
+            vertical-align: middle;
+        `;
+        quantityCell.innerHTML = `
+            <input type="number" class="number-input quantity-input" 
+                   data-row="${index}" 
+                   value="${row.quantity || 1}" 
+                   min="1" step="1"
+                   style="width: 100%; height: 32px; padding: 2px 4px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 0.85rem; box-sizing: border-box;">
+        `;
+        
+        // Ячейка суммы
+        const totalCell = document.createElement('td');
+        totalCell.className = 'total-cell';
+        totalCell.style.cssText = `
+            cursor: pointer;
+            text-align: center;
+            vertical-align: middle;
+            height: 36px;
+            padding: 2px 4px;
+            font-weight: 600;
+            color: #27ae60;
+            line-height: 32px;
+        `;
+        totalCell.title = 'Нажмите для настройки коэффициента/скидки';
+        totalCell.dataset.row = index;
+        totalCell.textContent = formatCurrency(row.total);
+        
+        totalCell.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const rowIndex = parseInt(this.dataset.row);
+            if (estimateData[rowIndex] && (estimateData[rowIndex].priceId || estimateData[rowIndex].name)) {
+                openRowSettings(rowIndex);
+            } else {
+                showNotification('Сначала выберите позицию');
+            }
+        });
+        
+        // Ячейка действий
+        const actionsCell = document.createElement('td');
+        actionsCell.className = 'actions-cell';
+        actionsCell.style.cssText = `
+            text-align: center;
+            vertical-align: middle;
+            height: 36px;
+            padding: 2px 4px;
+            line-height: 32px;
+        `;
+        actionsCell.innerHTML = `<i class="fas fa-trash delete-row" data-row="${index}" style="color: #e74c3c; cursor: pointer; font-size: 1rem;"></i>`;
+        
+        // Добавляем все ячейки в строку
+        tr.appendChild(priceIdCell);
+        tr.appendChild(nameCell);
+        tr.appendChild(unitCell);
+        tr.appendChild(priceCell);
+        tr.appendChild(quantityCell);
+        tr.appendChild(totalCell);
+        tr.appendChild(actionsCell);
+        
+        tableBody.appendChild(tr);
+    });
+    
+    // Настраиваем обработчики событий для всех новых строк
+    setupRowEventListeners();
+}
+        // НОВАЯ ФУНКЦИЯ: Открытие модального окна настроек строки
+        function openRowSettings(rowIndex, activeTab = 'coefficient') {
+            const row = estimateData[rowIndex];
+            if (!row || (!row.priceId && !row.isMaterial && !row.name)) {
+                showNotification('Сначала выберите позицию');
                 return;
             }
             
-            tableBody.innerHTML = '';
+            currentRowIndex = rowIndex;
             
-            // Получаем ВСЕ строки из estimateData
-            const allRows = estimateData;
-            console.log(`Рендеринг ${allRows.length} строк сметы с видео-функционалом`);
+            // Заполняем поля
+            document.getElementById('rowCoefficient').value = row.coefficient || 1.0;
+            document.getElementById('rowCoeffComment').value = row.coeffComment || '';
+            document.getElementById('rowDiscount').value = row.discount || 0;
+            document.getElementById('rowDiscountComment').value = row.discountComment || '';
+            document.getElementById('rowComment').value = row.rowComment || '';
             
-            // Рендерим ВСЕ строки
-            allRows.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                if (row.isMaterial) {
-                    tr.classList.add('material-row');
+            // Обновляем предпросмотр суммы
+            updateRowPreview();
+            
+            // Переключаем вкладку
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === activeTab) {
+                    tab.classList.add('active');
                 }
-                
-                // Создаем ячейку с кодом, которая будет кликабельной если есть видео
-                const priceIdCell = document.createElement('td');
-                priceIdCell.className = 'price-id-cell';
-                
-                if (row.priceId && !isNaN(parseInt(row.priceId))) {
-                    // Это числовой ID (не материал)
-                    const numberSpan = document.createElement('span');
-                    numberSpan.textContent = row.priceId;
-                    numberSpan.style.cursor = 'pointer';
-                    numberSpan.style.color = '#3498db';
-                    numberSpan.style.fontWeight = 'bold';
-                    
-                    // Добавляем обработчик клика
-                    numberSpan.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        playVideoByNumber(row.priceId);
-                    });
-                    
-                    priceIdCell.appendChild(numberSpan);
-                    
-                    // Проверяем наличие видео
-                    checkVideoExists(row.priceId).then(exists => {
-                        if (exists) {
-                            numberSpan.style.color = '#e74c3c';
-                            numberSpan.style.textDecoration = 'underline';
-                            numberSpan.style.textDecorationStyle = 'dotted';
-                            
-                            // Добавляем иконку видео
-                            const videoIcon = document.createElement('i');
-                            videoIcon.className = 'fas fa-video';
-                            videoIcon.style.marginLeft = '5px';
-                            videoIcon.style.fontSize = '10px';
-                            videoIcon.style.color = '#e74c3c';
-                            priceIdCell.appendChild(videoIcon);
-                        }
-                    });
-                } else {
-                    // Это материал или пустая строка
-                    priceIdCell.textContent = row.priceId || '';
-                }
-                
-                // Создаем остальные ячейки
-                const nameCell = document.createElement('td');
-                nameCell.className = 'search-cell';
-                nameCell.innerHTML = `
-                    <input type="text" class="search-input" 
-                           data-row="${index}" 
-                           value="${row.name.replace(/"/g, '&quot;')}"
-                           placeholder="${row.isMaterial ? 'Материал...' : 'Начните вводить название...'}"
-                           autocomplete="off">
-                    <div class="dropdown" id="dropdown-${index}"></div>
-                `;
-                
-                const unitCell = document.createElement('td');
-                unitCell.className = 'unit-cell';
-                unitCell.textContent = row.unit || '';
-                
-                const priceCell = document.createElement('td');
-                priceCell.className = 'price-cell';
-                priceCell.innerHTML = `
-                    <input type="number" class="number-input price-input" 
-                           data-row="${index}" 
-                           value="${row.price || ''}" 
-                           min="0" step="0.01">
-                `;
-                
-                const quantityCell = document.createElement('td');
-                quantityCell.className = 'quantity-cell';
-                quantityCell.innerHTML = `
-                    <input type="number" class="number-input quantity-input" 
-                           data-row="${index}" 
-                           value="${row.quantity || 1}" 
-                           min="1" step="1">
-                `;
-                
-                const totalCell = document.createElement('td');
-                totalCell.className = 'total-cell';
-                totalCell.textContent = formatCurrency(row.total);
-                
-                const actionsCell = document.createElement('td');
-                actionsCell.className = 'actions-cell';
-                actionsCell.innerHTML = `<i class="fas fa-trash delete-row" data-row="${index}"></i>`;
-                
-                // Добавляем все ячейки в строку
-                tr.appendChild(priceIdCell);
-                tr.appendChild(nameCell);
-                tr.appendChild(unitCell);
-                tr.appendChild(priceCell);
-                tr.appendChild(quantityCell);
-                tr.appendChild(totalCell);
-                tr.appendChild(actionsCell);
-                
-                tableBody.appendChild(tr);
             });
             
-            // После рендеринга показываем сколько строк реально отрисовано
-            const renderedRows = tableBody.querySelectorAll('tr').length;
-            console.log(`Отображено ${renderedRows} строк в таблице`);
+            document.querySelectorAll('.settings-content').forEach(content => {
+                content.classList.remove('active');
+                document.getElementById(`${activeTab}Tab`).classList.add('active');
+            });
             
-            // Настраиваем обработчики событий для всех новых строк
-            setupRowEventListeners();
+            // Показываем модальное окно
+            document.getElementById('rowSettingsModal').style.display = 'flex';
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Обновление предпросмотра суммы в модальном окне
+        function updateRowPreview() {
+            if (currentRowIndex === -1) return;
+            
+            const row = estimateData[currentRowIndex];
+            const coeff = parseFloat(document.getElementById('rowCoefficient').value) || 1.0;
+            const discount = parseFloat(document.getElementById('rowDiscount').value) || 0;
+            const quantity = row.quantity || 1;
+            
+            // Используем оригинальную цену или текущую
+            const basePrice = row.originalPrice > 0 ? row.originalPrice : row.price;
+            let priceWithCoeff = basePrice * coeff;
+            let total = priceWithCoeff * quantity;
+            
+            if (discount > 0) {
+                total = total * (1 - discount / 100);
+            }
+            
+            const previewEl = document.getElementById('rowTotalPreview');
+            previewEl.innerHTML = `
+                <span class="base-price">база: ${formatCurrency(basePrice)} руб.</span>
+                Итог: ${formatCurrency(total)} руб.
+            `;
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Применение настроек строки
+        function applyRowSettings() {
+            if (currentRowIndex === -1) {
+                document.getElementById('rowSettingsModal').style.display = 'none';
+                return;
+            }
+            
+            const row = estimateData[currentRowIndex];
+            
+            // Сохраняем оригинальную цену если еще не сохранена
+            if (row.originalPrice === 0 && row.price > 0) {
+                row.originalPrice = row.price;
+            }
+            
+            // Обновляем поля
+            row.coefficient = parseFloat(document.getElementById('rowCoefficient').value) || 1.0;
+            row.coeffComment = document.getElementById('rowCoeffComment').value;
+            row.discount = parseFloat(document.getElementById('rowDiscount').value) || 0;
+            row.discountComment = document.getElementById('rowDiscountComment').value;
+            row.rowComment = document.getElementById('rowComment').value;
+            
+            // Пересчитываем итог строки
+            row.total = calculateRowTotal(row);
+            
+            // Обновляем отображение
+            renderEstimateTable();
+            updateTotals();
+            updateEstimateCounter();
+            
+            document.getElementById('rowSettingsModal').style.display = 'none';
+            showNotification('Настройки применены');
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Очистка настроек строки
+        function clearRowSettings() {
+            if (currentRowIndex === -1) return;
+            
+            const row = estimateData[currentRowIndex];
+            
+            // Сбрасываем поля
+            row.coefficient = 1.0;
+            row.coeffComment = '';
+            row.discount = 0;
+            row.discountComment = '';
+            row.rowComment = '';
+            
+            // Восстанавливаем оригинальную цену если была
+            if (row.originalPrice > 0) {
+                row.price = row.originalPrice;
+            }
+            
+            // Пересчитываем итог
+            row.total = row.price * row.quantity;
+            
+            // Обновляем отображение
+            renderEstimateTable();
+            updateTotals();
+            updateEstimateCounter();
+            
+            // Скрываем модальное окно
+            document.getElementById('rowSettingsModal').style.display = 'none';
+            showNotification('Настройки сброшены');
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Обновление глобальных итогов с учетом глобальных настроек
+        function updateTotals() {
+            // Базовая сумма всех строк
+            const baseTotal = estimateData.reduce((sum, row) => sum + row.total, 0);
+            document.getElementById('baseTotalAmount').textContent = formatCurrency(baseTotal);
+            
+            // Получаем глобальные настройки
+            const globalDiscount = parseFloat(document.getElementById('globalDiscount').value) || 0;
+            const globalCoeff = parseFloat(document.getElementById('globalCoefficient').value) || 1.0;
+            const globalComment = document.getElementById('globalComment').value;
+            
+            let finalTotal = baseTotal;
+            
+            // Применяем глобальный коэффициент
+            if (globalCoeff !== 1.0) {
+                finalTotal = finalTotal * globalCoeff;
+                document.getElementById('coefficientRow').style.display = 'flex';
+                document.getElementById('coefficientValue').textContent = globalCoeff;
+                document.getElementById('coefficientAdjustment').textContent = 
+                    formatCurrency(finalTotal - baseTotal);
+            } else {
+                document.getElementById('coefficientRow').style.display = 'none';
+            }
+            
+            // Применяем глобальную скидку
+            if (globalDiscount > 0) {
+                const discountAmount = finalTotal * (globalDiscount / 100);
+                finalTotal = finalTotal - discountAmount;
+                
+                document.getElementById('discountRow').style.display = 'flex';
+                document.getElementById('discountPercent').textContent = globalDiscount;
+                document.getElementById('discountAmount').textContent = '-' + formatCurrency(discountAmount);
+            } else {
+                document.getElementById('discountRow').style.display = 'none';
+            }
+            
+            // Показываем глобальный комментарий
+            if (globalComment) {
+                document.getElementById('globalCommentRow').style.display = 'flex';
+                document.getElementById('globalCommentText').innerHTML = 
+                    `<i class="fas fa-comment"></i> ${globalComment}`;
+            } else {
+                document.getElementById('globalCommentRow').style.display = 'none';
+            }
+            
+            document.getElementById('totalAmount').textContent = formatCurrency(finalTotal);
+        }
+
+        // НОВЫЕ ФУНКЦИИ ДЛЯ МАСШТАБИРОВАНИЯ
+        function loadZoomFactor() {
+            const savedZoom = localStorage.getItem('estimate_zoom');
+            if (savedZoom) {
+                zoomFactor = parseFloat(savedZoom);
+                if (zoomFactor < MIN_ZOOM) zoomFactor = MIN_ZOOM;
+                if (zoomFactor > MAX_ZOOM) zoomFactor = MAX_ZOOM;
+            }
+            applyZoom();
+        }
+        
+        function saveZoomFactor() {
+            localStorage.setItem('estimate_zoom', zoomFactor.toString());
+        }
+        
+function applyZoom() {
+    const scalable = document.getElementById('estimateScalable');
+    if (scalable) {
+        scalable.style.transform = `scale(${zoomFactor})`;
+        document.getElementById('zoomPercent').textContent = Math.round(zoomFactor * 100) + '%';
+        
+        // Важно: при масштабировании ширина остается fit-content
+        scalable.style.width = 'fit-content';
+    }
+}
+        
+        function zoomIn() {
+            if (zoomFactor < MAX_ZOOM) {
+                zoomFactor = Math.min(zoomFactor + 0.05, MAX_ZOOM);
+                applyZoom();
+                saveZoomFactor();
+            }
+        }
+        
+        function zoomOut() {
+            if (zoomFactor > MIN_ZOOM) {
+                zoomFactor = Math.max(zoomFactor - 0.05, MIN_ZOOM);
+                applyZoom();
+                saveZoomFactor();
+            }
+        }
+        
+        function zoomReset() {
+            zoomFactor = 1.0;
+            applyZoom();
+            saveZoomFactor();
         }
 
         function setupEventListeners() {
@@ -3533,10 +4898,6 @@ document.getElementById('refreshEstimateBtn').addEventListener('click', async fu
                     saveAsPDF();
                     menu.classList.remove('show');
                 });
-                
-                document.getElementById('printPriceBtn').addEventListener('click', function() {
-                    printPriceList();
-                });
             }
             
             // Модальные окна
@@ -3560,11 +4921,45 @@ document.getElementById('refreshEstimateBtn').addEventListener('click', async fu
                 generatePrint();
             });
             
-            // Закрытие модальных окон при клике на фон
-            window.addEventListener('click', function(e) {
-                if (e.target.classList.contains('modal')) {
-                    e.target.style.display = 'none';
-                }
+			// Закрытие модальных окон при клике на фон (ТОЛЬКО на сам фон)
+			window.addEventListener('click', function(e) {
+			// Проверяем, что кликнули именно на фон (сам modal), а не на его содержимое
+				if (e.target.classList.contains('modal')) {
+					e.target.style.display = 'none';
+			}
+			});
+            
+            // НОВЫЕ ОБРАБОТЧИКИ ДЛЯ МАСШТАБИРОВАНИЯ
+            document.getElementById('zoomIn').addEventListener('click', zoomIn);
+            document.getElementById('zoomOut').addEventListener('click', zoomOut);
+            document.getElementById('zoomReset').addEventListener('click', zoomReset);
+            
+            // НОВЫЕ ОБРАБОТЧИКИ ДЛЯ ГЛОБАЛЬНЫХ НАСТРОЕК
+            document.getElementById('globalDiscount').addEventListener('input', updateTotals);
+            document.getElementById('globalCoefficient').addEventListener('input', updateTotals);
+            document.getElementById('globalComment').addEventListener('input', updateTotals);
+            
+            // НОВЫЕ ОБРАБОТЧИКИ ДЛЯ МОДАЛЬНОГО ОКНА НАСТРОЕК СТРОКИ
+            document.getElementById('closeRowSettingsModal').addEventListener('click', function() {
+                document.getElementById('rowSettingsModal').style.display = 'none';
+            });
+            
+            document.getElementById('applyRowSettings').addEventListener('click', applyRowSettings);
+            document.getElementById('clearRowSettings').addEventListener('click', clearRowSettings);
+            
+            // Обновление предпросмотра при изменении полей
+            document.getElementById('rowCoefficient').addEventListener('input', updateRowPreview);
+            document.getElementById('rowDiscount').addEventListener('input', updateRowPreview);
+            
+            // Переключение вкладок в модальном окне
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    document.querySelectorAll('.settings-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById(`${this.dataset.tab}Tab`).classList.add('active');
+                });
             });
             
             console.log('Обработчики событий настроены');
@@ -3604,14 +4999,14 @@ document.getElementById('refreshEstimateBtn').addEventListener('click', async fu
                 }
             });
             
-            // Изменение цены
-            document.querySelectorAll('.price-input').forEach(input => {
-                input.addEventListener('change', function() {
-                    const rowIndex = parseInt(this.dataset.row);
-                    updateRowTotal(rowIndex);
-                    updateEstimateCounter();
-                });
-            });
+// Изменение цены
+document.querySelectorAll('.price-input').forEach(input => {
+    input.addEventListener('input', function() {  // change → input
+        const rowIndex = parseInt(this.dataset.row);
+        updateRowTotal(rowIndex);
+        updateEstimateCounter();
+    });
+});
             
             // Изменение количества
             document.querySelectorAll('.quantity-input').forEach(input => {
@@ -3643,17 +5038,30 @@ document.getElementById('refreshEstimateBtn').addEventListener('click', async fu
                 emptyRowIndex = estimateData.length - 1;
             }
             
-            // Заполняем строку
+            // Заполняем строку с сохранением коэффициентов
             estimateData[emptyRowIndex] = {
                 ...estimateData[emptyRowIndex],
                 priceId: item.id,
                 name: item.name,
                 unit: item.unit,
                 price: item.price,
+                originalPrice: item.price,
                 quantity: 1,
                 total: item.price,
-                isMaterial: false
+                isMaterial: false,
+                
+                // Сохраняем существующие коэффициенты если были
+                coefficient: estimateData[emptyRowIndex].coefficient || 1.0,
+                coeffComment: estimateData[emptyRowIndex].coeffComment || '',
+                discount: estimateData[emptyRowIndex].discount || 0,
+                discountComment: estimateData[emptyRowIndex].discountComment || '',
+                rowComment: estimateData[emptyRowIndex].rowComment || ''
             };
+            
+            // Применяем коэффициенты если они есть
+            if (estimateData[emptyRowIndex].coefficient !== 1.0 || estimateData[emptyRowIndex].discount > 0) {
+                estimateData[emptyRowIndex].total = calculateRowTotal(estimateData[emptyRowIndex]);
+            }
             
             renderEstimateTable();
             updateTotals();
@@ -3671,7 +5079,15 @@ function addEmptyRow() {
         quantity: 1,
         total: 0,
         notes: "",
-        isMaterial: false
+        isMaterial: false,
+        
+        // Новые поля
+        coefficient: 1.0,
+        coeffComment: "",
+        discount: 0,
+        discountComment: "",
+        rowComment: "",
+        originalPrice: 0
     });
     
     renderEstimateTable();
@@ -3695,29 +5111,37 @@ function addEmptyRow() {
             updateTotals();
         }
 
-        function updateRowTotal(rowIndex) {
-            const priceInput = document.querySelector(`.price-input[data-row="${rowIndex}"]`);
-            const quantityInput = document.querySelector(`.quantity-input[data-row="${rowIndex}"]`);
-            
-            const price = parseFloat(priceInput.value) || 0;
-            const quantity = parseInt(quantityInput.value) || 1;
-            
-            estimateData[rowIndex].price = price;
-            estimateData[rowIndex].quantity = quantity;
-            estimateData[rowIndex].total = price * quantity;
-            
-            const totalCell = document.querySelector(`tr:nth-child(${rowIndex + 1}) .total-cell`);
-            if (totalCell) {
-                totalCell.textContent = formatCurrency(estimateData[rowIndex].total);
-            }
-            
-            updateTotals();
-        }
-
-        function updateTotals() {
-            const totalAmount = estimateData.reduce((sum, row) => sum + row.total, 0);
-            document.getElementById('totalAmount').textContent = formatCurrency(totalAmount);
-        }
+function updateRowTotal(rowIndex) {
+    console.log('updateRowTotal вызвана для строки:', rowIndex);
+    
+    const priceInput = document.querySelector(`.price-input[data-row="${rowIndex}"]`);
+    const quantityInput = document.querySelector(`.quantity-input[data-row="${rowIndex}"]`);
+    
+    console.log('priceInput:', priceInput);
+    console.log('quantityInput:', quantityInput);
+    
+    const price = parseFloat(priceInput.value) || 0;
+    const quantity = parseInt(quantityInput.value) || 1;
+    
+    console.log('Новая цена:', price);
+    console.log('Количество:', quantity);
+    
+    estimateData[rowIndex].price = price;
+    estimateData[rowIndex].originalPrice = price;  // ВСЕГДА обновляем originalPrice
+    estimateData[rowIndex].quantity = quantity;
+    
+    // Пересчитываем с учетом коэффициентов
+    estimateData[rowIndex].total = calculateRowTotal(estimateData[rowIndex]);
+    
+    console.log('Новый total:', estimateData[rowIndex].total);
+    
+    const totalCell = document.querySelector(`tr:nth-child(${rowIndex + 1}) .total-cell`);
+    if (totalCell) {
+        totalCell.textContent = formatCurrency(estimateData[rowIndex].total);
+    }
+    
+    updateTotals();
+}
 
         function updateEstimateCounter() {
             const filledRows = estimateData.filter(row => 
@@ -3735,7 +5159,131 @@ function addEmptyRow() {
                 counterElement.style.backgroundColor = '#27ae60';
             }
         }
+        // НОВАЯ ФУНКЦИЯ: Открытие модального окна настроек строки
+        function openRowSettings(rowIndex, activeTab = 'coefficient') {
+            const row = estimateData[rowIndex];
+            if (!row || (!row.priceId && !row.isMaterial && !row.name)) {
+                showNotification('Сначала выберите позицию');
+                return;
+            }
+            
+            currentRowIndex = rowIndex;
+            
+            // Заполняем поля
+            document.getElementById('rowCoefficient').value = row.coefficient || 1.0;
+            document.getElementById('rowCoeffComment').value = row.coeffComment || '';
+            document.getElementById('rowDiscount').value = row.discount || 0;
+            document.getElementById('rowDiscountComment').value = row.discountComment || '';
+            document.getElementById('rowComment').value = row.rowComment || '';
+            
+            // Обновляем предпросмотр суммы
+            updateRowPreview();
+            
+            // Переключаем вкладку
+            document.querySelectorAll('.settings-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === activeTab) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            document.querySelectorAll('.settings-content').forEach(content => {
+                content.classList.remove('active');
+                document.getElementById(`${activeTab}Tab`).classList.add('active');
+            });
+            
+            // Показываем модальное окно
+            document.getElementById('rowSettingsModal').style.display = 'flex';
+        }
 
+        // НОВАЯ ФУНКЦИЯ: Обновление предпросмотра суммы в модальном окне
+        function updateRowPreview() {
+            if (currentRowIndex === -1) return;
+            
+            const row = estimateData[currentRowIndex];
+            const coeff = parseFloat(document.getElementById('rowCoefficient').value) || 1.0;
+            const discount = parseFloat(document.getElementById('rowDiscount').value) || 0;
+            const quantity = row.quantity || 1;
+            
+            // Используем оригинальную цену или текущую
+            const basePrice = row.originalPrice > 0 ? row.originalPrice : row.price;
+            let priceWithCoeff = basePrice * coeff;
+            let total = priceWithCoeff * quantity;
+            
+            if (discount > 0) {
+                total = total * (1 - discount / 100);
+            }
+            
+            const previewEl = document.getElementById('rowTotalPreview');
+            previewEl.innerHTML = `
+                <span class="base-price">база: ${formatCurrency(basePrice)} руб.</span>
+                Итог: ${formatCurrency(total)} руб.
+            `;
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Применение настроек строки
+        function applyRowSettings() {
+            if (currentRowIndex === -1) {
+                document.getElementById('rowSettingsModal').style.display = 'none';
+                return;
+            }
+            
+            const row = estimateData[currentRowIndex];
+            
+            // Сохраняем оригинальную цену если еще не сохранена
+            if (row.originalPrice === 0 && row.price > 0) {
+                row.originalPrice = row.price;
+            }
+            
+            // Обновляем поля
+            row.coefficient = parseFloat(document.getElementById('rowCoefficient').value) || 1.0;
+            row.coeffComment = document.getElementById('rowCoeffComment').value;
+            row.discount = parseFloat(document.getElementById('rowDiscount').value) || 0;
+            row.discountComment = document.getElementById('rowDiscountComment').value;
+            row.rowComment = document.getElementById('rowComment').value;
+            
+            // Пересчитываем итог строки
+            row.total = calculateRowTotal(row);
+            
+            // Обновляем отображение
+            renderEstimateTable();
+            updateTotals();
+            updateEstimateCounter();
+            
+            document.getElementById('rowSettingsModal').style.display = 'none';
+            showNotification('Настройки применены');
+        }
+
+        // НОВАЯ ФУНКЦИЯ: Очистка настроек строки
+        function clearRowSettings() {
+            if (currentRowIndex === -1) return;
+            
+            const row = estimateData[currentRowIndex];
+            
+            // Сбрасываем поля
+            row.coefficient = 1.0;
+            row.coeffComment = '';
+            row.discount = 0;
+            row.discountComment = '';
+            row.rowComment = '';
+            
+            // Восстанавливаем оригинальную цену если была
+            if (row.originalPrice > 0) {
+                row.price = row.originalPrice;
+            }
+            
+            // Пересчитываем итог
+            row.total = row.price * row.quantity;
+            
+            // Обновляем отображение
+            renderEstimateTable();
+            updateTotals();
+            updateEstimateCounter();
+            
+            // Скрываем модальное окно
+            document.getElementById('rowSettingsModal').style.display = 'none';
+            showNotification('Настройки сброшены');
+        }
 function clearEstimate() {
     if (confirm('Вы уверены, что хотите очистить всю смету?')) {
         estimateData = [{
@@ -3747,7 +5295,15 @@ function clearEstimate() {
             quantity: 1,
             total: 0,
             notes: "",
-            isMaterial: false
+            isMaterial: false,
+            
+            // Новые поля
+            coefficient: 1.0,
+            coeffComment: "",
+            discount: 0,
+            discountComment: "",
+            rowComment: "",
+            originalPrice: 0
         }];
         
         renderEstimateTable();
@@ -3796,10 +5352,18 @@ function clearEstimate() {
                 name: name,
                 unit: unit,
                 price: price,
+                originalPrice: price,
                 quantity: quantity,
                 total: price * quantity,
                 notes: "",
-                isMaterial: true
+                isMaterial: true,
+                
+                // Новые поля
+                coefficient: 1.0,
+                coeffComment: "",
+                discount: 0,
+                discountComment: "",
+                rowComment: ""
             };
             
             renderEstimateTable();
@@ -3882,8 +5446,11 @@ function clearEstimate() {
                 estimateData[rowIndex].name = item.name;
                 estimateData[rowIndex].unit = item.unit;
                 estimateData[rowIndex].price = item.price;
-                estimateData[rowIndex].total = item.price * estimateData[rowIndex].quantity;
+                estimateData[rowIndex].originalPrice = item.price;
                 estimateData[rowIndex].isMaterial = false;
+                
+                // Пересчитываем с учетом коэффициентов
+                estimateData[rowIndex].total = calculateRowTotal(estimateData[rowIndex]);
                 
                 const totalCell = document.querySelector(`tr:nth-child(${rowIndex + 1}) .total-cell`);
                 if (totalCell) {
@@ -3909,10 +5476,24 @@ function saveEstimate() {
             id: Date.now(),
             name: estimateName,
             date: new Date().toISOString(),
-            data: filledRows.map(row => ({ ...row })), // Сохраняем только заполненные
+            data: filledRows.map(row => ({ 
+                ...row,
+                // Сохраняем все поля включая новые
+                originalPrice: row.originalPrice || row.price
+            })),
             totals: {
                 totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
-            }
+            },
+            
+            // Сохраняем глобальные настройки
+            globalSettings: {
+                discount: parseFloat(document.getElementById('globalDiscount').value) || 0,
+                coefficient: parseFloat(document.getElementById('globalCoefficient').value) || 1.0,
+                comment: document.getElementById('globalComment').value || ''
+            },
+            
+            // Сохраняем масштаб
+            zoom: zoomFactor
         };
         
         savedEstimates.push(estimateToSave);
@@ -3971,16 +5552,22 @@ function loadEstimate(estimateId) {
     if (estimate) {
         console.log('Найдена смета:', estimate.name);
         console.log('Количество строк в сохраненной смете:', estimate.data.length);
-        console.log('Все сохраненные строки:', estimate.data);
         
-        // ВАЖНО: Очищаем текущие данные
+        // Очищаем текущие данные
         estimateData = [];
         
-        // Загружаем ВСЕ сохраненные данные точно как они были сохранены
+        // Загружаем ВСЕ сохраненные данные
         estimate.data.forEach((item, index) => {
             estimateData.push({ 
                 ...item,
-                id: index + 1  // Пересчитываем ID
+                id: index + 1,  // Пересчитываем ID
+                // Убеждаемся что все новые поля есть
+                coefficient: item.coefficient || 1.0,
+                coeffComment: item.coeffComment || '',
+                discount: item.discount || 0,
+                discountComment: item.discountComment || '',
+                rowComment: item.rowComment || '',
+                originalPrice: item.originalPrice || item.price || 0
             });
         });
         
@@ -3996,12 +5583,32 @@ function loadEstimate(estimateId) {
                 quantity: 1,
                 total: 0,
                 notes: "",
-                isMaterial: false
+                isMaterial: false,
+                coefficient: 1.0,
+                coeffComment: "",
+                discount: 0,
+                discountComment: "",
+                rowComment: "",
+                originalPrice: 0
             });
         }
         
+        // Загружаем глобальные настройки если есть
+        if (estimate.globalSettings) {
+            document.getElementById('globalDiscount').value = estimate.globalSettings.discount || 0;
+            document.getElementById('globalCoefficient').value = estimate.globalSettings.coefficient || 1.0;
+            document.getElementById('globalComment').value = estimate.globalSettings.comment || '';
+        }
+        
+        // Загружаем масштаб если есть
+        if (estimate.zoom) {
+            zoomFactor = estimate.zoom;
+            if (zoomFactor < MIN_ZOOM) zoomFactor = MIN_ZOOM;
+            if (zoomFactor > MAX_ZOOM) zoomFactor = MAX_ZOOM;
+            applyZoom();
+        }
+        
         console.log('Данные загружены в estimateData:', estimateData.length, 'строк');
-        console.log('Первые 10 строк загруженных данных:', estimateData.slice(0, 10));
         
         // Рендерим таблицу
         renderEstimateTable();
@@ -4028,10 +5635,15 @@ function loadEstimate(estimateId) {
             
             document.getElementById('printModal').style.display = 'flex';
         }
-				// ==========  ФУНКЦИИ ПЕЧАТИ==========
+                // ==========  ФУНКЦИИ ПЕЧАТИ==========
 // Новая функция, которая показывает HTML для печати И предлагает PDF
 function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: оставляем старое имя!
+    const executorName = document.getElementById('executorName').value || 'ЭлектроСмета';
+    const executorInn = document.getElementById('executorInn').value || '';
+    const executorPhone = document.getElementById('executorPhone').value || '+7 (963) 598-48-46';
     const clientName = document.getElementById('clientName').value || 'Клиент не указан';
+    const clientContacts = document.getElementById('clientContacts').value || '';
+    const projectName = document.getElementById('projectName').value || '';
     const estimateNumber = document.getElementById('estimateNumber').value;
     const estimateDate = document.getElementById('estimateDate').value;
     const notes = document.getElementById('notes').value;
@@ -4043,7 +5655,17 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
         return;
     }
     
-    const totalAmount = filledRows.reduce((sum, row) => sum + row.total, 0);
+    // Получаем глобальные настройки
+    const globalDiscount = parseFloat(document.getElementById('globalDiscount').value) || 0;
+    const globalCoeff = parseFloat(document.getElementById('globalCoefficient').value) || 1.0;
+    const globalComment = document.getElementById('globalComment').value;
+    
+    // Рассчитываем итоги с учетом глобальных настроек
+    const baseTotal = filledRows.reduce((sum, row) => sum + row.total, 0);
+    let finalTotal = baseTotal;
+    
+    if (globalCoeff !== 1.0) finalTotal = finalTotal * globalCoeff;
+    if (globalDiscount > 0) finalTotal = finalTotal * (1 - globalDiscount / 100);
     
     // Создаем HTML с выбором: Печать ИЛИ PDF
     const printContent = `
@@ -4061,11 +5683,40 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
                     padding: 30px; 
                     box-shadow: 0 0 20px rgba(0,0,0,0.1);
                 }
-                .header { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #3498db; padding-bottom: 20px; }
-                table { width: 100%; border-collapse: collapse; margin: 25px 0; }
-                th, td { border: 1px solid #ddd; padding: 10px; }
-                th { background: #2c3e50; color: white; }
-                .total { text-align: right; font-size: 18px; font-weight: bold; margin: 25px 0; color: #27ae60; }
+                .header { text-align: center;
+				margin-bottom: 30px;
+				border-bottom: 3px solid #3498db;
+				padding-bottom: 20px;
+				}
+				
+				table { 
+					width: 100%; 
+					border-collapse: collapse; 
+					margin: 10px 0;  /* Было 25px */
+					font-size: 9px;  /* Добавили */
+				}
+                .modifier-note { color: #666; font-size: 11px; margin-left: 5px; }
+                
+				th, td { 
+					border: 1px solid #ddd; 
+					padding: 3px 2px;  /* Было 10px */
+				}
+				th { 
+					background: #2c3e50; 
+					color: white; 
+					font-size: 9px;  /* Добавили */
+				}
+				.total { 
+					text-align: right; 
+					font-size: 12px;  /* Было 18px */
+					font-weight: bold; 
+					margin: 10px 0;  /* Было 25px */
+					color: #27ae60; 
+				}
+				.global-panel { 
+					font-size: 9px;  /* Добавили */
+					padding: 5px;  /* Добавили */
+				}
                 .controls {
                     position: fixed;
                     top: 20px;
@@ -4094,6 +5745,31 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
                     body { background: white; }
                     .print-container { box-shadow: none; padding: 0; }
                 }
+				/* Стили для модального окна печати */
+#printModal h4 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#printModal .form-group {
+    margin-bottom: 10px;
+}
+
+#printModal label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 3px;
+}
+
+#printModal input,
+#printModal textarea {
+    font-size: 13px;
+    padding: 8px 10px;
+}
             </style>
         </head>
         <body>
@@ -4111,15 +5787,37 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
             
             <div class="print-container">
                 <div class="header">
+				<div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+    <div style="width: 48%;">
+        <strong style="color: #2c3e50;">ИСПОЛНИТЕЛЬ:</strong><br>
+        ${executorName}<br>
+        ${executorInn ? `ИНН: ${executorInn}<br>` : ''}
+        ${executorPhone ? `Тел.: ${executorPhone}` : ''}
+    </div>
+    <div style="width: 48%; text-align: right;">
+        <strong style="color: #2c3e50;">ЗАКАЗЧИК:</strong><br>
+        ${clientName}<br>
+        ${clientContacts ? `${clientContacts}<br>` : ''}
+        ${projectName ? `Объект: ${projectName}` : ''}
+    </div>
+</div>
                     <h1 style="color: #2c3e50;">СМЕТА № ${estimateNumber}</h1>
                     <div style="font-size: 16px; margin: 10px 0;"><strong>Клиент:</strong> ${clientName}</div>
                     <div style="font-size: 16px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
                 </div>
                 
+                ${(globalDiscount > 0 || globalCoeff !== 1.0 || globalComment) ? `
+                <div class="global-panel">
+                    <strong>Общие настройки:</strong><br>
+                    ${globalDiscount > 0 ? `Скидка: ${globalDiscount}%<br>` : ''}
+                    ${globalCoeff !== 1.0 ? `Коэффициент: ${globalCoeff}<br>` : ''}
+                    ${globalComment ? `Комментарий: ${globalComment}` : ''}
+                </div>
+                ` : ''}
+                
                 <table>
                     <thead>
                         <tr>
-                            <th>№</th>
                             <th>Код</th>
                             <th>Наименование</th>
                             <th>Ед.</th>
@@ -4129,22 +5827,54 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
                         </tr>
                     </thead>
                     <tbody>
-                        ${filledRows.map((row, index) => `
+                        ${filledRows.map((row, index) => {
+                            // Формируем полное наименование с комментариями
+                            let fullName = row.name || '';
+                            if (row.coefficient && row.coefficient !== 1.0) {
+                                fullName += ` <span class="modifier-note">[коэф. ${row.coefficient}${row.coeffComment ? ': ' + row.coeffComment : ''}]</span>`;
+                            }
+                            if (row.discount && row.discount > 0) {
+                                fullName += ` <span class="modifier-note">[скидка ${row.discount}%${row.discountComment ? ': ' + row.discountComment : ''}]</span>`;
+                            }
+                            if (row.rowComment) {
+                                fullName += ` <span class="modifier-note">— ${row.rowComment}</span>`;
+                            }
+                            
+                            return `
                             <tr>
-                                <td>${index + 1}</td>
+
                                 <td><strong>${row.priceId || ''}</strong></td>
-                                <td>${row.name || ''}</td>
+                                <td>${fullName}</td>
                                 <td>${row.unit || ''}</td>
                                 <td>${formatCurrency(row.price)}</td>
                                 <td>${row.quantity}</td>
                                 <td><strong style="color: #27ae60;">${formatCurrency(row.total)}</strong></td>
                             </tr>
-                        `).join('')}
+                        `}).join('')}
                     </tbody>
                 </table>
                 
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <div style="text-align: right; font-size: 16px; margin-bottom: 5px;">
+                        <span style="color: #666;">Базовая сумма:</span>
+                        <strong>${formatCurrency(baseTotal)} руб.</strong>
+                    </div>
+                    ${globalCoeff !== 1.0 ? `
+                    <div style="text-align: right; font-size: 16px; margin-bottom: 5px;">
+                        <span style="color: #666;">С учетом коэффициента ${globalCoeff}:</span>
+                        <strong>${formatCurrency(baseTotal * globalCoeff)} руб.</strong>
+                    </div>
+                    ` : ''}
+                    ${globalDiscount > 0 ? `
+                    <div style="text-align: right; font-size: 16px; margin-bottom: 5px;">
+                        <span style="color: #666;">Скидка ${globalDiscount}%:</span>
+                        <strong>-${formatCurrency(baseTotal * globalCoeff * (globalDiscount / 100))} руб.</strong>
+                    </div>
+                    ` : ''}
+                </div>
+                
                 <div class="total">
-                    ИТОГО: ${formatCurrency(totalAmount)} руб.
+                    ИТОГО: ${formatCurrency(finalTotal)} руб.
                 </div>
                 
                 ${notes ? `<div style="background: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 20px 0;">
@@ -4493,60 +6223,158 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
     loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Создание PDF...';
     document.body.appendChild(loadingDiv);
     
-    // Создаем временный контейнер для PDF
-    const tempContainer = document.createElement('div');
-    tempContainer.style.cssText = `
-        position: fixed;
-        left: -9999px;
-        top: -9999px;
-        width: 210mm;
-        padding: 15mm;
-        background: white;
-        font-family: Arial, sans-serif;
-        font-size: 12px;
-    `;
+    // Получаем глобальные настройки
+    const globalDiscount = parseFloat(document.getElementById('globalDiscount').value) || 0;
+    const globalCoeff = parseFloat(document.getElementById('globalCoefficient').value) || 1.0;
+    const globalComment = document.getElementById('globalComment').value;
     
-    // Формируем содержимое
-    let pdfContent = `
-        <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px;">
-            <h1 style="margin: 0 0 10px 0; font-size: 24px;">СМЕТА № ${estimateNumber}</h1>
-            <div style="font-size: 16px;"><strong>Клиент:</strong> ${clientName}</div>
-            <div style="font-size: 14px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
-        </div>
-        <table style="width: 110%; margin-left: -30px; border-collapse: collapse; font-size: 10px;">
-            <thead>
-                <tr style="background: #f0f0f0; height: 20px;">  <!-- ← добавили height -->
-                    <th style="border: 1px solid #000; padding: 6px; width: 5%; text-align: center;">Код</th>
-                    <th style="border: 1px solid #000; padding: 6px;">Наименование</th>
-                    <th style="border: 1px solid #000; padding: 6px; width: 7%; text-align: center;">Ед.</th>
-                    <th style="border: 1px solid #000; padding: 6px; width: 12%;">Цена, руб.</th>
-                    <th style="border: 1px solid #000; padding: 6px; width: 8%;">Кол</th>
-                    <th style="border: 1px solid #000; padding: 6px; width: 12%;">Сумма, руб.</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    // Рассчитываем итоги
+    const baseTotal = filledRows.reduce((sum, row) => sum + row.total, 0);
+    let finalTotal = baseTotal;
+    
+    if (globalCoeff !== 1.0) finalTotal = finalTotal * globalCoeff;
+    if (globalDiscount > 0) finalTotal = finalTotal * (1 - globalDiscount / 100);
+    
+// Создаем временный контейнер для PDF
+const tempContainer = document.createElement('div');
+tempContainer.style.cssText = `
+    position: fixed;
+    left: -9999px;
+    top: -9999px;
+    width: 300mm;  /* Увеличили ширину для масштабирования */
+    padding: 1mm;
+    background: white;
+    font-family: Arial, sans-serif;
+    transform: scale(0.7);  /* Масштаб 70% */
+    transform-origin: top left;
+`;
+
+// Добавляем стили для таблицы
+const style = document.createElement('style');
+style.textContent = `
+    table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+    }
+    th, td {
+        border: 1px solid #000 !important;
+        padding: 1px 2px !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        vertical-align: middle !important;
+        font-size: 11px !important;
+    }
+    th {
+        background: #f0f0f0 !important;
+        font-weight: bold !important;
+        text-align: center !important;
+    }
+    /* Принудительные ширины */
+    th:nth-child(1), td:nth-child(1) { width: 30px !important; max-width: 30px !important; }
+    th:nth-child(2), td:nth-child(2) { width: 200px !important; max-width: 200px !important; }
+    th:nth-child(3), td:nth-child(3) { width: 40px !important; max-width: 40px !important; }
+    th:nth-child(4), td:nth-child(4) { width: 50px !important; max-width: 50px !important; }
+    th:nth-child(5), td:nth-child(5) { width: 30px !important; max-width: 30px !important; }
+    th:nth-child(6), td:nth-child(6) { width: 60px !important; max-width: 60px !important; }
+`;
+tempContainer.appendChild(style);
+
+// Формируем содержимое
+let pdfContent = `
+    <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">
+        <h1 style="margin: 0 0 5px 0; font-size: 16px;">СМЕТА № ${estimateNumber}</h1>
+        <div style="font-size: 10px;"><strong>Клиент:</strong> ${clientName}</div>
+        <div style="font-size: 9px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
+    </div>
+`;
+    // Добавляем глобальные настройки
+    if (globalDiscount > 0 || globalCoeff !== 1.0 || globalComment) {
+        pdfContent += `
+            <div style="background: #f8f9fa; padding: 10px; border-left: 4px solid #3498db; margin-bottom: 20px; font-size: 11px;">
+                <strong>Общие настройки:</strong><br>
+                ${globalDiscount > 0 ? `Скидка: ${globalDiscount}%<br>` : ''}
+                ${globalCoeff !== 1.0 ? `Коэффициент: ${globalCoeff}<br>` : ''}
+                ${globalComment ? `Комментарий: ${globalComment}` : ''}
+            </div>
+        `;
+    }
+    
+pdfContent += `
+    <table style="border-collapse: collapse; width: 100%;">
+        <thead>
+            <tr style="background: #f0f0f0;">
+                <th style="border: 1px solid #000; padding: 2px 4px;">Код</th>
+                <th style="border: 1px solid #000; padding: 2px 4px;">Наименование</th>
+                <th style="border: 1px solid #000; padding: 2px 4px;">Ед.</th>
+                <th style="border: 1px solid #000; padding: 2px 4px;">Цена, руб.</th>
+                <th style="border: 1px solid #000; padding: 2px 4px;">Кол</th>
+                <th style="border: 1px solid #000; padding: 2px 4px;">Сумма, руб.</th>
+            </tr>
+        </thead>
+        <tbody>
+`;
     
     filledRows.forEach((row, index) => {
-        pdfContent += `
-            <tr>
-                <td style="border: 1px solid #000; padding: 6px; text-align: center;">${row.priceId || ''}</td>
-                <td style="border: 1px solid #000; padding: 6px;">${row.name || ''}</td>
-                <td style="border: 1px solid #000; padding: 6px; text-align: center;">${row.unit || ''}</td>
-                <td style="border: 1px solid #000; padding: 6px; text-align: right;">${formatCurrency(row.price)}</td>
-                <td style="border: 1px solid #000; padding: 6px; text-align: center;">${row.quantity}</td>
-                <td style="border: 1px solid #000; padding: 6px; text-align: right;">${formatCurrency(row.total)}</td>
-            </tr>
-        `;
+        // Формируем полное наименование
+        let fullName = row.name || '';
+        if (row.coefficient && row.coefficient !== 1.0) {
+            fullName += ` [коэф. ${row.coefficient}${row.coeffComment ? ': ' + row.coeffComment : ''}]`;
+        }
+        if (row.discount && row.discount > 0) {
+            fullName += ` [скидка ${row.discount}%${row.discountComment ? ': ' + row.discountComment : ''}]`;
+        }
+        if (row.rowComment) {
+            fullName += ` — ${row.rowComment}`;
+        }
+        
+pdfContent += `
+    <tr>
+        <td style="border: 1px solid #000;">${row.priceId || ''}</td>
+        <td style="border: 1px solid #000;">${fullName}</td>
+        <td style="border: 1px solid #000;">${row.unit || ''}</td>
+        <td style="border: 1px solid #000;">${formatCurrency(row.price)}</td>
+        <td style="border: 1px solid #000;">${row.quantity}</td>
+        <td style="border: 1px solid #000;">${formatCurrency(row.total)}</td>
+    </tr>
+`;
     });
-    
-    const totalAmount = filledRows.reduce((sum, row) => sum + row.total, 0);
     
     pdfContent += `
             </tbody>
         </table>
-        <div style="text-align: right; font-size: 18px; font-weight: bold; margin-top: 20px; padding-top: 10px; border-top: 2px solid #000;">
-            Итого: ${formatCurrency(totalAmount)} руб.
+    `;
+    
+    // Добавляем детализацию расчета
+    pdfContent += `
+        <div style="margin-top: 20px; padding-top: 10px; border-top: 2px solid #000;">
+            <div style="text-align: right; font-size: 14px; margin-bottom: 5px;">
+                <span style="color: #666;">Базовая сумма:</span> ${formatCurrency(baseTotal)} руб.
+            </div>
+    `;
+    
+    if (globalCoeff !== 1.0) {
+        pdfContent += `
+            <div style="text-align: right; font-size: 14px; margin-bottom: 5px;">
+                <span style="color: #666;">С учетом коэффициента ${globalCoeff}:</span> ${formatCurrency(baseTotal * globalCoeff)} руб.
+            </div>
+        `;
+    }
+    
+    if (globalDiscount > 0) {
+        pdfContent += `
+            <div style="text-align: right; font-size: 14px; margin-bottom: 5px;">
+                <span style="color: #666;">Скидка ${globalDiscount}%:</span> -${formatCurrency(baseTotal * globalCoeff * (globalDiscount / 100))} руб.
+            </div>
+        `;
+    }
+    
+    pdfContent += `
+            <div style="text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid #000;">
+                ИТОГО: ${formatCurrency(finalTotal)} руб.
+            </div>
         </div>
     `;
     
@@ -4623,7 +6451,7 @@ document.addEventListener('DOMContentLoaded', function() {
         appIcon.onerror = handleIconError;
     }
 });
-		
+        
 // PWA Service Worker регистрация
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
@@ -4732,7 +6560,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePWA();
 });
 
-		// ========== GOOGLE DRIVE СИНХРОНИЗАЦИЯ ==========
+        // ========== GOOGLE DRIVE СИНХРОНИЗАЦИЯ ==========
 const GOOGLE_CLIENT_ID = '10151274989-sirobiq4o2es78hs82gbotu34lkf11pb.apps.googleusercontent.com';
 
 let googleToken = '';
@@ -4793,7 +6621,9 @@ async function saveToDrive() {
     
     if (!estimateName) return;
     
-    // Получаем текущие данные сметы (сохраняем ВСЕ 30 строк)
+    // Получаем текущие данные сметы
+    const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '' || row.isMaterial);
+    
     const currentEstimate = {
         id: Date.now(),
         name: estimateName,
@@ -4804,18 +6634,30 @@ async function saveToDrive() {
             name: row.name,
             unit: row.unit,
             price: row.price,
+            originalPrice: row.originalPrice || row.price,
             quantity: row.quantity,
             total: row.total,
-            isMaterial: row.isMaterial || false
+            isMaterial: row.isMaterial || false,
+            // Новые поля
+            coefficient: row.coefficient || 1.0,
+            coeffComment: row.coeffComment || '',
+            discount: row.discount || 0,
+            discountComment: row.discountComment || '',
+            rowComment: row.rowComment || ''
         })),
         totals: {
             totalAmount: parseFloat(document.getElementById('totalAmount').textContent.replace(/\s/g, ''))
-        }
+        },
+        // Сохраняем глобальные настройки
+        globalSettings: {
+            discount: parseFloat(document.getElementById('globalDiscount').value) || 0,
+            coefficient: parseFloat(document.getElementById('globalCoefficient').value) || 1.0,
+            comment: document.getElementById('globalComment').value || ''
+        },
+        zoom: zoomFactor
     };
     
     console.log('Сохранение в Drive:', currentEstimate);
-    console.log('Фильтровано строк для сохранения:', currentEstimate.data.length);
-    console.log('Всего строк в estimateData:', estimateData.length);
     
     try {
         // 1. Сохраняем в Google Drive
@@ -4892,51 +6734,75 @@ async function loadFromDrive() {
                 const data = await fileResponse.json();
                 
                 // Загружаем данные в смету
-if (data && data.data) {
-        // Определяем максимальное количество строк
-        const maxRows = Math.max(data.data.length, 30);
-        
-        // Очищаем текущую смету с нужным количеством строк
-        estimateData = Array(maxRows).fill().map((_, i) => ({
-            id: i + 1,
-            priceId: "",
-            name: "",
-            unit: "",
-            price: 0,
-            quantity: 1,
-            total: 0,
-            notes: "",
-            isMaterial: false
-        }));
-        
-        // Заполняем данными
-        data.data.forEach((row, i) => {
-            if (i < maxRows) {
-                estimateData[i] = {
-                    id: i + 1,
-                    priceId: row.priceId || "",
-                    name: row.name || "",
-                    unit: row.unit || "",
-                    price: row.price || 0,
-                    quantity: row.quantity || 1,
-                    total: row.total || 0,
-                    notes: row.notes || "",
-                    isMaterial: row.isMaterial || false
-                };
-            }
-        });
-        
-        // Обновляем интерфейс
-        renderEstimateTable();
-        updateTotals();
-        updateEstimateCounter();
-        showTab('estimate');
-        
-        showNotification(`✅ Загружена смета: "${files.files[index].name}" (${data.data.length} позиций)`);
-    }
-				
-				
-				else {
+                if (data && data.data) {
+                    // Определяем максимальное количество строк
+                    const maxRows = Math.max(data.data.length, 30);
+                    
+                    // Очищаем текущую смету с нужным количеством строк
+                    estimateData = Array(maxRows).fill().map((_, i) => ({
+                        id: i + 1,
+                        priceId: "",
+                        name: "",
+                        unit: "",
+                        price: 0,
+                        quantity: 1,
+                        total: 0,
+                        notes: "",
+                        isMaterial: false,
+                        coefficient: 1.0,
+                        coeffComment: "",
+                        discount: 0,
+                        discountComment: "",
+                        rowComment: "",
+                        originalPrice: 0
+                    }));
+                    
+                    // Заполняем данными
+                    data.data.forEach((row, i) => {
+                        if (i < maxRows) {
+                            estimateData[i] = {
+                                id: i + 1,
+                                priceId: row.priceId || "",
+                                name: row.name || "",
+                                unit: row.unit || "",
+                                price: row.price || 0,
+                                originalPrice: row.originalPrice || row.price || 0,
+                                quantity: row.quantity || 1,
+                                total: row.total || 0,
+                                notes: row.notes || "",
+                                isMaterial: row.isMaterial || false,
+                                coefficient: row.coefficient || 1.0,
+                                coeffComment: row.coeffComment || "",
+                                discount: row.discount || 0,
+                                discountComment: row.discountComment || "",
+                                rowComment: row.rowComment || ""
+                            };
+                        }
+                    });
+                    
+                    // Загружаем глобальные настройки
+                    if (data.globalSettings) {
+                        document.getElementById('globalDiscount').value = data.globalSettings.discount || 0;
+                        document.getElementById('globalCoefficient').value = data.globalSettings.coefficient || 1.0;
+                        document.getElementById('globalComment').value = data.globalSettings.comment || '';
+                    }
+                    
+                    // Загружаем масштаб
+                    if (data.zoom) {
+                        zoomFactor = data.zoom;
+                        if (zoomFactor < MIN_ZOOM) zoomFactor = MIN_ZOOM;
+                        if (zoomFactor > MAX_ZOOM) zoomFactor = MAX_ZOOM;
+                        applyZoom();
+                    }
+                    
+                    // Обновляем интерфейс
+                    renderEstimateTable();
+                    updateTotals();
+                    updateEstimateCounter();
+                    showTab('estimate');
+                    
+                    showNotification(`✅ Загружена смета: "${files.files[index].name}" (${data.data.length} позиций)`);
+                } else {
                     showNotification('❌ Ошибка: неверный формат файла');
                 }
             }
@@ -5511,7 +7377,7 @@ this.toggleBtn.addEventListener('touchstart', (e) => {
     }
     
     toggle() {
-		    // Для мобильных - убедимся что линза существует
+            // Для мобильных - убедимся что линза существует
     if (!this.magnifier) {
         console.error('Линза не найдена');
         return;
@@ -5644,12 +7510,28 @@ function refreshEstimate() {
         quantity: 1,
         total: 0,
         notes: "",
-        isMaterial: false
+        isMaterial: false,
+        coefficient: 1.0,
+        coeffComment: "",
+        discount: 0,
+        discountComment: "",
+        rowComment: "",
+        originalPrice: 0
     }];
     
     savedEstimates = [];
     nextMaterialId = 1000;
     googleToken = '';
+    
+    // Сбрасываем глобальные настройки
+    document.getElementById('globalDiscount').value = 0;
+    document.getElementById('globalCoefficient').value = 1.0;
+    document.getElementById('globalComment').value = '';
+    
+    // Сбрасываем масштаб
+    zoomFactor = 1.0;
+    applyZoom();
+    saveZoomFactor();
     
     // Обновляем интерфейс
     renderEstimateTable();
@@ -5677,7 +7559,7 @@ function refreshEstimate() {
 // Словарь ссылок на видео (номер: прямая ссылка)
 const videoLinks = {
     28: 'https://i.imgur.com/k93Uc9a.mp4',
-	43: 'https://i.imgur.com/0CSBqVf.mp4',
+    43: 'https://i.imgur.com/0CSBqVf.mp4',
     // Добавляйте новые видео так:
     // 10: 'https://i.imgur.com/ваш_код.mp4',
     // 25: 'https://i.imgur.com/другой_код.mp4',
@@ -5793,7 +7675,223 @@ initializeApp = async function() {
     await originalInitializeApp();
     await preloadVideoInfo();
 };
+        
 		
+		
+		
+		
+// ========== ИСПРАВЛЕННОЕ СКРЫТИЕ/ПОКАЗ ПАНЕЛИ ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleGlobalPanel');
+    const globalPanel = document.querySelector('.global-modifiers-panel');
+    
+    // Важно: проверяем, что все элементы найдены
+    if (toggleBtn && globalPanel) {
+        // Проверяем сохраненное состояние
+        const isHidden = localStorage.getItem('globalPanelHidden') === 'true';
+        if (isHidden) {
+            globalPanel.classList.add('hidden');
+            toggleBtn.innerHTML = '<i class="fas fa-eye"></i> <span id="togglePanelText">Показать панель</span>';
+        }
+        
+        // Функция обработки клика
+        function handlePanelToggle(e) {
+            e.preventDefault();
+            globalPanel.classList.toggle('hidden');
+            
+            // Меняем текст и иконку
+            if (globalPanel.classList.contains('hidden')) {
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i> <span id="togglePanelText">Показать панель</span>';
+                localStorage.setItem('globalPanelHidden', 'true');
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>';
+                localStorage.setItem('globalPanelHidden', 'false');
+            }
+        }
+        
+        // Добавляем обработчики
+        toggleBtn.addEventListener('click', handlePanelToggle);
+        toggleBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handlePanelToggle(e);
+        }, { passive: false });
+        
+    } else {
+        console.warn('Не удалось найти элементы для управления панелью.');
+    }
+});
+		
+		
+	// ========== ФИКС ПОРЯДКА ЭЛЕМЕНТОВ ==========
+document.addEventListener('DOMContentLoaded', function() {
+    // Убедимся, что элементы расположены в правильном порядке
+    const estimateTab = document.getElementById('estimate-tab');
+    if (estimateTab) {
+        const panel = estimateTab.querySelector('.global-modifiers-panel');
+        const container = estimateTab.querySelector('.estimate-scale-container');
+        const totals = estimateTab.querySelector('.estimate-totals');
+        
+        if (panel && container && totals) {
+            // Проверяем порядок (panel должен быть ПЕРЕД container)
+            const panelIndex = Array.from(estimateTab.children).indexOf(panel);
+            const containerIndex = Array.from(estimateTab.children).indexOf(container);
+            
+            if (panelIndex > containerIndex) {
+                // Если panel после container - перемещаем
+                estimateTab.insertBefore(panel, container);
+                console.log('✅ Порядок элементов исправлен');
+            }
+        }
+    }
+});	
+	
+// ========== СОХРАНЕНИЕ ДАННЫХ ИСПОЛНИТЕЛЯ ==========
+function loadExecutorData() {
+    // Загружаем из localStorage
+    const savedData = localStorage.getItem('executorData');
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            document.getElementById('executorName').value = data.name || '';
+            document.getElementById('executorInn').value = data.inn || '';
+            document.getElementById('executorPhone').value = data.phone || '';
+        } catch (e) {
+            console.error('Ошибка загрузки данных исполнителя:', e);
+        }
+    }
+    
+    // Загружаем из Google Drive если есть токен
+    if (googleToken || localStorage.getItem('google_token')) {
+        loadExecutorFromDrive();
+    }
+}
+
+function saveExecutorData() {
+    const executorData = {
+        name: document.getElementById('executorName').value,
+        inn: document.getElementById('executorInn').value,
+        phone: document.getElementById('executorPhone').value,
+        lastUpdated: new Date().toISOString()
+    };
+    
+    // Сохраняем локально
+    localStorage.setItem('executorData', JSON.stringify(executorData));
+    
+    // Сохраняем в Google Drive если есть токен
+    if (googleToken || localStorage.getItem('google_token')) {
+        saveExecutorToDrive(executorData);
+    } else {
+        showNotification('✅ Данные исполнителя сохранены локально');
+    }
+}
+
+async function saveExecutorToDrive(executorData) {
+    const token = googleToken || localStorage.getItem('google_token');
+    if (!token) return;
+    
+    try {
+        // Проверяем, есть ли уже файл
+        const listResponse = await fetch('https://www.googleapis.com/drive/v3/files?q=name="executor_data.json"', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const files = await listResponse.json();
+        let fileId = null;
+        
+        if (files.files && files.files.length > 0) {
+            fileId = files.files[0].id;
+            
+            // Обновляем существующий файл
+            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(executorData)
+            });
+        } else {
+            // Создаем новый файл
+            const fileResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: 'executor_data.json',
+                    mimeType: 'application/json'
+                })
+            });
+            
+            const file = await fileResponse.json();
+            fileId = file.id;
+            
+            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(executorData)
+            });
+        }
+        
+        showNotification('✅ Данные исполнителя сохранены в Google Drive');
+    } catch (error) {
+        console.error('Ошибка сохранения в Drive:', error);
+        showNotification('⚠️ Данные сохранены только локально');
+    }
+}
+
+async function loadExecutorFromDrive() {
+    const token = googleToken || localStorage.getItem('google_token');
+    if (!token) return;
+    
+    try {
+        const listResponse = await fetch('https://www.googleapis.com/drive/v3/files?q=name="executor_data.json"', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const files = await listResponse.json();
+        
+        if (files.files && files.files.length > 0) {
+            const fileId = files.files[0].id;
+            
+            const fileResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const data = await fileResponse.json();
+            
+            document.getElementById('executorName').value = data.name || '';
+            document.getElementById('executorInn').value = data.inn || '';
+            document.getElementById('executorPhone').value = data.phone || '';
+            
+            // Обновляем localStorage
+            localStorage.setItem('executorData', JSON.stringify(data));
+            
+            console.log('✅ Данные исполнителя загружены из Drive');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки из Drive:', error);
+    }
+}
+
+// Обновляем функцию showPrintModal для загрузки данных
+const originalShowPrintModal = showPrintModal;
+showPrintModal = function() {
+    originalShowPrintModal();
+    loadExecutorData(); // Загружаем данные исполнителя
+};
+
+// Добавляем обработчик для кнопки сохранения
+document.addEventListener('DOMContentLoaded', function() {
+    const saveBtn = document.getElementById('saveExecutorData');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveExecutorData);
+    }
+});	
     </script>
 </body>
 </html>
