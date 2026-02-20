@@ -3546,7 +3546,14 @@ async function getHijriDate() {
     
     try {
         // Используем API
-        const response = await fetch('https://api.aladhan.com/v1/gToH?adjustment=0');
+// Получаем текущую дату
+const today = new Date();
+const day = today.getDate().toString().padStart(2, '0');
+const month = (today.getMonth() + 1).toString().padStart(2, '0');
+const year = today.getFullYear();
+
+// Запрашиваем с правильной датой
+const response = await fetch(`https://api.aladhan.com/v1/gToH?date=${day}-${month}-${year}&adjustment=0`);
         const data = await response.json();
         
         if (data.code === 200) {
