@@ -3533,19 +3533,7 @@ const islamicHolidays = [
 
 // ========== ФУНКЦИЯ ПОЛУЧЕНИЯ ДАТЫ ХИДЖРЫ ==========
 async function getHijriDate() {
-    // Проверяем кэш
-    const cached = localStorage.getItem('hijri_date_cache');
-    const today = new Date().toDateString();
-    
-    if (cached) {
-        const { date, data } = JSON.parse(cached);
-        if (date === today) {
-            return data;
-        }
-    }
-    
     try {
-        // Используем API
 // Получаем текущую дату
 const today = new Date();
 const day = today.getDate().toString().padStart(2, '0');
@@ -3649,13 +3637,7 @@ const response = await fetch(`https://api.aladhan.com/v1/gToH?date=${day}-${mont
                 monthIndex: parseInt(hijri.month.number),
                 day: parseInt(hijri.day),
                 display: `${hijri.day} ${monthRu} ${hijri.year} г.х.`
-            };
-            
-            localStorage.setItem('hijri_date_cache', JSON.stringify({
-                date: today,
-                data: result
-            }));
-            
+            };            
             return result;
         }
     } catch (error) {
