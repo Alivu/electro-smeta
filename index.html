@@ -6707,10 +6707,29 @@ function checkGoogleToken() {
         document.getElementById('saveToDriveBtn').style.display = 'flex';
         document.getElementById('loadFromDriveBtn').style.display = 'flex';
         
+        // Получаем информацию о пользователе
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => response.json())
+        .then(user => {
+            localStorage.setItem('google_user', JSON.stringify(user));
+            console.log('✅ Пользователь:', user.email);
+            showNotification(`✅ Вход выполнен: ${user.email}`);
+            
+            // Можно добавить отображение email где-то на странице
+            const userEmailSpan = document.getElementById('userEmail');
+            if (userEmailSpan) {
+                userEmailSpan.textContent = user.email;
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка получения данных пользователя:', error);
+            showNotification('✅ Вход выполнен (email не получен)');
+        });
+        
         // Убираем хэш из URL
         history.replaceState(null, null, ' ');
-        
-        showNotification('✅ Успешный вход через Google!');
     }
 }
 // Функция сохранения локально
