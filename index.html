@@ -3937,15 +3937,15 @@ function showNotification(message) {
     
     document.body.appendChild(notification);
     
-    // Автоматическое скрытие через 4 секунды (дольше на мобильных)
+// Автоматическое скрытие через 5 секунд
+setTimeout(() => {
+    notification.style.animation = isMobile ? 'slideOutDown 0.3s ease-out' : 'slideOut 0.3s ease-out';
     setTimeout(() => {
-        notification.style.animation = isMobile ? 'slideOutDown 0.3s ease-out' : 'slideOut 0.3s ease-out';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    }, isMobile ? 4000 : 3000); // На мобильных показываем дольше
+        if (notification.parentNode) {
+            document.body.removeChild(notification);
+        }
+    }, 300);
+}, 5000); // 5 секунд для всех устройств
     
     // Добавляем CSS анимации для мобильных
     if (!document.querySelector('#notification-animations')) {
