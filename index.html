@@ -95,15 +95,17 @@
             --scale-factor: 1;
         }
         
-        /* Контейнер для масштабирования с полосой прокрутки */
-        .estimate-scale-container {
-            overflow: auto;
-            max-height: calc(100vh - 300px);
-            width: 100%;
-			display: flex;           /* Добавить */
-			justify-content: center; /* Добавить */
-			-webkit-overflow-scrolling: touch;
-        }
+.estimate-scale-container {
+    overflow: auto !important;
+    max-height: calc(100vh - 300px) !important;
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch !important;
+    position: relative !important;
+    left: 0 !important;
+    right: 0 !important;
+    display: block !important;  /* Убираем flex */
+    justify-content: flex-start !important; /* Сбрасываем центрирование */
+}
         
         /* Новые стили для коэффициентов и скидок */
         .coefficient-badge {
@@ -1682,16 +1684,74 @@
 /* ========== МАСШТАБИРОВАНИЕ СМЕТЫ ========== */
 .estimate-scalable {
     transform: scale(var(--scale-factor, 1));
-    transform-origin: top left;  /* Привязка к левому верхнему углу */
-    width: fit-content;
-    min-width: 100%;
-    transition: transform 0.2s ease;
-    margin: 0;  /* Убираем центрирование */
+    transform-origin: 0 0 !important;  /* Всегда от левого верхнего угла */
+    width: fit-content !important;
+    min-width: 100% !important;
+    transition: transform 0.2s ease !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+    position: relative !important;
+    left: 0 !important;
+    top: 0 !important;
 }
-/* Для мобильных устройств - оставляем то же поведение */
+/* ========== ИСПРАВЛЕНИЕ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ ========== */
 @media (max-width: 767px) {
+    /* Основной контейнер с прокруткой */
+    .estimate-scale-container {
+        max-height: calc(100vh - 250px) !important;
+        -webkit-overflow-scrolling: touch !important;
+        overflow-x: auto !important;
+        overflow-y: auto !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: relative !important;
+    }
+    
+    /* Масштабируемый контент */
     .estimate-scalable {
-        transform-origin: top left;  /* Привязка к левому верхнему углу */
+        transform: scale(var(--scale-factor, 1)) !important;
+        transform-origin: 0 0 !important;
+        width: fit-content !important;
+        min-width: 100% !important;
+        display: inline-block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transition: transform 0.2s ease !important;
+        will-change: transform !important;
+        -webkit-transform: scale(var(--scale-factor, 1)) !important;
+        -webkit-transform-origin: 0 0 !important;
+    }
+    
+    /* Контейнер сметы */
+    #estimate-tab {
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+    
+    /* Контейнер таблицы */
+    .estimate-table-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+    
+    /* Таблица */
+    .estimate-table {
+        min-width: 800px !important;
+        margin: 0 !important;
+        border-collapse: collapse !important;
+    }
+    
+    /* Убираем лишние display: flex */
+    .estimate-scale-container {
+        display: block !important;
+        justify-content: flex-start !important;
     }
 }
 /* Фиксированная ширина таблицы */
@@ -1930,11 +1990,8 @@
         min-width: 60px !important;
     }
     
-    /* Наименование на телефоне */
-    .estimate-table th:nth-child(2),
-    .estimate-table td:nth-child(2) {
-        min-width: 250px !important;
-    }
+/* Наименование на телефоне - УМЕНЬШЕНО */
+
     
     /* Значки коэффициентов */
     .row-modifiers span {
@@ -2101,7 +2158,7 @@
 /* Исправление ширины наименования */
 .estimate-table th:nth-child(2),
 .estimate-table td:nth-child(2) {
-    min-width: 600px !important;
+    min-width: 620px !important;
 }
 .estimate-table td:nth-child(2) input {
     min-width: 580px !important;
@@ -2141,6 +2198,60 @@
     .estimate-totals {
         order: 3;
     }
+}
+/* ========== ФИНАЛЬНЫЕ ИСПРАВЛЕНИЯ ДЛЯ МОБИЛЬНЫХ ========== */
+@media (max-width: 767px) {
+    /* Исправляем позиционирование */
+    body {
+        overflow-x: hidden;
+        position: relative;
+    }
+    
+    .container {
+        padding: 2px;
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+    
+    #estimate-tab {
+        padding: 0;
+        margin: 0;
+        overflow: visible;
+    }
+    
+    .global-modifiers-panel {
+        margin: 5px !important;
+        width: auto !important;
+    }
+    
+    /* Гарантируем, что контейнер для скролла занимает всю ширину */
+    .estimate-scale-container {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+    }
+    
+    /* Убираем transform-баги на мобильных */
+    .estimate-scalable {
+        transform: scale(var(--scale-factor, 1)) !important;
+        transform-origin: 0 0 !important;
+        will-change: transform; /* Оптимизация производительности */
+    }
+	.estimate-table th:nth-child(2),
+	.estimate-table td:nth-child(2) {
+    min-width: 360px !important;  /* Было 250px */
+    max-width: 420px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+}
+
+.estimate-table td:nth-child(2) input {
+    min-width: 360px !important;  /* Было 250px */
+    max-width: 420px !important;
+    font-size: 9px !important;   /* Уменьшаем шрифт */
+}
 }
     </style>
 </head>
@@ -4708,36 +4819,51 @@ function renderEstimateTable() {
         
 function applyZoom() {
     const scalable = document.getElementById('estimateScalable');
+    const zoomPercent = document.getElementById('zoomPercent');
+    
     if (scalable) {
+        // Применяем масштабирование
         scalable.style.transform = `scale(${zoomFactor})`;
-        document.getElementById('zoomPercent').textContent = Math.round(zoomFactor * 100) + '%';
         
-        // Важно: при масштабировании ширина остается fit-content
-        scalable.style.width = 'fit-content';
+        // Обновляем отображение процентов
+        if (zoomPercent) {
+            zoomPercent.textContent = Math.round(zoomFactor * 100) + '%';
+        }
+        
+        // Сохраняем значение
+        saveZoomFactor();
+        
+        console.log('Масштаб применен:', zoomFactor);
+    } else {
+        console.error('Элемент estimateScalable не найден!');
     }
 }
         
-        function zoomIn() {
-            if (zoomFactor < MAX_ZOOM) {
-                zoomFactor = Math.min(zoomFactor + 0.05, MAX_ZOOM);
-                applyZoom();
-                saveZoomFactor();
-            }
-        }
-        
-        function zoomOut() {
-            if (zoomFactor > MIN_ZOOM) {
-                zoomFactor = Math.max(zoomFactor - 0.05, MIN_ZOOM);
-                applyZoom();
-                saveZoomFactor();
-            }
-        }
-        
-        function zoomReset() {
-            zoomFactor = 1.0;
-            applyZoom();
-            saveZoomFactor();
-        }
+ function zoomIn() {
+    if (zoomFactor < MAX_ZOOM) {
+        zoomFactor = Math.min(zoomFactor + 0.1, MAX_ZOOM); // Увеличил шаг до 0.1
+        applyZoom();
+        console.log('Zoom In:', zoomFactor);
+    } else {
+        console.log('Максимальный масштаб достигнут');
+    }
+}
+
+function zoomOut() {
+    if (zoomFactor > MIN_ZOOM) {
+        zoomFactor = Math.max(zoomFactor - 0.1, MIN_ZOOM); // Увеличил шаг до 0.1
+        applyZoom();
+        console.log('Zoom Out:', zoomFactor);
+    } else {
+        console.log('Минимальный масштаб достигнут');
+    }
+}
+
+function zoomReset() {
+    zoomFactor = 1.0;
+    applyZoom();
+    console.log('Zoom Reset');
+}
 
         function setupEventListeners() {
             console.log('Настройка обработчиков событий');
@@ -7892,6 +8018,181 @@ document.addEventListener('DOMContentLoaded', function() {
         saveBtn.addEventListener('click', saveExecutorData);
     }
 });	
+// ========== ПРОВЕРКА РАБОТЫ МАСШТАБИРОВАНИЯ ==========
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Проверка кнопок масштабирования:');
+    
+    const zoomInBtn = document.getElementById('zoomIn');
+    const zoomOutBtn = document.getElementById('zoomOut');
+    const zoomResetBtn = document.getElementById('zoomReset');
+    const scalable = document.getElementById('estimateScalable');
+    const zoomPercent = document.getElementById('zoomPercent');
+    
+    console.log('zoomInBtn:', zoomInBtn ? 'найден' : 'НЕ НАЙДЕН');
+    console.log('zoomOutBtn:', zoomOutBtn ? 'найден' : 'НЕ НАЙДЕН');
+    console.log('zoomResetBtn:', zoomResetBtn ? 'найден' : 'НЕ НАЙДЕН');
+    console.log('estimateScalable:', scalable ? 'найден' : 'НЕ НАЙДЕН');
+    console.log('zoomPercent:', zoomPercent ? 'найден' : 'НЕ НАЙДЕН');
+    
+    if (scalable) {
+        console.log('Начальный transform:', scalable.style.transform);
+        console.log('Текущий zoomFactor:', zoomFactor);
+    }
+    
+    // Добавляем дополнительные обработчики для надежности
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', function(e) {
+            console.log('Клик по кнопке Zoom In');
+            zoomIn();
+        });
+    }
+    
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', function(e) {
+            console.log('Клик по кнопке Zoom Out');
+            zoomOut();
+        });
+    }
+    
+    if (zoomResetBtn) {
+        zoomResetBtn.addEventListener('click', function(e) {
+            console.log('Клик по кнопке Zoom Reset');
+            zoomReset();
+        });
+    }
+});
+
+
+// ========== ИСПРАВЛЕНИЕ МАСШТАБИРОВАНИЯ ДЛЯ МОБИЛЬНЫХ ==========
+(function() {
+    // Сохраняем оригинальные функции
+    const originalApplyZoom = applyZoom;
+    const originalZoomIn = zoomIn;
+    const originalZoomOut = zoomOut;
+    const originalZoomReset = zoomReset;
+    
+    // Переопределяем applyZoom для мобильных
+    window.applyZoom = function() {
+        const scalable = document.getElementById('estimateScalable');
+        const zoomPercent = document.getElementById('zoomPercent');
+        
+        if (scalable) {
+            // Для мобильных используем CSS переменную
+            if (window.innerWidth <= 767) {
+                document.documentElement.style.setProperty('--scale-factor', zoomFactor);
+                scalable.style.webkitTransform = `scale(${zoomFactor})`;
+                scalable.style.transform = `scale(${zoomFactor})`;
+            } else {
+                scalable.style.transform = `scale(${zoomFactor})`;
+            }
+            
+            if (zoomPercent) {
+                zoomPercent.textContent = Math.round(zoomFactor * 100) + '%';
+            }
+            
+            saveZoomFactor();
+            console.log('Масштаб применен (моб):', zoomFactor);
+        }
+    };
+    
+    // Переопределяем zoomIn
+    window.zoomIn = function() {
+        if (zoomFactor < MAX_ZOOM) {
+            zoomFactor = Math.min(zoomFactor + 0.1, MAX_ZOOM);
+            applyZoom();
+            
+            // Для мобильных принудительно обновляем скролл
+            if (window.innerWidth <= 767) {
+                setTimeout(function() {
+                    const container = document.querySelector('.estimate-scale-container');
+                    if (container) {
+                        container.scrollLeft = 0;
+                        container.scrollTop = 0;
+                    }
+                }, 50);
+            }
+        }
+    };
+    
+    // Переопределяем zoomOut
+    window.zoomOut = function() {
+        if (zoomFactor > MIN_ZOOM) {
+            zoomFactor = Math.max(zoomFactor - 0.1, MIN_ZOOM);
+            applyZoom();
+        }
+    };
+    
+    // Переопределяем zoomReset
+    window.zoomReset = function() {
+        zoomFactor = 1.0;
+        applyZoom();
+        
+        // Сбрасываем скролл
+        if (window.innerWidth <= 767) {
+            setTimeout(function() {
+                const container = document.querySelector('.estimate-scale-container');
+                if (container) {
+                    container.scrollLeft = 0;
+                    container.scrollTop = 0;
+                }
+            }, 50);
+        }
+    };
+    
+    // Добавляем обработчики касаний для мобильных
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth <= 767) {
+            const zoomInBtn = document.getElementById('zoomIn');
+            const zoomOutBtn = document.getElementById('zoomOut');
+            const zoomResetBtn = document.getElementById('zoomReset');
+            
+            if (zoomInBtn) {
+                zoomInBtn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    zoomIn();
+                }, { passive: false });
+            }
+            
+            if (zoomOutBtn) {
+                zoomOutBtn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    zoomOut();
+                }, { passive: false });
+            }
+            
+            if (zoomResetBtn) {
+                zoomResetBtn.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    zoomReset();
+                }, { passive: false });
+            }
+            
+            console.log('Мобильные обработчики масштабирования добавлены');
+        }
+    });
+})();
+
+// ========== ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ ПОСЛЕ ЗАГРУЗКИ ==========
+window.addEventListener('load', function() {
+    if (window.innerWidth <= 767) {
+        // Загружаем сохраненный масштаб
+        const savedZoom = localStorage.getItem('estimate_zoom');
+        if (savedZoom) {
+            zoomFactor = parseFloat(savedZoom);
+            if (zoomFactor < MIN_ZOOM) zoomFactor = MIN_ZOOM;
+            if (zoomFactor > MAX_ZOOM) zoomFactor = MAX_ZOOM;
+        } else {
+            zoomFactor = 1.0;
+        }
+        
+        // Применяем масштаб
+        setTimeout(function() {
+            applyZoom();
+            console.log('Масштаб применен после загрузки:', zoomFactor);
+        }, 500);
+    }
+});
+
     </script>
 </body>
 </html>
