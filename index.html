@@ -8640,40 +8640,69 @@ function updateGoogleUI(user) {
     }
     
     if (user && user.email) {
-        // Показываем блок с email ВНУТРИ меню
+        // Показываем блок с email
         googleUserBlock.style.display = 'block';
         googleUserEmail.textContent = user.email;
         
-        // Скрываем кнопку входа и разделитель
+        // Скрываем кнопку входа
         googleLoginBtn.classList.add('google-login-hidden');
         googleLoginDivider.style.display = 'none';
         
         // Показываем кнопки Drive
         const saveToDriveBtn = document.getElementById('saveToDriveBtn');
         const loadFromDriveBtn = document.getElementById('loadFromDriveBtn');
-        const googleDriveLoadBtn = document.getElementById('googleDriveLoadBtn'); // НОВАЯ КНОПКА
+        const googleDriveLoadBtn = document.getElementById('googleDriveLoadBtn');
         
         if (saveToDriveBtn) saveToDriveBtn.style.display = 'flex';
         if (loadFromDriveBtn) loadFromDriveBtn.style.display = 'flex';
-        if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'flex'; // ПОКАЗЫВАЕМ
+        if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'flex';
+        
+        // ===== ПРОВЕРЯЕМ НАЛИЧИЕ ЛОГОТИПА В DRIVE =====
+        checkLogoInDrive();
         
         showNotification(`✅ Вход выполнен: ${user.email}`);
     } else {
         // Скрываем блок с email
         googleUserBlock.style.display = 'none';
         
-        // Показываем кнопку входа и разделитель
+        // Показываем кнопку входа
         googleLoginBtn.style.display = 'flex';
         googleLoginDivider.style.display = 'block';
         
         // Скрываем кнопки Drive
         const saveToDriveBtn = document.getElementById('saveToDriveBtn');
         const loadFromDriveBtn = document.getElementById('loadFromDriveBtn');
-        const googleDriveLoadBtn = document.getElementById('googleDriveLoadBtn'); // НОВАЯ КНОПКА
+        const googleDriveLoadBtn = document.getElementById('googleDriveLoadBtn');
         
         if (saveToDriveBtn) saveToDriveBtn.style.display = 'none';
         if (loadFromDriveBtn) loadFromDriveBtn.style.display = 'none';
-        if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'none'; // СКРЫВАЕМ
+        if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'none';
+    }
+}
+
+// Новая функция для проверки логотипа в Drive
+async function checkLogoInDrive() {
+    const token = localStorage.getItem('google_token');
+    if (!token) return;
+    
+    try {
+        const response = await fetch(
+            'https://www.googleapis.com/drive/v3/files?q=name="company_logo.png"&fields=files(id)',
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        
+        const data = await response.json();
+        
+        // Если логотип есть в Drive - показываем кнопку "Загрузить"
+        if (data.files && data.files.length > 0) {
+            const loadLogoBtn = document.getElementById('loadLogoFromDriveBtn');
+            if (loadLogoBtn) {
+                loadLogoBtn.style.display = 'inline-block';
+                console.log('✅ Логотип найден в Drive, кнопка загрузки активна');
+            }
+        }
+    } catch (error) {
+        console.error('Ошибка проверки логотипа в Drive:', error);
     }
 }
 
