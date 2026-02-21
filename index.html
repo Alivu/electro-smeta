@@ -2299,7 +2299,7 @@
         <i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>
     </button>
     
-    <!-- Блок пользователя Google (скрыт по умолчанию) -->
+    <!-- Блок пользователя Google (рядом с кнопкой скрытия) -->
     <div id="googleUserBlock" style="display: none; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; align-items: center; gap: 8px; white-space: nowrap;">
         <i class="fas fa-user-circle"></i>
         <span id="googleUserEmail" style="font-weight: 500;"></span>
@@ -2308,11 +2308,6 @@
         </button>
     </div>
     
-    <!-- Кнопка входа Google (видна по умолчанию) -->
-    <button class="btn btn-primary" id="googleLoginBtn">
-        <i class="fab fa-google"></i> Войти
-    </button>
-    
     <!-- Меню управления сметой -->
     <div class="dropdown-controls">
         <button class="btn btn-success dropdown-toggle" id="controlsDropdown">
@@ -2320,6 +2315,12 @@
             <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
         </button>
         <div class="dropdown-menu" id="controlsMenu">
+            <!-- Кнопка входа Google (внутри меню, видна когда не вошел) -->
+            <button class="dropdown-item" id="googleLoginBtn" style="display: flex;">
+                <i class="fab fa-google"></i> Войти через Google
+            </button>
+            <div class="dropdown-divider" id="googleLoginDivider" style="display: flex;"></div>
+            
             <button class="dropdown-item" id="refreshEstimateBtn">
                 <i class="fas fa-sync-alt"></i> Обновить смету
             </button>
@@ -8216,9 +8217,13 @@ const googleLogoutBtn = document.getElementById('googleLogoutBtn');
 // Функция обновления UI после входа
 function updateGoogleUI(user) {
     if (user && user.email) {
-        googleUserEmail.textContent = user.email;
+        // Показываем блок с email снаружи
         googleUserBlock.style.display = 'flex';
-        googleLoginBtn.style.display = 'none';
+        googleUserEmail.textContent = user.email;
+        
+        // Скрываем кнопку входа в меню
+        document.getElementById('googleLoginBtn').style.display = 'none';
+        document.getElementById('googleLoginDivider').style.display = 'none';
         
         // Показываем кнопки Drive
         document.getElementById('saveToDriveBtn').style.display = 'flex';
@@ -8226,8 +8231,12 @@ function updateGoogleUI(user) {
         
         showNotification(`✅ Вход выполнен: ${user.email}`);
     } else {
+        // Скрываем блок с email
         googleUserBlock.style.display = 'none';
-        googleLoginBtn.style.display = 'inline-flex';
+        
+        // Показываем кнопку входа в меню
+        document.getElementById('googleLoginBtn').style.display = 'flex';
+        document.getElementById('googleLoginDivider').style.display = 'flex';
         
         // Скрываем кнопки Drive
         document.getElementById('saveToDriveBtn').style.display = 'none';
