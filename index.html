@@ -6068,7 +6068,7 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
     const notes = document.getElementById('notes').value;
     const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
 	const logoHtml = logoDataUrl ? 
-    `<div style="margin-bottom: 20px; text-align: left;">
+    `<div style="margin-bottom: 20px; text-align: left: -10;">
         <img src="${logoDataUrl}" style="max-height: 100px; max-width: 100px; object-fit: contain;">
     </div>` : '';
     if (filledRows.length === 0) {
@@ -6308,7 +6308,7 @@ td:first-child {
             </div>
             
 <div class="print-container">
-    ${logoHtml}  <!-- ← ЛОГОТИП ДОЛЖЕН БЫТЬ ЗДЕСЬ, ДО HEADER -->
+    ${logoHtml} 
     <div class="header">
         <div style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 20px; padding: 10px 10px; background: #f8f9fa; border-radius: 5px;">
             <div style="text-align: left;">
