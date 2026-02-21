@@ -9040,7 +9040,7 @@ function loadDriveEstimateData(data) {
     showNotification(`✅ Загружена смета: ${data.name || 'из Drive'}`);
 }
 
-// Загрузка выбранного файла из Drive
+// Загрузка выбранного файла из Drive (ОДНА функция)
 async function loadSelectedDriveFile() {
     if (!selectedDriveFileId) return;
     
@@ -9056,7 +9056,6 @@ async function loadSelectedDriveFile() {
         const data = await response.json();
         
         if (data && data.data) {
-            // Загружаем данные в смету - используем новую функцию
             loadDriveEstimateData(data);
             document.getElementById('googleDriveLoadModal').style.display = 'none';
             showNotification('✅ Смета загружена из Google Drive');
@@ -9066,34 +9065,183 @@ async function loadSelectedDriveFile() {
         showNotification('❌ Ошибка при загрузке');
     }
 }
-// Загрузка выбранного файла из Drive
-async function loadSelectedDriveFile() {
-    if (!selectedDriveFileId) return;
-    
+
+// ========== УПРАВЛЕНИЕ ЛОГОТИПОМ ==========
+let logoDataUrl = localStorage.getItem('companyLogo') || null;
+
+// Сохранить логотип в Google Drive
+async function saveLogoToDrive() {
     const token = localStorage.getItem('google_token');
-    if (!token) return;
+    if (!token) {
+        showNotification('❌ Сначала войдите в Google');
+        return;
+    }
+    
+    if (!logoDataUrl) {
+        showNotification('❌ Сначала загрузите логотип');
+        return;
+    }
     
     try {
+        showNotification('⏳ Сохраняем логотип в Drive...');
+        
+        const response = await fetch(logoDataUrl);
+        const blob = await response.blob();
+        
+        const formData = new FormData();
+        formData.append('metadata', new Blob([JSON.stringify({
+            name: 'company_logo.png',
+            mimeType: 'image/png'
+        })], { type: 'application/json' }));
+        formData.append('file', blob);
+        
+        const uploadResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (!uploadResponse.ok) {
+            throw new Error('Ошибка загрузки');
+        }
+        
+        const loadBtn = document.getElementById('loadLogoFromDriveBtn');
+        if (loadBtn) loadBtn.style.display = 'inline-block';
+        
+        showNotification('✅ Логотип сохранен в Google Drive');
+        
+    } catch (error) {
+        console.error('Ошибка сохранения логотипа:', error);
+        showNotification('❌ Ошибка при сохранении логотипа');
+    }
+}
+
+// Загрузить логотип из Google Drive
+async function loadLogoFromDrive() {
+    const token = localStorage.getItem('google_token');
+    if (!token) {
+        showNotification('❌ Сначала войдите в Google');
+        return;
+    }
+    
+    try {
+        showNotification('⏳ Загружаем логотип из Drive...');
+        
         const response = await fetch(
-            `https://www.googleapis.com/drive/v3/files/${selectedDriveFileId}?alt=media`,
+            'https://www.googleapis.com/drive/v3/files?q=name="company_logo.png"&fields=files(id)',
             { headers: { 'Authorization': `Bearer ${token}` } }
         );
         
         const data = await response.json();
         
-        if (data && data.data) {
-            // Загружаем данные в смету - используем существующую логику
-            loadDriveEstimateData(data);
-            document.getElementById('googleDriveLoadModal').style.display = 'none';
-            showNotification('✅ Смета загружена из Google Drive');
+        if (!data.files || data.files.length === 0) {
+            showNotification('❌ Логотип не найден в Drive');
+            return;
         }
+        
+        const fileId = data.files[0].id;
+        
+        const fileResponse = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        
+        const blob = await fileResponse.blob();
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            logoDataUrl = e.target.result;
+            localStorage.setItem('companyLogo', logoDataUrl);
+            
+            const logoImg = document.getElementById('logoImage');
+            const logoPreview = document.getElementById('logoPreview');
+            const clearBtn = document.getElementById('clearLogoBtn');
+            const saveBtn = document.getElementById('saveLogoToDriveBtn');
+            const loadBtn = document.getElementById('loadLogoFromDriveBtn');
+            
+            if (logoImg) logoImg.src = logoDataUrl;
+            if (logoPreview) logoPreview.style.display = 'block';
+            if (clearBtn) clearBtn.style.display = 'inline-block';
+            if (saveBtn) saveBtn.style.display = 'inline-block';
+            if (loadBtn) loadBtn.style.display = 'inline-block';
+            
+            showNotification('✅ Логотип загружен из Drive');
+        };
+        reader.readAsDataURL(blob);
+        
     } catch (error) {
-        console.error('Ошибка загрузки файла:', error);
-        showNotification('❌ Ошибка при загрузке');
+        console.error('Ошибка загрузки логотипа из Drive:', error);
+        showNotification('❌ Ошибка при загрузке логотипа');
     }
 }
-// Добавь обработчики при загрузке
+
+// Инициализация логотипа и обработчиков
 document.addEventListener('DOMContentLoaded', function() {
+    // Загружаем сохраненный логотип при открытии
+    if (logoDataUrl) {
+        const logoImg = document.getElementById('logoImage');
+        const logoPreview = document.getElementById('logoPreview');
+        const clearBtn = document.getElementById('clearLogoBtn');
+        const saveBtn = document.getElementById('saveLogoToDriveBtn');
+        const loadBtn = document.getElementById('loadLogoFromDriveBtn');
+        
+        if (logoImg) logoImg.src = logoDataUrl;
+        if (logoPreview) logoPreview.style.display = 'block';
+        if (clearBtn) clearBtn.style.display = 'inline-block';
+        if (saveBtn) saveBtn.style.display = 'inline-block';
+        if (loadBtn) loadBtn.style.display = 'inline-block';
+    }
+    
+    // Обработчик загрузки файла
+    const logoUpload = document.getElementById('logoUpload');
+    if (logoUpload) {
+        logoUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    logoDataUrl = event.target.result;
+                    localStorage.setItem('companyLogo', logoDataUrl);
+                    
+                    const preview = document.getElementById('logoPreview');
+                    const logoImg = document.getElementById('logoImage');
+                    const clearBtn = document.getElementById('clearLogoBtn');
+                    const saveBtn = document.getElementById('saveLogoToDriveBtn');
+                    const loadBtn = document.getElementById('loadLogoFromDriveBtn');
+                    
+                    if (logoImg) logoImg.src = logoDataUrl;
+                    if (preview) preview.style.display = 'block';
+                    if (clearBtn) clearBtn.style.display = 'inline-block';
+                    if (saveBtn) saveBtn.style.display = 'inline-block';
+                    if (loadBtn) loadBtn.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Обработчик очистки
+    const clearBtn = document.getElementById('clearLogoBtn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            localStorage.removeItem('companyLogo');
+            logoDataUrl = null;
+            
+            const preview = document.getElementById('logoPreview');
+            const upload = document.getElementById('logoUpload');
+            const saveBtn = document.getElementById('saveLogoToDriveBtn');
+            const loadBtn = document.getElementById('loadLogoFromDriveBtn');
+            
+            if (preview) preview.style.display = 'none';
+            if (upload) upload.value = '';
+            this.style.display = 'none';
+            if (saveBtn) saveBtn.style.display = 'none';
+            if (loadBtn) loadBtn.style.display = 'none';
+        });
+    }
+    
     // Кнопка загрузки выбранного файла из Drive
     const loadDriveBtn = document.getElementById('loadSelectedDriveFileBtn');
     if (loadDriveBtn) {
@@ -9128,110 +9276,6 @@ document.addEventListener('DOMContentLoaded', function() {
         saveLogoBtn.addEventListener('click', saveLogoToDrive);
     }
 });
-// ========== УПРАВЛЕНИЕ ЛОГОТИПОМ ==========
-let logoDataUrl = localStorage.getItem('companyLogo') || null;
-
-document.getElementById('logoUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            logoDataUrl = event.target.result;
-            localStorage.setItem('companyLogo', logoDataUrl);
-            
-            const preview = document.getElementById('logoPreview');
-            const logoImg = document.getElementById('logoImage');
-            logoImg.src = logoDataUrl;
-            preview.style.display = 'block';
-            document.getElementById('clearLogoBtn').style.display = 'inline-block';
-            document.getElementById('saveLogoToDriveBtn').style.display = 'inline-block';
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-document.getElementById('clearLogoBtn').addEventListener('click', function() {
-    localStorage.removeItem('companyLogo');
-    logoDataUrl = null;
-    document.getElementById('logoPreview').style.display = 'none';
-    document.getElementById('logoUpload').value = '';
-    this.style.display = 'none';
-    document.getElementById('saveLogoToDriveBtn').style.display = 'none';
-});
-
-// Загружаем сохраненный логотип при открытии
-document.addEventListener('DOMContentLoaded', function() {
-    if (logoDataUrl) {
-        const logoImg = document.getElementById('logoImage');
-        logoImg.src = logoDataUrl;
-        document.getElementById('logoPreview').style.display = 'block';
-        document.getElementById('clearLogoBtn').style.display = 'inline-block';
-        document.getElementById('saveLogoToDriveBtn').style.display = 'inline-block';
-    }
-});
-
-		// Загрузить логотип из Google Drive
-async function loadLogoFromDrive() {
-    const token = localStorage.getItem('google_token');
-    if (!token) {
-        showNotification('❌ Сначала войдите в Google');
-        return;
-    }
-    
-    try {
-        showNotification('⏳ Загружаем логотип из Drive...');
-        
-        // Ищем файл с логотипом
-        const response = await fetch(
-            'https://www.googleapis.com/drive/v3/files?q=name="company_logo.png"&fields=files(id)',
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        );
-        
-        const data = await response.json();
-        
-        if (!data.files || data.files.length === 0) {
-            showNotification('❌ Логотип не найден в Drive');
-            return;
-        }
-        
-        const fileId = data.files[0].id;
-        
-        // Загружаем файл
-        const fileResponse = await fetch(
-            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        );
-        
-        const blob = await fileResponse.blob();
-        
-        // Конвертируем blob в data URL
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            logoDataUrl = e.target.result;
-            localStorage.setItem('companyLogo', logoDataUrl);
-            
-            // Обновляем предпросмотр
-            const logoImg = document.getElementById('logoImage');
-            const logoPreview = document.getElementById('logoPreview');
-            const clearBtn = document.getElementById('clearLogoBtn');
-            const saveBtn = document.getElementById('saveLogoToDriveBtn');
-            const loadBtn = document.getElementById('loadLogoFromDriveBtn');
-            
-            if (logoImg) logoImg.src = logoDataUrl;
-            if (logoPreview) logoPreview.style.display = 'block';
-            if (clearBtn) clearBtn.style.display = 'inline-block';
-            if (saveBtn) saveBtn.style.display = 'inline-block';
-            if (loadBtn) loadBtn.style.display = 'inline-block';
-            
-            showNotification('✅ Логотип загружен из Drive');
-        };
-        reader.readAsDataURL(blob);
-        
-    } catch (error) {
-        console.error('Ошибка загрузки логотипа из Drive:', error);
-        showNotification('❌ Ошибка при загрузке логотипа');
-    }
-}
     </script>
 	<!-- Модальное окно для загрузки из Google Drive -->
 <div class="modal" id="googleDriveLoadModal">
