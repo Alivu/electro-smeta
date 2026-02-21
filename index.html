@@ -6075,8 +6075,11 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
         <html>
         <head>
             <meta charset="UTF-8">
-         <title> </title>
+         <title>Смета ${estimateNumber}</title>
             <style>
+			@page {
+    margin: 0;
+}
                 body { font-family: Arial; padding: 20px; background: #f5f5f5; }
                 .print-container { 
                     max-width: 800px; 
