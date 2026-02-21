@@ -1,12 +1,12 @@
 // Service Worker для ЭлектроСметы
-const APP_VERSION = '2.2.0';
+const APP_VERSION = '2.2.1';
 const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 
 // Текст уведомления для этой версии
 const VERSION_NOTIFICATION = {
   version: APP_VERSION,
   title: '📢 Что нового в версии ' + APP_VERSION,
-  message: '✨ Исправлено отоброжения Хиджры.'
+  message: '✨ Исправлено: Хиджра, Вход в Google Accaunt, Меню сохранения и загрузки.'
 };
 
 // Установка
