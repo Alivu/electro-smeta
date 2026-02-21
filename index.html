@@ -2253,6 +2253,10 @@
     font-size: 9px !important;   /* Уменьшаем шрифт */
 }
 }
+		/* ========== СКРЫТИЕ КНОПОК ========== */
+.google-login-hidden {
+    display: none !important;
+}
     </style>
 </head>
 <body>
@@ -2367,6 +2371,7 @@
         </div>
     </div>
 </div>
+	</div>
         <!-- Вкладка 1: Прайс-лист -->
         <div class="tab-content active" id="price-tab">
             <div class="price-header">
@@ -8230,7 +8235,7 @@ function updateGoogleUI(user) {
         googleUserEmail.textContent = user.email;
         
         // Скрываем кнопку входа и разделитель
-        googleLoginBtn.style.display = 'none';
+        googleLoginBtn.classList.add('google-login-hidden');
         googleLoginDivider.style.display = 'none';
         
         // Показываем кнопки Drive
