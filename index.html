@@ -6970,6 +6970,7 @@ let googleToken = '';
 function googleLogin() {
     const clientId = '1005885507362-vsplr1th18mhk2uj6prb2akump2c20tb.apps.googleusercontent.com';
     const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+	const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
     
     // ВАЖНО: добавляем все необходимые scope для Drive
     const scope = encodeURIComponent([
@@ -6980,9 +6981,8 @@ function googleLogin() {
 		'https://www.googleapis.com/auth/drive.readonly'
     ].join(' '));
     
-    const url = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&state=electro_smeta&access_type=offline&prompt=consent`;
-    
-    window.open(url, '_blank', 'width=500,height=600');
+const url = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&state=electro_smeta&prompt=consent`;
+window.location.href = url;
 }
 
 // Проверяем токен при загрузке
@@ -7264,27 +7264,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ========== УПРАВЛЕНИЕ КНОПКАМИ GOOGLE DRIVE ==========
-
-// 1. Проверяем токен при загрузке
-function checkGoogleAuth() {
-    const hash = window.location.hash;
-    if (hash.includes('access_token')) {
-        const token = hash.split('access_token=')[1].split('&')[0];
-        localStorage.setItem('google_token', token);
-        
-        // Показываем кнопки Drive с проверкой
-        const saveBtn = document.getElementById('saveToDriveBtn');
-        const loadBtn = document.getElementById('loadFromDriveBtn');
-        
-        if (saveBtn) saveBtn.style.display = 'flex';
-        if (loadBtn) loadBtn.style.display = 'flex';
-        
-        // Убираем токен из URL
-        history.replaceState(null, null, ' ');
-        
-        showNotification('✅ Успешный вход Google!');
-    }
-}
 
 // 2. Проверяем есть ли сохраненный токен
 function checkSavedToken() {
