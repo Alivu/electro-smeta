@@ -8629,6 +8629,7 @@ if (googleLogoutBtn) {
 document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
 });
+let selectedDriveFileId = null;	
 // Показать окно загрузки из Google Drive
 async function showGoogleDriveLoadModal() {
     const modal = document.getElementById('googleDriveLoadModal');
