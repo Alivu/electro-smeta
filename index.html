@@ -3234,11 +3234,50 @@ initializeVersion();
 // Обработчик для кнопки "Скачать PDF" в окне печати
 window.addEventListener('message', function(event) {
     if (event.data.action === 'savePDFFromPrint') {
-        // Заполняем поля в модальном окне PDF
-        document.getElementById('clientName').value = event.data.data.clientName;
-        document.getElementById('estimateNumber').value = event.data.data.estimateNumber;
-        document.getElementById('estimateDate').value = event.data.data.estimateDate;
-        document.getElementById('notes').value = event.data.data.notes;
+        // Заполняем поля исполнителя
+        if (document.getElementById('executorName')) {
+            document.getElementById('executorName').value = event.data.data.executorName || 'ЭлектроСмета';
+        }
+        if (document.getElementById('executorInn')) {
+            document.getElementById('executorInn').value = event.data.data.executorInn || '';
+        }
+        if (document.getElementById('executorPhone')) {
+            document.getElementById('executorPhone').value = event.data.data.executorPhone || '+7 (963) 598-48-46';
+        }
+        
+        // Заполняем поля клиента
+        if (document.getElementById('clientName')) {
+            document.getElementById('clientName').value = event.data.data.clientName || '';
+        }
+        if (document.getElementById('clientContacts')) {
+            document.getElementById('clientContacts').value = event.data.data.clientContacts || '';
+        }
+        if (document.getElementById('projectName')) {
+            document.getElementById('projectName').value = event.data.data.projectName || '';
+        }
+        
+        // Заполняем поля документа
+        if (document.getElementById('estimateNumber')) {
+            document.getElementById('estimateNumber').value = event.data.data.estimateNumber || 'СМ-001';
+        }
+        if (document.getElementById('estimateDate')) {
+            document.getElementById('estimateDate').value = event.data.data.estimateDate || new Date().toISOString().split('T')[0];
+        }
+        if (document.getElementById('notes')) {
+            document.getElementById('notes').value = event.data.data.notes || '';
+        }
+        
+        // Сохраняем логотип, если он передан
+        if (event.data.data.logoDataUrl) {
+            localStorage.setItem('companyLogo', event.data.data.logoDataUrl);
+            logoDataUrl = event.data.data.logoDataUrl;
+            
+            // Обновляем предпросмотр логотипа если он открыт
+            const logoImg = document.getElementById('logoImage');
+            const logoPreview = document.getElementById('logoPreview');
+            if (logoImg) logoImg.src = event.data.data.logoDataUrl;
+            if (logoPreview) logoPreview.style.display = 'block';
+        }
         
         // Закрываем окно печати
         if (event.source) event.source.close();
@@ -3248,7 +3287,7 @@ window.addEventListener('message', function(event) {
             saveAsPDF();
         }, 300);
     }
-    
+});
     // ДОБАВЬТЕ ЭТОТ БЛОК для прайс-листа:
     if (event.data.action === 'savePriceAsPDF') {
         // Закрываем окно печати
@@ -6413,18 +6452,23 @@ td:first-child {
             </div>
             <script>
                 // Функция для отправки данных обратно в основное окно
-                function saveAsPDFFromPrint() {
-                    window.opener.postMessage({
-                        action: 'savePDFFromPrint',
-                        data: {
-                            clientName: '${clientName}',
-                            estimateNumber: '${estimateNumber}',
-                            estimateDate: '${estimateDate}',
-                            notes: '${notes.replace(/'/g, "\\'")}'
-                        }
-                    }, '*');
-                }
-                
+function saveAsPDFFromPrint() {
+    window.opener.postMessage({
+        action: 'savePDFFromPrint',
+        data: {
+            executorName: '${executorName}',
+            executorInn: '${executorInn}',
+            executorPhone: '${executorPhone}',
+            clientName: '${clientName}',
+            clientContacts: '${clientContacts}',
+            projectName: '${projectName}',
+            estimateNumber: '${estimateNumber}',
+            estimateDate: '${estimateDate}',
+            notes: '${notes.replace(/'/g, "\\'")}',
+            logoDataUrl: '${logoDataUrl || ''}'  // ← ДОБАВЛЯЕМ ЛОГОТИП
+        }
+    }, '*');
+}
                 // Закрытие после печати (опционально)
                 window.onafterprint = function() {
                     setTimeout(() => {
