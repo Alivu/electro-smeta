@@ -6985,7 +6985,62 @@ window.location.href = url;
 }
 
 // Проверяем токен при загрузке
+// Проверяем токен при загрузке
 function checkGoogleToken() {
+    const hash = window.location.hash;
+    if (hash.includes('access_token')) {
+        const token = hash.split('access_token=')[1].split('&')[0];
+        googleToken = token;
+        localStorage.setItem('google_token', token);
+        
+        // Показываем кнопки Drive с проверкой
+        const saveBtn = document.getElementById('saveToDriveBtn');
+        const loadBtn = document.getElementById('loadFromDriveBtn');
+        
+        if (saveBtn) saveBtn.style.display = 'flex';
+        if (loadBtn) loadBtn.style.display = 'flex';
+        
+        // Получаем информацию о пользователе
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(response => response.json())
+        .then(user => {
+            localStorage.setItem('google_user', JSON.stringify(user));
+            console.log('✅ Пользователь:', user.email);
+            showNotification(`✅ Вход выполнен: ${user.email}`);
+            
+            // ===== ДОБАВЬ ЭТОТ БЛОК =====
+            // Обновляем UI с данными пользователя
+            const googleUserBlock = document.getElementById('googleUserBlock');
+            const googleUserEmail = document.getElementById('googleUserEmail');
+            const googleLoginBtn = document.getElementById('googleLoginBtn');
+            const googleDriveLoadBtn = document.getElementById('googleDriveLoadBtn');
+            
+            if (googleUserBlock) googleUserBlock.style.display = 'block';
+            if (googleUserEmail) googleUserEmail.textContent = user.email;
+            if (googleLoginBtn) {
+                googleLoginBtn.style.display = 'none';
+                googleLoginBtn.classList.add('google-login-hidden');
+            }
+            if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'flex';
+            // ===== КОНЕЦ БЛОКА =====
+            
+            // Можно добавить отображение email где-то на странице
+            const userEmailSpan = document.getElementById('userEmail');
+            if (userEmailSpan) {
+                userEmailSpan.textContent = user.email;
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка получения данных пользователя:', error);
+            showNotification('✅ Вход выполнен (email не получен)');
+        });
+        
+        // Убираем хэш из URL
+        history.replaceState(null, null, ' ');
+    }
+}
     const hash = window.location.hash;
     if (hash.includes('access_token')) {
         const token = hash.split('access_token=')[1].split('&')[0];
