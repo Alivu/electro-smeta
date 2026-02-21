@@ -6189,14 +6189,14 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
             
             <div class="print-container">
                 <div class="header">
-				<div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-    <div style="width: 48%;">
+				<div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding: 10px 0; background: #f8f9fa; border-radius: 5px;">
+    <div style="text-align: left; padding-left: 0;">
         <strong style="color: #2c3e50;">ИСПОЛНИТЕЛЬ:</strong><br>
         ${executorName}<br>
         ${executorInn ? `ИНН: ${executorInn}<br>` : ''}
         ${executorPhone ? `Тел.: ${executorPhone}` : ''}
     </div>
-    <div style="width: 48%; text-align: right;">
+    <div style="text-align: right; padding-right: 0;">
         <strong style="color: #2c3e50;">ЗАКАЗЧИК:</strong><br>
         ${clientName}<br>
         ${clientContacts ? `${clientContacts}<br>` : ''}
