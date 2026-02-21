@@ -6107,8 +6107,11 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
     const notes = document.getElementById('notes').value;
     const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
 	const logoHtml = logoDataUrl ? 
-    `<div style="margin-bottom: 20px; text-align: left: -10;">
-        <img src="${logoDataUrl}" style="max-height: 100px; max-width: 100px; object-fit: contain;">
+	const logoHtml = logoDataUrl ? 
+    `<div style="height: 10px; position: relative;">
+        <div style="position: absolute; top: -13px; left: -5;">
+            <img src="${logoDataUrl}" style="max-height: 160px; max-width: 160px; object-fit: contain;">
+        </div>
     </div>` : '';
     if (filledRows.length === 0) {
         alert('Смета пуста! Добавьте позиции перед печатью.');
@@ -6347,7 +6350,7 @@ td:first-child {
             </div>
             
 <div class="print-container">
-    ${logoHtml} 
+    
     <div class="header">
         <div style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 20px; padding: 10px 10px; background: #f8f9fa; border-radius: 5px;">
             <div style="text-align: left;">
@@ -6363,6 +6366,7 @@ td:first-child {
                 ${projectName ? `Объект: ${projectName}` : ''}
             </div>
         </div>
+		 ${logoHtml}
         <!-- Удали ${logoHtml} отсюда, он уже выше -->
         <h1 style="color: #2c3e50;">СМЕТА № ${estimateNumber}</h1>
         <div style="font-size: 16px; margin: 10px 0;"><strong>Клиент:</strong> ${clientName}</div>
