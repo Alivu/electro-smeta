@@ -8694,12 +8694,17 @@ const data = await response.json();
 console.log('Файлы из Drive:', data.files); // ← вот это добавить
 loading.style.display = 'none';
         
-        if (data.files && data.files.length > 0) {
-            data.files.forEach(file => {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'google-drive-item';
-                itemDiv.dataset.id = file.id;
-                itemDiv.dataset.name = file.name;
+if (data.files && data.files.length > 0) {
+    data.files.forEach(file => {
+        // Показываем только JSON файлы, которые содержат слово "Смета"
+        if (!file.name.toLowerCase().includes('смета')) {
+            return; // пропускаем все остальное
+        }
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'google-drive-item';
+        itemDiv.dataset.id = file.id;
+        itemDiv.dataset.name = file.name;
                 
 // Получаем имя файла без .json
 const fileName = file.name.replace('.json', '');
@@ -8715,14 +8720,30 @@ if (dateMatch) {
                 
 // Сразу запрашиваем детали файла
 getEstimateDetails(file.id).then(details => {
-    const itemsCount = details ? details.itemsCount : '?';
-    const total = details ? formatCurrency(details.total) : '?';
+    // Проверяем, что это действительно наша смета (есть данные)
+    let itemsCount = '?';
+    let total = '?';
+    let isValidEstimate = false;
+    
+    if (details && details.itemsCount > 0 && details.total) {
+        itemsCount = details.itemsCount;
+        total = formatCurrency(details.total);
+        isValidEstimate = true;
+    }
+    
+    // Если это не смета (например, installed_apps), показываем предупреждение
+    const fileClass = isValidEstimate ? 'google-drive-item' : 'google-drive-item invalid-file';
+    const deleteButton = isValidEstimate ? 
+        `<button class="google-drive-delete-btn" onclick="deleteDriveFile('${file.id}')" title="Удалить">
+            <i class="fas fa-trash"></i>
+         </button>` : '';
     
     itemDiv.innerHTML = `
         <div class="google-drive-item-info">
             <div class="google-drive-item-name">
                 <i class="fas fa-file-alt"></i>
                 ${fileName}
+                ${!isValidEstimate ? '<span style="color: #e74c3c; font-size: 11px; margin-left: 8px;">(не смета)</span>' : ''}
             </div>
             <div class="google-drive-item-meta">
                 <span><i class="fas fa-calendar-alt"></i> ${displayDate}</span>
@@ -8734,11 +8755,15 @@ getEstimateDetails(file.id).then(details => {
             <button class="google-drive-edit-btn" onclick="editDriveFileName('${file.id}', '${file.name}')" title="Редактировать название">
                 <i class="fas fa-edit"></i>
             </button>
-            <button class="google-drive-delete-btn" onclick="deleteDriveFile('${file.id}')" title="Удалить">
-                <i class="fas fa-trash"></i>
-            </button>
+            ${deleteButton}
         </div>
     `;
+    
+    // Если файл не является сметой, делаем его некликабельным
+    if (!isValidEstimate) {
+        itemDiv.style.opacity = '0.6';
+        itemDiv.style.pointerEvents = 'none';
+    }
 });
                 
                 itemDiv.addEventListener('click', function(e) {
