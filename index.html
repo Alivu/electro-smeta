@@ -5839,6 +5839,9 @@ function saveEstimate() {
 }
 
 function showLoadModal() {
+	    // Сначала закрываем меню
+    const menu = document.getElementById('controlsMenu');
+    if (menu) menu.classList.remove('show');
     const listContainer = document.getElementById('savedEstimatesList');
     const loadBtn = document.getElementById('loadSelectedEstimateBtn');
     listContainer.innerHTML = '';
@@ -8667,6 +8670,9 @@ document.addEventListener('DOMContentLoaded', function() {
 let selectedDriveFileId = null;	
 // Показать окно загрузки из Google Drive
 async function showGoogleDriveLoadModal() {
+	    // Сначала закрываем меню
+    const menu = document.getElementById('controlsMenu');
+    if (menu) menu.classList.remove('show');
     const modal = document.getElementById('googleDriveLoadModal');
     const filesList = document.getElementById('googleDriveFilesList');
     const loading = document.getElementById('googleDriveLoading');
