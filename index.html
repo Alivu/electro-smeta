@@ -7202,16 +7202,23 @@ async function loadFromDrive() {
 document.addEventListener('DOMContentLoaded', function() {
     checkGoogleToken();
     
-    // Проверяем сохраненный токен
+    // Проверяем сохраненный токен с проверкой существования элементов
     if (localStorage.getItem('google_token')) {
         googleToken = localStorage.getItem('google_token');
-        document.getElementById('saveToDriveBtn').style.display = 'flex';
-        document.getElementById('loadFromDriveBtn').style.display = 'flex';
+        
+        const saveBtn = document.getElementById('saveToDriveBtn');
+        const loadBtn = document.getElementById('loadFromDriveBtn');
+        
+        if (saveBtn) saveBtn.style.display = 'flex';
+        if (loadBtn) loadBtn.style.display = 'flex';
     }
     
-    // Назначаем кнопкам функции
-    document.getElementById('saveToDriveBtn').onclick = saveToDrive;
-    document.getElementById('loadFromDriveBtn').onclick = loadFromDrive;
+    // Назначаем кнопкам функции с проверкой
+    const saveBtn = document.getElementById('saveToDriveBtn');
+    if (saveBtn) saveBtn.onclick = saveToDrive;
+    
+    const loadBtn = document.getElementById('loadFromDriveBtn');
+    if (loadBtn) loadBtn.onclick = loadFromDrive;
 });
 
 // ========== УПРАВЛЕНИЕ КНОПКАМИ GOOGLE DRIVE ==========
@@ -7223,9 +7230,12 @@ function checkGoogleAuth() {
         const token = hash.split('access_token=')[1].split('&')[0];
         localStorage.setItem('google_token', token);
         
-        // Показываем кнопки Drive
-        document.getElementById('saveToDriveBtn').style.display = 'flex';
-        document.getElementById('loadFromDriveBtn').style.display = 'flex';
+        // Показываем кнопки Drive с проверкой
+        const saveBtn = document.getElementById('saveToDriveBtn');
+        const loadBtn = document.getElementById('loadFromDriveBtn');
+        
+        if (saveBtn) saveBtn.style.display = 'flex';
+        if (loadBtn) loadBtn.style.display = 'flex';
         
         // Убираем токен из URL
         history.replaceState(null, null, ' ');
@@ -7238,8 +7248,12 @@ function checkGoogleAuth() {
 function checkSavedToken() {
     const token = localStorage.getItem('google_token');
     if (token) {
-        document.getElementById('saveToDriveBtn').style.display = 'flex';
-        document.getElementById('loadFromDriveBtn').style.display = 'flex';
+        const saveBtn = document.getElementById('saveToDriveBtn');
+        const loadBtn = document.getElementById('loadFromDriveBtn');
+        
+        if (saveBtn) saveBtn.style.display = 'flex';
+        if (loadBtn) loadBtn.style.display = 'flex';
+        
         return token;
     }
     return null;
