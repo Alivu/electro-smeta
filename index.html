@@ -8569,63 +8569,19 @@ function googleLogin() {
 
 // Функция выхода
 function googleLogout() {
-    const token = localStorage.getItem('google_token');
+    // Просто делаем ту же очистку, что и вручную
+    localStorage.clear();
+    sessionStorage.clear();
     
-    if (token) {
-        fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`)
-            .finally(() => {
-                // ===== ПОЛНАЯ ОЧИСТКА =====
-                localStorage.clear();        // Очищаем всё localStorage
-                sessionStorage.clear();      // Очищаем sessionStorage
-                
-                // Очищаем cookies
-                document.cookie.split(";").forEach(function(c) { 
-                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-                });
-                
-                // Сбрасываем переменные
-                window.googleToken = null;
-                
-                // ПОКАЗЫВАЕМ КНОПКУ ВХОДА
-                const loginBtn = document.getElementById('googleLoginBtn');
-                if (loginBtn) {
-                    loginBtn.style.display = 'flex';
-                    loginBtn.classList.remove('forced-hidden');
-                    loginBtn.classList.remove('google-login-hidden');
-                }
-                
-                // Скрываем блок пользователя
-                const userBlock = document.getElementById('googleUserBlock');
-                if (userBlock) userBlock.style.display = 'none';
-                
-                // Показываем разделитель (если есть)
-                const divider = document.getElementById('googleLoginDivider');
-                if (divider) divider.style.display = 'block';
-                
-                // Скрываем все кнопки Drive
-                const saveBtn = document.getElementById('saveToDriveBtn');
-                const loadBtn = document.getElementById('loadFromDriveBtn');
-                const googleDriveBtn = document.getElementById('googleDriveLoadBtn');
-                
-                if (saveBtn) saveBtn.style.display = 'none';
-                if (loadBtn) loadBtn.style.display = 'none';
-                if (googleDriveBtn) googleDriveBtn.style.display = 'none';
-                
-                showNotification('👋 Вы вышли из аккаунта');
-                
-                // Перезагружаем страницу для полной очистки
-                setTimeout(() => {
-                    location.reload();
-                }, 500);
-            });
-    } else {
-        localStorage.clear();
-        sessionStorage.clear();
-        document.cookie.split(";").forEach(function(c) { 
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-        });
-        location.reload();
-    }
+    // Очищаем cookies
+    document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
+    
+    showNotification('👋 Выход из аккаунта');
+    
+    // Перезагружаем страницу
+    location.reload();
 }
 // Проверяем сохраненный вход при загрузке
 function checkGoogleAuth() {
