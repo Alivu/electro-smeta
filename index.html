@@ -8648,7 +8648,8 @@ async function getEstimateDetails(fileId) {
         );
         
         const data = await response.json();
-        if (data && data.data) {
+        // Проверяем, что это действительно наша смета
+        if (data && data.data && Array.isArray(data.data) && data.totals) {
             return {
                 itemsCount: data.data.length,
                 total: data.totals?.totalAmount || 0
