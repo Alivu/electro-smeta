@@ -6752,29 +6752,35 @@ function printPriceList() {
             };
         }
 
-        // Функция для генерации PDF из модального окна
-        function generatePDFFromModal() {
-            const clientName = document.getElementById('clientName').value || 'Клиент не указан';
-            const estimateNumber = document.getElementById('estimateNumber').value;
-            const estimateDate = document.getElementById('estimateDate').value;
-            const notes = document.getElementById('notes').value;
-            
-            const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
-            
-            if (filledRows.length === 0) {
-                alert('Смета пуста! Добавьте позиции перед сохранением.');
-                return;
-            }
-            
-            // Закрываем модальное окно
-            document.getElementById('printModal').style.display = 'none';
-            
-            // Для мобильных устройств создаем более простой PDF
-            createMobilePDF(clientName, estimateNumber, estimateDate, notes, filledRows);
-        }
+// Функция для генерации PDF из модального окна
+function generatePDFFromModal() {
+    const executorName = document.getElementById('executorName').value || 'ЭлектроСмета';
+    const executorInn = document.getElementById('executorInn').value || '';
+    const executorPhone = document.getElementById('executorPhone').value || '+7 (963) 598-48-46';
+    const clientName = document.getElementById('clientName').value || 'Клиент не указан';
+    const clientContacts = document.getElementById('clientContacts').value || '';
+    const projectName = document.getElementById('projectName').value || '';
+    const estimateNumber = document.getElementById('estimateNumber').value;
+    const estimateDate = document.getElementById('estimateDate').value;
+    const notes = document.getElementById('notes').value;
+    const logoDataUrl = localStorage.getItem('companyLogo') || null;
+    
+    const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
+    
+    if (filledRows.length === 0) {
+        alert('Смета пуста! Добавьте позиции перед сохранением.');
+        return;
+    }
+    
+    // Закрываем модальное окно
+    document.getElementById('printModal').style.display = 'none';
+    
+    // Для мобильных устройств создаем более простой PDF
+    createMobilePDF(executorName, executorInn, executorPhone, clientName, clientContacts, projectName, estimateNumber, estimateDate, notes, filledRows, logoDataUrl);
+}
 
-        // Функция создания PDF для мобильных устройств
-function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filledRows) {
+// Функция создания PDF для мобильных устройств
+function createMobilePDF(executorName, executorInn, executorPhone, clientName, clientContacts, projectName, estimateNumber, estimateDate, notes, filledRows, logoDataUrl) {
     // Показываем индикатор загрузки
     const loadingDiv = document.createElement('div');
     loadingDiv.style.cssText = `
@@ -6804,61 +6810,82 @@ function createMobilePDF(clientName, estimateNumber, estimateDate, notes, filled
     if (globalCoeff !== 1.0) finalTotal = finalTotal * globalCoeff;
     if (globalDiscount > 0) finalTotal = finalTotal * (1 - globalDiscount / 100);
     
-// Создаем временный контейнер для PDF
-const tempContainer = document.createElement('div');
-tempContainer.style.cssText = `
-    position: fixed;
-    left: -9999px;
-    top: -9999px;
-    width: 300mm;  /* Увеличили ширину для масштабирования */
-    padding: 1mm;
-    background: white;
-    font-family: Arial, sans-serif;
-    transform: scale(0.7);  /* Масштаб 70% */
-    transform-origin: top left;
-`;
+    // Создаем временный контейнер для PDF
+    const tempContainer = document.createElement('div');
+    tempContainer.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: -9999px;
+        width: 300mm;
+        padding: 1mm;
+        background: white;
+        font-family: Arial, sans-serif;
+        transform: scale(0.7);
+        transform-origin: top left;
+    `;
 
-// Добавляем стили для таблицы
-const style = document.createElement('style');
-style.textContent = `
-    table {
-        border-collapse: collapse !important;
-        width: 100% !important;
-        table-layout: fixed !important;
-    }
-    th, td {
-        border: 1px solid #000 !important;
-        padding: 1px 2px !important;
-        line-height: 1 !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        vertical-align: middle !important;
-        font-size: 11px !important;
-    }
-    th {
-        background: #f0f0f0 !important;
-        font-weight: bold !important;
-        text-align: center !important;
-    }
-    /* Принудительные ширины */
-    th:nth-child(1), td:nth-child(1) { width: 30px !important; max-width: 30px !important; }
-    th:nth-child(2), td:nth-child(2) { width: 200px !important; max-width: 200px !important; }
-    th:nth-child(3), td:nth-child(3) { width: 40px !important; max-width: 40px !important; }
-    th:nth-child(4), td:nth-child(4) { width: 50px !important; max-width: 50px !important; }
-    th:nth-child(5), td:nth-child(5) { width: 30px !important; max-width: 30px !important; }
-    th:nth-child(6), td:nth-child(6) { width: 60px !important; max-width: 60px !important; }
-`;
-tempContainer.appendChild(style);
+    // Добавляем стили для таблицы
+    const style = document.createElement('style');
+    style.textContent = `
+        table {
+            border-collapse: collapse !important;
+            width: 100% !important;
+            table-layout: fixed !important;
+        }
+        th, td {
+            border: 1px solid #000 !important;
+            padding: 1px 2px !important;
+            line-height: 1 !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            vertical-align: middle !important;
+            font-size: 11px !important;
+        }
+        th {
+            background: #f0f0f0 !important;
+            font-weight: bold !important;
+            text-align: center !important;
+        }
+        th:nth-child(1), td:nth-child(1) { width: 30px !important; max-width: 30px !important; }
+        th:nth-child(2), td:nth-child(2) { width: 200px !important; max-width: 200px !important; }
+        th:nth-child(3), td:nth-child(3) { width: 40px !important; max-width: 40px !important; }
+        th:nth-child(4), td:nth-child(4) { width: 50px !important; max-width: 50px !important; }
+        th:nth-child(5), td:nth-child(5) { width: 30px !important; max-width: 30px !important; }
+        th:nth-child(6), td:nth-child(6) { width: 60px !important; max-width: 60px !important; }
+    `;
+    tempContainer.appendChild(style);
 
-// Формируем содержимое
-let pdfContent = `
-    <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">
-        <h1 style="margin: 0 0 5px 0; font-size: 16px;">СМЕТА № ${estimateNumber}</h1>
-        <div style="font-size: 10px;"><strong>Клиент:</strong> ${clientName}</div>
-        <div style="font-size: 9px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
-    </div>
-`;
+    // Формируем HTML для логотипа
+    const logoHtml = logoDataUrl ? 
+        `<div style="text-align: left; margin-bottom: 10px;">
+            <img src="${logoDataUrl}" style="max-height: 60px; max-width: 200px; object-fit: contain;">
+        </div>` : '';
+
+    // Формируем содержимое PDF с логотипом и данными исполнителя
+    let pdfContent = `
+        <div style="margin: 10px;">
+            ${logoHtml}
+            <div style="display: flex; justify-content: space-between; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+                <div style="text-align: left; width: 48%;">
+                    <strong style="color: #2c3e50;">ИСПОЛНИТЕЛЬ:</strong><br>
+                    ${executorName}<br>
+                    ${executorInn ? `ИНН: ${executorInn}<br>` : ''}
+                    ${executorPhone ? `Тел.: ${executorPhone}` : ''}
+                </div>
+                <div style="text-align: right; width: 48%;">
+                    <strong style="color: #2c3e50;">ЗАКАЗЧИК:</strong><br>
+                    ${clientName}<br>
+                    ${clientContacts ? `${clientContacts}<br>` : ''}
+                    ${projectName ? `Объект: ${projectName}` : ''}
+                </div>
+            </div>
+            <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">
+                <h1 style="margin: 0 0 5px 0; font-size: 16px;">СМЕТА № ${estimateNumber}</h1>
+                <div style="font-size: 10px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
+            </div>
+    `;
+
     // Добавляем глобальные настройки
     if (globalDiscount > 0 || globalCoeff !== 1.0 || globalComment) {
         pdfContent += `
@@ -6870,24 +6897,23 @@ let pdfContent = `
             </div>
         `;
     }
-    
-pdfContent += `
-    <table style="border-collapse: collapse; width: 100%;">
-        <thead>
-            <tr style="background: #f0f0f0;">
-                <th style="border: 1px solid #000; padding: 2px 4px;">Код</th>
-                <th style="border: 1px solid #000; padding: 2px 4px;">Наименование</th>
-                <th style="border: 1px solid #000; padding: 2px 4px;">Ед.</th>
-                <th style="border: 1px solid #000; padding: 2px 4px;">Цена, руб.</th>
-                <th style="border: 1px solid #000; padding: 2px 4px;">Кол</th>
-                <th style="border: 1px solid #000; padding: 2px 4px;">Сумма, руб.</th>
-            </tr>
-        </thead>
-        <tbody>
-`;
-    
-    filledRows.forEach((row, index) => {
-        // Формируем полное наименование
+
+    pdfContent += `
+        <table>
+            <thead>
+                <tr>
+                    <th>Код</th>
+                    <th>Наименование</th>
+                    <th>Ед.</th>
+                    <th>Цена, руб.</th>
+                    <th>Кол</th>
+                    <th>Сумма, руб.</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    filledRows.forEach((row) => {
         let fullName = row.name || '';
         if (row.coefficient && row.coefficient !== 1.0) {
             fullName += ` [коэф. ${row.coefficient}${row.coeffComment ? ': ' + row.coeffComment : ''}]`;
@@ -6898,24 +6924,24 @@ pdfContent += `
         if (row.rowComment) {
             fullName += ` — ${row.rowComment}`;
         }
-        
-pdfContent += `
-    <tr>
-        <td style="border: 1px solid #000;">${row.priceId || ''}</td>
-        <td style="border: 1px solid #000;">${fullName}</td>
-        <td style="border: 1px solid #000;">${row.unit || ''}</td>
-        <td style="border: 1px solid #000;">${formatCurrency(row.price)}</td>
-        <td style="border: 1px solid #000;">${row.quantity}</td>
-        <td style="border: 1px solid #000;">${formatCurrency(row.total)}</td>
-    </tr>
-`;
+
+        pdfContent += `
+            <tr>
+                <td>${row.priceId || ''}</td>
+                <td>${fullName}</td>
+                <td>${row.unit || ''}</td>
+                <td>${formatCurrency(row.price)}</td>
+                <td>${row.quantity}</td>
+                <td>${formatCurrency(row.total)}</td>
+            </tr>
+        `;
     });
-    
+
     pdfContent += `
             </tbody>
         </table>
     `;
-    
+
     // Добавляем детализацию расчета
     pdfContent += `
         <div style="margin-top: 20px; padding-top: 10px; border-top: 2px solid #000;">
@@ -6923,7 +6949,7 @@ pdfContent += `
                 <span style="color: #666;">Базовая сумма:</span> ${formatCurrency(baseTotal)} руб.
             </div>
     `;
-    
+
     if (globalCoeff !== 1.0) {
         pdfContent += `
             <div style="text-align: right; font-size: 14px; margin-bottom: 5px;">
@@ -6931,7 +6957,7 @@ pdfContent += `
             </div>
         `;
     }
-    
+
     if (globalDiscount > 0) {
         pdfContent += `
             <div style="text-align: right; font-size: 14px; margin-bottom: 5px;">
@@ -6939,14 +6965,14 @@ pdfContent += `
             </div>
         `;
     }
-    
+
     pdfContent += `
             <div style="text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid #000;">
                 ИТОГО: ${formatCurrency(finalTotal)} руб.
             </div>
         </div>
     `;
-    
+
     if (notes) {
         pdfContent += `
             <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-left: 4px solid #3498db;">
@@ -6955,21 +6981,21 @@ pdfContent += `
             </div>
         `;
     }
-    
+
     pdfContent += `
         <div style="margin-top: 50px; font-size: 10px; color: #666; text-align: center;">
             Смета составлена с использованием приложения "ЭлектроСмета"<br>
             Дата формирования: ${new Date().toLocaleString('ru-RU')}
         </div>
+    </div>
     `;
-    
+
     tempContainer.innerHTML = pdfContent;
     document.body.appendChild(tempContainer);
-    
-    // Используем setTimeout для асинхронности (особенно важно для iOS)
+
     setTimeout(() => {
         html2canvas(tempContainer, {
-            scale: 2, // Увеличиваем качество для печати
+            scale: 2,
             useCORS: true,
             logging: false,
             backgroundColor: '#ffffff'
@@ -6986,11 +7012,9 @@ pdfContent += `
             
             pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
             
-            // Очистка
             document.body.removeChild(tempContainer);
             document.body.removeChild(loadingDiv);
             
-            // Сохранение
             pdf.save(`Смета_${estimateNumber}_${clientName.replace(/\s+/g, '_')}.pdf`);
             
             showNotification('PDF успешно сохранен!');
