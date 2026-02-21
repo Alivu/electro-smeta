@@ -8670,7 +8670,15 @@ async function showGoogleDriveLoadModal() {
                 itemDiv.dataset.id = file.id;
                 itemDiv.dataset.name = file.name;
                 
-                const modifiedTime = new Date(file.modifiedTime).toLocaleDateString('ru-RU');
+                let modifiedTime = 'Дата неизвестна';
+try {
+    const date = new Date(file.modifiedTime);
+    if (!isNaN(date.getTime())) {
+        modifiedTime = date.toLocaleDateString('ru-RU');
+    }
+} catch (e) {
+    console.log('Ошибка парсинга даты:', e);
+}
                 
                 itemDiv.innerHTML = `
                     <div class="google-drive-item-info">
