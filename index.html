@@ -2292,68 +2292,75 @@
         </button>
     </div>
     
-    <!-- Управление -->
-    <div class="estimate-controls">
-
-<button class="btn btn-info" id="toggleGlobalPanel" style="margin-right: 5px;">
-    <i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>
-</button>
-        
-        <!-- Меню управления сметой -->
-        <div class="dropdown-controls">
-            <button class="btn btn-success dropdown-toggle" id="controlsDropdown">
-                <i class="fas fa-bars"></i> Управление
-                <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
+<!-- Управление -->
+<div class="estimate-controls" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+    <!-- Кнопка скрытия панели -->
+    <button class="btn btn-info" id="toggleGlobalPanel">
+        <i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>
+    </button>
+    
+    <!-- Блок пользователя Google (скрыт по умолчанию) -->
+    <div id="googleUserBlock" style="display: none; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; align-items: center; gap: 8px; white-space: nowrap;">
+        <i class="fas fa-user-circle"></i>
+        <span id="googleUserEmail" style="font-weight: 500;"></span>
+        <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; margin-left: 5px; font-size: 14px;" title="Выйти">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+    
+    <!-- Кнопка входа Google (видна по умолчанию) -->
+    <button class="btn btn-primary" id="googleLoginBtn">
+        <i class="fab fa-google"></i> Войти
+    </button>
+    
+    <!-- Меню управления сметой -->
+    <div class="dropdown-controls">
+        <button class="btn btn-success dropdown-toggle" id="controlsDropdown">
+            <i class="fas fa-bars"></i> Управление
+            <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
+        </button>
+        <div class="dropdown-menu" id="controlsMenu">
+            <button class="dropdown-item" id="refreshEstimateBtn">
+                <i class="fas fa-sync-alt"></i> Обновить смету
             </button>
-            <div class="dropdown-menu" id="controlsMenu">
-                <button class="dropdown-item" id="refreshEstimateBtn">
-                    <i class="fas fa-sync-alt"></i> Обновить смету
-                </button>
-                
-                <button class="dropdown-item" id="addRowBtn">
-                    <i class="fas fa-plus"></i> Добавить строку
-                </button>
-                <button class="dropdown-item" id="addMaterialBtn">
-                    <i class="fas fa-box"></i> Добавить материал
-                </button>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item" id="saveEstimateBtn">
-                    <i class="fas fa-save"></i> Сохранить смету
-                </button>
-                <button class="dropdown-item" id="loadEstimateBtn">
-                    <i class="fas fa-folder-open"></i> Загрузить смету
-                </button>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item" id="saveAsPdfBtn">
-                    <i class="fas fa-file-pdf"></i> Сохранить в PDF
-                </button>
-                <button class="dropdown-item" id="printEstimateBtn">
-                    <i class="fas fa-print"></i> Печать сметы
-                </button>
-                <div class="dropdown-divider"></div>
-                <!-- НОВАЯ КНОПКА: Скачать PDF -->
-                <button class="dropdown-item" 
-                        onclick="window.open('https://github.com/Alivu/electro-smeta/raw/main/Price_Electric_GrouP.pdf', '_blank')">
-                    <i class="fas fa-download"></i> Скачать PDF прайс-лист
-                </button>
-                <button class="dropdown-item" onclick="window.open('https://accounts.google.com/o/oauth2/auth?client_id=10151274989-sirobiq4o2es78hs82gbotu34lkf11pb.apps.googleusercontent.com&redirect_uri=https://alivu.github.io/electro-smeta&response_type=token&scope=https://www.googleapis.com/auth/drive.file&state=electro_smeta', '_blank')">
-                    <i class="fab fa-google"></i> Тест Google Login
-                </button>
-
-                <!-- ДОБАВЬТЕ ЭТИ ДВЕ КНОПКИ: -->
-                <button class="dropdown-item" onclick="saveToDrive()" id="saveToDriveBtn" style="display:none">
-                    <i class="fab fa-google-drive"></i> Сохранить в Drive
-                </button>
-                <button class="dropdown-item" onclick="loadFromDrive()" id="loadFromDriveBtn" style="display:none">
-                    <i class="fas fa-download"></i> Загрузить из Drive
-                </button>
-                
-                <!-- Кнопка возврата -->
-                <button class="dropdown-item" 
-                        onclick="window.open('https://alivu.github.io/', '_blank')">
-                    <i class="fas fa-home"></i> Вернуться в Electric_Group
-                </button>
-            </div>
+            
+            <button class="dropdown-item" id="addRowBtn">
+                <i class="fas fa-plus"></i> Добавить строку
+            </button>
+            <button class="dropdown-item" id="addMaterialBtn">
+                <i class="fas fa-box"></i> Добавить материал
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" id="saveEstimateBtn">
+                <i class="fas fa-save"></i> Сохранить смету
+            </button>
+            <button class="dropdown-item" id="loadEstimateBtn">
+                <i class="fas fa-folder-open"></i> Загрузить смету
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" id="saveAsPdfBtn">
+                <i class="fas fa-file-pdf"></i> Сохранить в PDF
+            </button>
+            <button class="dropdown-item" id="printEstimateBtn">
+                <i class="fas fa-print"></i> Печать сметы
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" onclick="window.open('https://github.com/Alivu/electro-smeta/raw/main/Price_Electric_GrouP.pdf', '_blank')">
+                <i class="fas fa-download"></i> Скачать PDF прайс-лист
+            </button>
+            
+            <!-- Кнопки Google Drive (скрыты по умолчанию) -->
+            <button class="dropdown-item" onclick="saveToDrive()" id="saveToDriveBtn" style="display:none">
+                <i class="fab fa-google-drive"></i> Сохранить в Drive
+            </button>
+            <button class="dropdown-item" onclick="loadFromDrive()" id="loadFromDriveBtn" style="display:none">
+                <i class="fas fa-download"></i> Загрузить из Drive
+            </button>
+            
+            <!-- Кнопка возврата -->
+            <button class="dropdown-item" onclick="window.open('https://alivu.github.io/', '_blank')">
+                <i class="fas fa-home"></i> Вернуться в Electric_Group
+            </button>
         </div>
     </div>
 </div>
@@ -8200,7 +8207,128 @@ window.addEventListener('load', function() {
         }, 500);
     }
 });
+// ========== УПРАВЛЕНИЕ ВХОДОМ ЧЕРЕЗ GOOGLE ==========
+const googleLoginBtn = document.getElementById('googleLoginBtn');
+const googleUserBlock = document.getElementById('googleUserBlock');
+const googleUserEmail = document.getElementById('googleUserEmail');
+const googleLogoutBtn = document.getElementById('googleLogoutBtn');
 
+// Функция обновления UI после входа
+function updateGoogleUI(user) {
+    if (user && user.email) {
+        googleUserEmail.textContent = user.email;
+        googleUserBlock.style.display = 'flex';
+        googleLoginBtn.style.display = 'none';
+        
+        // Показываем кнопки Drive
+        document.getElementById('saveToDriveBtn').style.display = 'flex';
+        document.getElementById('loadFromDriveBtn').style.display = 'flex';
+        
+        showNotification(`✅ Вход выполнен: ${user.email}`);
+    } else {
+        googleUserBlock.style.display = 'none';
+        googleLoginBtn.style.display = 'inline-flex';
+        
+        // Скрываем кнопки Drive
+        document.getElementById('saveToDriveBtn').style.display = 'none';
+        document.getElementById('loadFromDriveBtn').style.display = 'none';
+    }
+}
+
+// Функция входа
+function googleLogin() {
+    const clientId = '10151274989-sirobiq4o2es78hs82gbotu34lkf11pb.apps.googleusercontent.com';
+    const redirectUri = encodeURIComponent(window.location.origin + window.location.pathname);
+    const scope = encodeURIComponent('https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/drive.file');
+    
+    const url = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&state=electro_smeta`;
+    
+    window.open(url, '_blank', 'width=500,height=600');
+}
+
+// Функция выхода
+function googleLogout() {
+    const token = localStorage.getItem('google_token');
+    
+    if (token) {
+        // Отзываем токен
+        fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`)
+            .finally(() => {
+                // Очищаем localStorage
+                localStorage.removeItem('google_token');
+                localStorage.removeItem('google_user');
+                googleToken = null;
+                
+                // Обновляем UI
+                updateGoogleUI(null);
+                
+                showNotification('👋 Вы вышли из аккаунта');
+            });
+    } else {
+        localStorage.removeItem('google_token');
+        localStorage.removeItem('google_user');
+        updateGoogleUI(null);
+    }
+}
+
+// Проверяем сохраненный вход при загрузке
+function checkGoogleAuth() {
+    const token = localStorage.getItem('google_token');
+    const userJson = localStorage.getItem('google_user');
+    
+    if (token && userJson) {
+        try {
+            const user = JSON.parse(userJson);
+            googleToken = token;
+            updateGoogleUI(user);
+        } catch (e) {
+            console.error('Ошибка парсинга пользователя');
+            localStorage.removeItem('google_user');
+        }
+    } else if (token) {
+        // Есть токен, но нет данных пользователя - получаем их
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(r => r.json())
+        .then(user => {
+            localStorage.setItem('google_user', JSON.stringify(user));
+            googleToken = token;
+            updateGoogleUI(user);
+        })
+        .catch(() => {
+            localStorage.removeItem('google_token');
+        });
+    }
+    
+    // Проверяем hash в URL (при возврате с Google)
+    const hash = window.location.hash;
+    if (hash.includes('access_token')) {
+        const token = hash.split('access_token=')[1].split('&')[0];
+        
+        // Получаем данные пользователя
+        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(r => r.json())
+        .then(user => {
+            localStorage.setItem('google_token', token);
+            localStorage.setItem('google_user', JSON.stringify(user));
+            googleToken = token;
+            updateGoogleUI(user);
+            
+            // Убираем hash из URL
+            history.replaceState(null, null, ' ');
+        });
+    }
+}
+
+// Назначаем обработчики
+googleLoginBtn.addEventListener('click', googleLogin);
+googleLogoutBtn.addEventListener('click', googleLogout);
+
+// Запускаем проверку при загрузке
+checkGoogleAuth();
     </script>
 </body>
 </html>
