@@ -2293,7 +2293,7 @@
     </div>
     
 <!-- Управление -->
-<div class="estimate-controls" style="display: flex; align-items: center; gap: 8px; ">
+<div class="estimate-controls">
     <!-- Кнопка скрытия панели -->
     <button class="btn btn-info" id="toggleGlobalPanel">
         <i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>
@@ -8211,17 +8211,19 @@ window.addEventListener('load', function() {
     }
 });
 // ========== УПРАВЛЕНИЕ ВХОДОМ ЧЕРЕЗ GOOGLE ==========
+// Получаем элементы
 const googleLoginBtn = document.getElementById('googleLoginBtn');
 const googleUserBlock = document.getElementById('googleUserBlock');
 const googleUserEmail = document.getElementById('googleUserEmail');
 const googleLogoutBtn = document.getElementById('googleLogoutBtn');
+const googleLoginDivider = document.getElementById('googleLoginDivider');
 
 // Функция обновления UI после входа
 function updateGoogleUI(user) {
-    const googleUserBlock = document.getElementById('googleUserBlock');
-    const googleUserEmail = document.getElementById('googleUserEmail');
-    const googleLoginBtn = document.getElementById('googleLoginBtn');
-    const googleLoginDivider = document.getElementById('googleLoginDivider');
+    if (!googleUserBlock || !googleUserEmail || !googleLoginBtn || !googleLoginDivider) {
+        console.error('Элементы Google UI не найдены');
+        return;
+    }
     
     if (user && user.email) {
         // Показываем блок с email ВНУТРИ меню
@@ -8233,8 +8235,10 @@ function updateGoogleUI(user) {
         googleLoginDivider.style.display = 'none';
         
         // Показываем кнопки Drive
-        document.getElementById('saveToDriveBtn').style.display = 'flex';
-        document.getElementById('loadFromDriveBtn').style.display = 'flex';
+        const saveToDriveBtn = document.getElementById('saveToDriveBtn');
+        const loadFromDriveBtn = document.getElementById('loadFromDriveBtn');
+        if (saveToDriveBtn) saveToDriveBtn.style.display = 'flex';
+        if (loadFromDriveBtn) loadFromDriveBtn.style.display = 'flex';
         
         showNotification(`✅ Вход выполнен: ${user.email}`);
     } else {
@@ -8246,8 +8250,10 @@ function updateGoogleUI(user) {
         googleLoginDivider.style.display = 'block';
         
         // Скрываем кнопки Drive
-        document.getElementById('saveToDriveBtn').style.display = 'none';
-        document.getElementById('loadFromDriveBtn').style.display = 'none';
+        const saveToDriveBtn = document.getElementById('saveToDriveBtn');
+        const loadFromDriveBtn = document.getElementById('loadFromDriveBtn');
+        if (saveToDriveBtn) saveToDriveBtn.style.display = 'none';
+        if (loadFromDriveBtn) loadFromDriveBtn.style.display = 'none';
     }
 }
 
@@ -8273,7 +8279,7 @@ function googleLogout() {
                 // Очищаем localStorage
                 localStorage.removeItem('google_token');
                 localStorage.removeItem('google_user');
-                googleToken = null;
+                window.googleToken = null;
                 
                 // Обновляем UI
                 updateGoogleUI(null);
@@ -8295,7 +8301,7 @@ function checkGoogleAuth() {
     if (token && userJson) {
         try {
             const user = JSON.parse(userJson);
-            googleToken = token;
+            window.googleToken = token;
             updateGoogleUI(user);
         } catch (e) {
             console.error('Ошибка парсинга пользователя');
@@ -8309,7 +8315,7 @@ function checkGoogleAuth() {
         .then(r => r.json())
         .then(user => {
             localStorage.setItem('google_user', JSON.stringify(user));
-            googleToken = token;
+            window.googleToken = token;
             updateGoogleUI(user);
         })
         .catch(() => {
@@ -8330,7 +8336,7 @@ function checkGoogleAuth() {
         .then(user => {
             localStorage.setItem('google_token', token);
             localStorage.setItem('google_user', JSON.stringify(user));
-            googleToken = token;
+            window.googleToken = token;
             updateGoogleUI(user);
             
             // Убираем hash из URL
@@ -8339,12 +8345,19 @@ function checkGoogleAuth() {
     }
 }
 
-// Назначаем обработчики
-googleLoginBtn.addEventListener('click', googleLogin);
-googleLogoutBtn.addEventListener('click', googleLogout);
+// Назначаем обработчики (только если элементы существуют)
+if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', googleLogin);
+}
+
+if (googleLogoutBtn) {
+    googleLogoutBtn.addEventListener('click', googleLogout);
+}
 
 // Запускаем проверку при загрузке
-checkGoogleAuth();
+document.addEventListener('DOMContentLoaded', function() {
+    checkGoogleAuth();
+});
     </script>
 </body>
 </html>
