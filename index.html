@@ -6824,73 +6824,147 @@ function createMobilePDF(executorName, executorInn, executorPhone, clientName, c
         transform-origin: top left;
     `;
 
-    // Добавляем стили для таблицы
+    // СТИЛИ ДЛЯ PDF (те же, что и в печатной версии)
     const style = document.createElement('style');
     style.textContent = `
-        table {
-            border-collapse: collapse !important;
-            width: 100% !important;
-            table-layout: fixed !important;
+        /* ========== ОСНОВНЫЕ НАСТРОЙКИ ========== */
+        @page {
+            margin: 0;
         }
-        th, td {
-            border: 1px solid #000 !important;
-            padding: 1px 2px !important;
-            line-height: 1 !important;
-            white-space: nowrap !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            vertical-align: middle !important;
-            font-size: 11px !important;
+        
+        body { 
+            font-family: Arial;
+            padding: 20px;
+            background: #f5f5f5;
         }
-        th {
-            background: #f0f0f0 !important;
-            font-weight: bold !important;
-            text-align: center !important;
+        
+        .print-container { 
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-        th:nth-child(1), td:nth-child(1) { width: 30px !important; max-width: 30px !important; }
-        th:nth-child(2), td:nth-child(2) { width: 200px !important; max-width: 200px !important; }
-        th:nth-child(3), td:nth-child(3) { width: 40px !important; max-width: 40px !important; }
-        th:nth-child(4), td:nth-child(4) { width: 50px !important; max-width: 50px !important; }
-        th:nth-child(5), td:nth-child(5) { width: 30px !important; max-width: 30px !important; }
-        th:nth-child(6), td:nth-child(6) { width: 60px !important; max-width: 60px !important; }
+        
+        /* ========== ШАПКА ДОКУМЕНТА ========== */
+        .header { 
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #3498db !important;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #e74c3c !important;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        
+        /* Исполнитель и заказчик */
+        .executor-client-block {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .executor-client-block div {
+            color: #3498db !important;
+        }
+        
+        .executor-client-block strong {
+            color: #2c3e50;
+        }
+        
+        /* ========== ТАБЛИЦА СМЕТЫ ========== */
+        table { 
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 9px;
+        }
+        
+        .modifier-note { 
+            color: #666;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+        
+        th, td { 
+            border: 1px solid #ddd;
+            padding: 3px 2px;
+        }
+        
+        th { 
+            background: #2c3e50;
+            color: white;
+            font-size: 9px;
+        }
+        
+        td {
+            color: #333;
+        }
+        
+        td:first-child {
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        /* ========== ИТОГОВЫЕ СУММЫ ========== */
+        .total { 
+            text-align: right;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #27ae60;
+        }
+        
+        .global-panel { 
+            font-size: 9px;
+            padding: 5px;
+            color: #333;
+        }
     `;
     tempContainer.appendChild(style);
 
-    // Формируем HTML для логотипа
+    // Формируем HTML для логотипа (увеличенный размер)
     const logoHtml = logoDataUrl ? 
-        `<div style="text-align: left; margin-bottom: 10px;">
-            <img src="${logoDataUrl}" style="max-height: 128px; max-width: 128px; object-fit: contain;">
+        `<div style="text-align: left; margin-bottom: 15px;">
+            <img src="${logoDataUrl}" style="max-height: 120px; max-width: 300px; object-fit: contain;">
         </div>` : '';
 
-    // Формируем содержимое PDF с логотипом и данными исполнителя
+    // Формируем содержимое PDF
     let pdfContent = `
-        <div style="margin: 10px;">
-            
-            <div style="display: flex; justify-content: space-between; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+        <div class="print-container">
+            <div class="executor-client-block">
                 <div style="text-align: left; width: 48%;">
-                    <strong style="color: #2c3e50;">ИСПОЛНИТЕЛЬ:</strong><br>
+                    <strong>ИСПОЛНИТЕЛЬ:</strong><br>
                     ${executorName}<br>
                     ${executorInn ? `ИНН: ${executorInn}<br>` : ''}
                     ${executorPhone ? `Тел.: ${executorPhone}` : ''}
                 </div>
                 <div style="text-align: right; width: 48%;">
-                    <strong style="color: #2c3e50;">ЗАКАЗЧИК:</strong><br>
+                    <strong>ЗАКАЗЧИК:</strong><br>
                     ${clientName}<br>
                     ${clientContacts ? `${clientContacts}<br>` : ''}
                     ${projectName ? `Объект: ${projectName}` : ''}
                 </div>
             </div>
-			${logoHtml}
-            <div style="text-align: center; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px;">
-                <h1 style="margin: 0 0 5px 0; font-size: 16px;">СМЕТА № ${estimateNumber}</h1>
-                <div style="font-size: 10px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
+            
+            ${logoHtml}
+            
+            <div class="header">
+                <h1>СМЕТА № ${estimateNumber}</h1>
+                <div style="font-size: 14px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
             </div>
     `;
 
     // Добавляем глобальные настройки
     if (globalDiscount > 0 || globalCoeff !== 1.0 || globalComment) {
         pdfContent += `
-            <div style="background: #f8f9fa; padding: 10px; border-left: 4px solid #3498db; margin-bottom: 20px; font-size: 11px;">
+            <div class="global-panel">
                 <strong>Общие настройки:</strong><br>
                 ${globalDiscount > 0 ? `Скидка: ${globalDiscount}%<br>` : ''}
                 ${globalCoeff !== 1.0 ? `Коэффициент: ${globalCoeff}<br>` : ''}
@@ -6907,7 +6981,7 @@ function createMobilePDF(executorName, executorInn, executorPhone, clientName, c
                     <th>Наименование</th>
                     <th>Ед.</th>
                     <th>Цена, руб.</th>
-                    <th>Кол</th>
+                    <th>Кол-во</th>
                     <th>Сумма, руб.</th>
                 </tr>
             </thead>
@@ -6917,10 +6991,10 @@ function createMobilePDF(executorName, executorInn, executorPhone, clientName, c
     filledRows.forEach((row) => {
         let fullName = row.name || '';
         if (row.coefficient && row.coefficient !== 1.0) {
-            fullName += ` [коэф. ${row.coefficient}${row.coeffComment ? ': ' + row.coeffComment : ''}]`;
+            fullName += ` <span class="modifier-note">[коэф. ${row.coefficient}${row.coeffComment ? ': ' + row.coeffComment : ''}]</span>`;
         }
         if (row.discount && row.discount > 0) {
-            fullName += ` [скидка ${row.discount}%${row.discountComment ? ': ' + row.discountComment : ''}]`;
+            fullName += ` <span class="modifier-note">[скидка ${row.discount}%${row.discountComment ? ': ' + row.discountComment : ''}]</span>`;
         }
         if (row.rowComment) {
             fullName += ` — ${row.rowComment}`;
@@ -6928,12 +7002,12 @@ function createMobilePDF(executorName, executorInn, executorPhone, clientName, c
 
         pdfContent += `
             <tr>
-                <td>${row.priceId || ''}</td>
+                <td><strong>${row.priceId || ''}</strong></td>
                 <td>${fullName}</td>
                 <td>${row.unit || ''}</td>
                 <td>${formatCurrency(row.price)}</td>
                 <td>${row.quantity}</td>
-                <td>${formatCurrency(row.total)}</td>
+                <td><strong>${formatCurrency(row.total)}</strong></td>
             </tr>
         `;
     });
@@ -6941,42 +7015,36 @@ function createMobilePDF(executorName, executorInn, executorPhone, clientName, c
     pdfContent += `
             </tbody>
         </table>
-    `;
-
-    // Добавляем детализацию расчета
-    pdfContent += `
-        <div style="margin-top: 20px; padding-top: 10px; border-top: 2px solid #000;">
-            <div style="text-align: right; font-size: 14px; margin-bottom: 5px;">
-                <span style="color: #666;">Базовая сумма:</span> ${formatCurrency(baseTotal)} руб.
-            </div>
+        
+        <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 15px 0;">
+            <div style="text-align: right; font-size: 12px;">
+                <span style="color: #666;">Базовая сумма:</span> ${formatCurrency(baseTotal)} руб.<br>
     `;
 
     if (globalCoeff !== 1.0) {
         pdfContent += `
-            <div style="text-align: right; font-size: 14px; margin-bottom: 5px;">
-                <span style="color: #666;">С учетом коэффициента ${globalCoeff}:</span> ${formatCurrency(baseTotal * globalCoeff)} руб.
-            </div>
+            <span style="color: #666;">С учетом коэффициента ${globalCoeff}:</span> ${formatCurrency(baseTotal * globalCoeff)} руб.<br>
         `;
     }
 
     if (globalDiscount > 0) {
         pdfContent += `
-            <div style="text-align: right; font-size: 14px; margin-bottom: 5px;">
-                <span style="color: #666;">Скидка ${globalDiscount}%:</span> -${formatCurrency(baseTotal * globalCoeff * (globalDiscount / 100))} руб.
-            </div>
+            <span style="color: #666;">Скидка ${globalDiscount}%:</span> -${formatCurrency(baseTotal * globalCoeff * (globalDiscount / 100))} руб.<br>
         `;
     }
 
     pdfContent += `
-            <div style="text-align: right; font-size: 18px; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid #000;">
-                ИТОГО: ${formatCurrency(finalTotal)} руб.
             </div>
+        </div>
+        
+        <div class="total">
+            ИТОГО: ${formatCurrency(finalTotal)} руб.
         </div>
     `;
 
     if (notes) {
         pdfContent += `
-            <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-left: 4px solid #3498db;">
+            <div style="background: #f8f9fa; padding: 10px; border-left: 4px solid #3498db; margin: 15px 0;">
                 <strong>Примечания:</strong><br>
                 ${notes.replace(/\n/g, '<br>')}
             </div>
@@ -6984,8 +7052,8 @@ function createMobilePDF(executorName, executorInn, executorPhone, clientName, c
     }
 
     pdfContent += `
-        <div style="margin-top: 50px; font-size: 10px; color: #666; text-align: center;">
-            Смета составлена с использованием приложения "ЭлектроСмета"<br>
+        <div style="margin-top: 30px; font-size: 10px; color: #666; text-align: center;">
+            Смета составлена в приложении "ЭлектроСмета" от Electric_Group<br>
             Дата формирования: ${new Date().toLocaleString('ru-RU')}
         </div>
     </div>
