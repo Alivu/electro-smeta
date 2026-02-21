@@ -6049,9 +6049,13 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
     const estimateNumber = document.getElementById('estimateNumber').value;
     const estimateDate = document.getElementById('estimateDate').value;
     const notes = document.getElementById('notes').value;
-    
     const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
-    
+	const logoHtml = logoDataUrl ? 
+    `<div style="height: 10px; position: relative;">
+        <div style="position: absolute; top: -13px; left: -5;">
+            <img src="${logoDataUrl}" style="max-height: 160px; max-width: 160px; object-fit: contain;">
+        </div>
+    </div>` : '';
     if (filledRows.length === 0) {
         alert('Смета пуста! Добавьте позиции перед печатью.');
         return;
@@ -6076,106 +6080,204 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
         <head>
             <meta charset="UTF-8">
          <title>Смета ${estimateNumber}</title>
-            <style>
-			@page {
+<style>
+/* ========== ОСНОВНЫЕ НАСТРОЙКИ ========== */
+
+/* Убираем поля страницы при печати */
+@page {
     margin: 0;
 }
-                body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-                .print-container { 
-                    max-width: 800px; 
-                    margin: 0 auto; 
-                    background: white; 
-                    padding: 30px; 
-                    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-                }
-                .header { text-align: center;
-				margin-bottom: 30px;
-				border-bottom: 3px solid #3498db;
-				padding-bottom: 20px;
-				}
-				
-				table { 
-					width: 100%; 
-					border-collapse: collapse; 
-					margin: 10px 0;  /* Было 25px */
-					font-size: 9px;  /* Добавили */
-				}
-                .modifier-note { color: #666; font-size: 11px; margin-left: 5px; }
-                
-				th, td { 
-					border: 1px solid #ddd; 
-					padding: 3px 2px;  /* Было 10px */
-				}
-				th { 
-					background: #2c3e50; 
-					color: white; 
-					font-size: 9px;  /* Добавили */
-				}
-				.total { 
-					text-align: right; 
-					font-size: 12px;  /* Было 18px */
-					font-weight: bold; 
-					margin: 10px 0;  /* Было 25px */
-					color: #27ae60; 
-				}
-				.global-panel { 
-					font-size: 9px;  /* Добавили */
-					padding: 5px;  /* Добавили */
-				}
-                .controls {
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    display: flex;
-                    gap: 10px;
-                    z-index: 1000;
-                }
-                .btn {
-                    padding: 12px 25px;
-                    border: none;
-                    border-radius: 6px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    transition: 0.3s;
-                }
-                .btn:hover { opacity: 0.9; transform: translateY(-2px); }
-                .btn-print { background: #3498db; color: white; }
-                .btn-pdf { background: #27ae60; color: white; }
-                .btn-close { background: #e74c3c; color: white; }
-                @media print {
-                    .controls { display: none; }
-                    body { background: white; }
-                    .print-container { box-shadow: none; padding: 0; }
-                }
-				/* Стили для модального окна печати */
+
+/* Настройки всего документа */
+body { 
+    font-family: Arial;                    /* Шрифт Arial */
+    padding: 20px;                          /* Отступы от краев */
+    background: #000000;                    /* Черный фон страницы */
+}
+
+/* ========== ОСНОВНОЙ БЕЛЫЙ БЛОК ========== */
+.print-container { 
+    max-width: 800px;                        /* Максимальная ширина */
+    margin: 0 auto;                           /* Центрирование по середине */
+    background: white;                         /* Белый фон */
+    padding: 30px;                             /* Внутренние отступы */
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);      /* Серая тень вокруг блока */
+}
+
+/* ========== ШАПКА ДОКУМЕНТА ========== */
+.header { 
+    text-align: center;                        /* Текст по центру */
+    margin-bottom: 30px;                        /* Отступ снизу */
+    border-bottom: 3px solid #3498db !important;/* Голубая линия под заголовком */
+    padding-bottom: 20px;                        /* Отступ от линии */
+}
+
+.header h1 {
+    color: #e74c3c !important;                   /* Красный для заголовка СМЕТА */
+    font-size: 24px;
+    margin: 10px 0;
+}
+
+/* Исполнитель и заказчик - всё голубое */
+.header > div:first-child,
+.header > div:first-child *,
+div[style*="ИСПОЛНИТЕЛЬ:"] ,
+div[style*="ИСПОЛНИТЕЛЬ:"] *,
+div[style*="ЗАКАЗЧИК:"] ,
+div[style*="ЗАКАЗЧИК:"] * {
+    color: #3498db !important;  /* Голубой для всего */
+}
+
+/* ========== ТАБЛИЦА СМЕТЫ ========== */
+table { 
+    width: 100%;                                /* Таблица на всю ширину */
+    border-collapse: collapse;                   /* Убирает двойные рамки */
+    margin: 10px 0;                              /* Отступы сверху и снизу */
+    font-size: 9px;                              /* Размер шрифта в таблице */
+}
+
+/* Примечания к позициям (коэф., скидки, комментарии) */
+.modifier-note { 
+    color: #000000 !important;                   /* Черный цвет текста */
+    font-size: 11px;                             /* Размер шрифта */
+    margin-left: 5px;                            /* Отступ слева */
+}
+
+/* Все ячейки таблицы (и заголовки, и данные) */
+th, td { 
+    border: 1px solid #000000 !important;        /* Черная */
+    padding: 3px 2px;                            /* Внутренние отступы */
+}
+
+/* Данные в ячейках */
+td {
+    color: #000000 !important;                    /* Черный */
+}
+
+/* Заголовки колонок */
+th { 
+    background: #87CEFA !important;               /* Светло-голубой фон */
+    color: black !important;                       /* Белый текст */
+    font-size: 9px;                                /* Размер шрифта */
+}
+
+/* Код в первой колонке */
+td:first-child {
+    color: #000000 !important;                     /* Черный */
+    font-weight: bold;
+}
+
+/* ========== ИТОГОВЫЕ СУММЫ ========== */
+.total { 
+    text-align: right;                            /* Текст справа */
+    font-size: 12px;                              /* Размер шрифта */
+    font-weight: bold;                             /* Жирный шрифт */
+    margin: 10px 0;                                /* Отступы */
+    color: #27ae60 !important;                     /* Зеленый цвет */
+}
+
+/* Панель с глобальными настройками (скидка, коэффициент) */
+.global-panel { 
+    color: #000000 !important;                     /* Черный цвет текста */
+    font-size: 9px;                                /* Размер шрифта */
+    padding: 5px;                                  /* Внутренние отступы */
+}
+
+/* ========== КНОПКИ УПРАВЛЕНИЯ (НЕ ПЕЧАТАЮТСЯ) ========== */
+.controls {
+    position: fixed;                               /* Плавающие поверх страницы */
+    top: 20px;                                      /* Отступ сверху */
+    right: 20px;                                    /* Отступ справа */
+    display: flex;                                  /* Кнопки в ряд */
+    gap: 10px;                                      /* Расстояние между кнопками */
+    z-index: 1000;                                  /* Поверх всего */
+}
+
+/* Все кнопки */
+.btn {
+    padding: 12px 25px;                             /* Внутренние отступы */
+    border: none;                                   /* Без рамки */
+    border-radius: 6px;                             /* Скругленные углы */
+    cursor: pointer;                                /* Курсор-рука */
+    font-weight: bold;                              /* Жирный текст */
+    display: flex;                                  /* Иконка и текст в ряд */
+    align-items: center;                            /* Выравнивание по центру */
+    gap: 8px;                                       /* Расстояние между иконкой и текстом */
+    transition: 0.3s;                               /* Плавные изменения */
+}
+
+/* Эффект при наведении на кнопку */
+.btn:hover { 
+    opacity: 0.9;                                    /* Становится чуть прозрачной */
+    transform: translateY(-2px);                     /* Приподнимается вверх */
+}
+
+/* Кнопка ПЕЧАТЬ - голубая */
+.btn-print { 
+    background: #3498db !important;                  /* Голубой фон */
+    color: white !important;                          /* Белый текст */
+}
+
+/* Кнопка PDF - зеленая */
+.btn-pdf { 
+    background: #27ae60 !important;                  /* Зеленый фон */
+    color: white !important;                          /* Белый текст */
+}
+
+/* Кнопка ЗАКРЫТЬ - красная */
+.btn-close { 
+    background: #e74c3c !important;                  /* Красный фон */
+    color: white !important;                          /* Белый текст */
+}
+
+/* ========== СТИЛИ ДЛЯ РЕЖИМА ПЕЧАТИ ========== */
+@media print {
+    /* Кнопки управления не печатаются */
+    .controls { 
+        display: none !important; 
+    }
+    /* Фон страницы белый */
+    body { 
+        background: white !important; 
+    }
+    /* Убираем тень и отступы у контейнера при печати */
+    .print-container { 
+        box-shadow: none !important; 
+        padding: 0 !important; 
+    }
+}
+
+/* ========== СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ПЕЧАТИ ========== */
+
+/* Заголовки секций в модальном окне */
 #printModal h4 {
-    font-size: 14px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    font-size: 14px;                                 /* Размер шрифта */
+    margin-bottom: 10px;                              /* Отступ снизу */
+    display: flex;                                    /* Иконка и текст в ряд */
+    align-items: center;                              /* Выравнивание по центру */
+    gap: 5px;                                         /* Расстояние между иконкой и текстом */
 }
 
+/* Отступы между полями ввода */
 #printModal .form-group {
-    margin-bottom: 10px;
+    margin-bottom: 10px;                              /* Отступ снизу */
 }
 
+/* Подписи к полям ввода */
 #printModal label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #555;
-    margin-bottom: 3px;
+    font-size: 12px;                                  /* Размер шрифта */
+    font-weight: 500;                                 /* Полужирный */
+    color: #555;                                      /* Темно-серый текст */
+    margin-bottom: 3px;                               /* Отступ снизу */
 }
 
+/* Поля ввода и текстовые области */
 #printModal input,
 #printModal textarea {
-    font-size: 13px;
-    padding: 8px 10px;
+    font-size: 13px;                                  /* Размер шрифта */
+    padding: 8px 10px;                                /* Внутренние отступы */
 }
-            </style>
+</style>
         </head>
         <body>
             <div class="controls">
@@ -6190,22 +6292,24 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
                 </button>
             </div>
             
-            <div class="print-container">
-                <div class="header">
-				<div style="display: flex; justify-content: space-between; margin-bottom: 20px; padding: 10px 0; background: #f8f9fa; border-radius: 5px;">
-    <div style="text-align: left; padding-left: 0;">
+<div class="print-container">
+
+    <div class="header">
+<div style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 20px; padding: 10px 10px; background: #f8f9fa; border-radius: 5px;">
+    <div style="text-align: left;">
         <strong style="color: #2c3e50;">ИСПОЛНИТЕЛЬ:</strong><br>
         ${executorName}<br>
         ${executorInn ? `ИНН: ${executorInn}<br>` : ''}
         ${executorPhone ? `Тел.: ${executorPhone}` : ''}
     </div>
-    <div style="text-align: right; padding-right: 0;">
+    <div style="text-align: right;">
         <strong style="color: #2c3e50;">ЗАКАЗЧИК:</strong><br>
         ${clientName}<br>
         ${clientContacts ? `${clientContacts}<br>` : ''}
         ${projectName ? `Объект: ${projectName}` : ''}
     </div>
 </div>
+		    ${logoHtml}
                     <h1 style="color: #2c3e50;">СМЕТА № ${estimateNumber}</h1>
                     <div style="font-size: 16px; margin: 10px 0;"><strong>Клиент:</strong> ${clientName}</div>
                     <div style="font-size: 16px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
@@ -6292,7 +6396,6 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
                     Сайт разработчика https://alivu.github.io/
                 </div>
             </div>
-            
             <script>
                 // Функция для отправки данных обратно в основное окно
                 function saveAsPDFFromPrint() {
@@ -8996,7 +9099,47 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+// ========== УПРАВЛЕНИЕ ЛОГОТИПОМ ==========
+let logoDataUrl = localStorage.getItem('companyLogo') || null;
 
+document.getElementById('logoUpload').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            logoDataUrl = event.target.result;
+            localStorage.setItem('companyLogo', logoDataUrl);
+            
+            const preview = document.getElementById('logoPreview');
+            const logoImg = document.getElementById('logoImage');
+            logoImg.src = logoDataUrl;
+            preview.style.display = 'block';
+            document.getElementById('clearLogoBtn').style.display = 'inline-block';
+            document.getElementById('saveLogoToDriveBtn').style.display = 'inline-block';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('clearLogoBtn').addEventListener('click', function() {
+    localStorage.removeItem('companyLogo');
+    logoDataUrl = null;
+    document.getElementById('logoPreview').style.display = 'none';
+    document.getElementById('logoUpload').value = '';
+    this.style.display = 'none';
+    document.getElementById('saveLogoToDriveBtn').style.display = 'none';
+});
+
+// Загружаем сохраненный логотип при открытии
+document.addEventListener('DOMContentLoaded', function() {
+    if (logoDataUrl) {
+        const logoImg = document.getElementById('logoImage');
+        logoImg.src = logoDataUrl;
+        document.getElementById('logoPreview').style.display = 'block';
+        document.getElementById('clearLogoBtn').style.display = 'inline-block';
+        document.getElementById('saveLogoToDriveBtn').style.display = 'inline-block';
+    }
+});
     </script>
 	<!-- Модальное окно для загрузки из Google Drive -->
 <div class="modal" id="googleDriveLoadModal">
