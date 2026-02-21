@@ -6068,10 +6068,8 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
     const notes = document.getElementById('notes').value;
     const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
 	const logoHtml = logoDataUrl ? 
-    `<div style="height: 10px; position: relative;">
-        <div style="position: absolute; top: -13px; left: -5;">
-            <img src="${logoDataUrl}" style="max-height: 160px; max-width: 160px; object-fit: contain;">
-        </div>
+    `<div style="margin-bottom: 20px; text-align: left;">
+        <img src="${logoDataUrl}" style="max-height: 100px; max-width: 100px; object-fit: contain;">
     </div>` : '';
     if (filledRows.length === 0) {
         alert('Смета пуста! Добавьте позиции перед печатью.');
@@ -6310,27 +6308,27 @@ td:first-child {
             </div>
             
 <div class="print-container">
-
+    ${logoHtml}  <!-- ← ЛОГОТИП ДОЛЖЕН БЫТЬ ЗДЕСЬ, ДО HEADER -->
     <div class="header">
-<div style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 20px; padding: 10px 10px; background: #f8f9fa; border-radius: 5px;">
-    <div style="text-align: left;">
-        <strong style="color: #2c3e50;">ИСПОЛНИТЕЛЬ:</strong><br>
-        ${executorName}<br>
-        ${executorInn ? `ИНН: ${executorInn}<br>` : ''}
-        ${executorPhone ? `Тел.: ${executorPhone}` : ''}
+        <div style="display: flex; justify-content: space-between; margin-top: 30px; margin-bottom: 20px; padding: 10px 10px; background: #f8f9fa; border-radius: 5px;">
+            <div style="text-align: left;">
+                <strong style="color: #2c3e50;">ИСПОЛНИТЕЛЬ:</strong><br>
+                ${executorName}<br>
+                ${executorInn ? `ИНН: ${executorInn}<br>` : ''}
+                ${executorPhone ? `Тел.: ${executorPhone}` : ''}
+            </div>
+            <div style="text-align: right;">
+                <strong style="color: #2c3e50;">ЗАКАЗЧИК:</strong><br>
+                ${clientName}<br>
+                ${clientContacts ? `${clientContacts}<br>` : ''}
+                ${projectName ? `Объект: ${projectName}` : ''}
+            </div>
+        </div>
+        <!-- Удали ${logoHtml} отсюда, он уже выше -->
+        <h1 style="color: #2c3e50;">СМЕТА № ${estimateNumber}</h1>
+        <div style="font-size: 16px; margin: 10px 0;"><strong>Клиент:</strong> ${clientName}</div>
+        <div style="font-size: 16px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
     </div>
-    <div style="text-align: right;">
-        <strong style="color: #2c3e50;">ЗАКАЗЧИК:</strong><br>
-        ${clientName}<br>
-        ${clientContacts ? `${clientContacts}<br>` : ''}
-        ${projectName ? `Объект: ${projectName}` : ''}
-    </div>
-</div>
-		    ${logoHtml}
-                    <h1 style="color: #2c3e50;">СМЕТА № ${estimateNumber}</h1>
-                    <div style="font-size: 16px; margin: 10px 0;"><strong>Клиент:</strong> ${clientName}</div>
-                    <div style="font-size: 16px;"><strong>Дата:</strong> ${new Date(estimateDate).toLocaleDateString('ru-RU')}</div>
-                </div>
                 
                 ${(globalDiscount > 0 || globalCoeff !== 1.0 || globalComment) ? `
                 <div class="global-panel">
