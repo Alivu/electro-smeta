@@ -6977,6 +6977,7 @@ function googleLogin() {
         'https://www.googleapis.com/auth/userinfo.profile',
         'https://www.googleapis.com/auth/drive.file',        // для создания/чтения файлов
         'https://www.googleapis.com/auth/drive.metadata.readonly' // для просмотра списка
+		'https://www.googleapis.com/auth/drive.readonly' // ДОБАВИТЬ ЭТОТ
     ].join(' '));
     
     const url = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&state=electro_smeta&access_type=offline&prompt=consent`;
