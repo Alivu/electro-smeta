@@ -2253,13 +2253,14 @@
     font-size: 9px !important;   /* Уменьшаем шрифт */
 }
 }
-		/* ========== СКРЫТИЕ КНОПОК ========== */
-#googleLoginBtn,
-#googleLoginBtn.dropdown-item,
-.dropdown-item#googleLoginBtn {
-    display: none !important;
+/* ========== СТИЛИ ДЛЯ КНОПКИ ВХОДА ========== */
+#googleLoginBtn {
+    display: flex; /* Кнопка видна по умолчанию */
 }
-		.forced-hidden {
+
+/* Классы для скрытия */
+#googleLoginBtn.forced-hidden,
+#googleLoginBtn.google-login-hidden {
     display: none !important;
 }
     </style>
@@ -8290,18 +8291,48 @@ function googleLogout() {
                 localStorage.removeItem('google_user');
                 window.googleToken = null;
                 
-                // Обновляем UI
-                updateGoogleUI(null);
+                // Показываем кнопку входа (убираем класс)
+                const loginBtn = document.getElementById('googleLoginBtn');
+                const userBlock = document.getElementById('googleUserBlock');
+                const divider = document.getElementById('googleLoginDivider');
+                
+                if (loginBtn) {
+                    loginBtn.classList.remove('forced-hidden');
+                    loginBtn.classList.remove('google-login-hidden');
+                    loginBtn.style.display = 'flex'; // Принудительно показываем
+                }
+                
+                if (userBlock) {
+                    userBlock.style.display = 'none';
+                }
+                
+                if (divider) {
+                    divider.style.display = 'block';
+                }
+                
+                // Скрываем кнопки Drive
+                const saveToDriveBtn = document.getElementById('saveToDriveBtn');
+                const loadFromDriveBtn = document.getElementById('loadFromDriveBtn');
+                if (saveToDriveBtn) saveToDriveBtn.style.display = 'none';
+                if (loadFromDriveBtn) loadFromDriveBtn.style.display = 'none';
                 
                 showNotification('👋 Вы вышли из аккаунта');
             });
     } else {
         localStorage.removeItem('google_token');
         localStorage.removeItem('google_user');
+        
+        // Показываем кнопку входа
+        const loginBtn = document.getElementById('googleLoginBtn');
+        if (loginBtn) {
+            loginBtn.classList.remove('forced-hidden');
+            loginBtn.classList.remove('google-login-hidden');
+            loginBtn.style.display = 'flex';
+        }
+        
         updateGoogleUI(null);
     }
 }
-
 // Проверяем сохраненный вход при загрузке
 function checkGoogleAuth() {
     const token = localStorage.getItem('google_token');
