@@ -2299,15 +2299,6 @@
         <i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>
     </button>
     
-    <!-- Блок пользователя Google (рядом с кнопкой скрытия) -->
-    <div id="googleUserBlock" style="display: none; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; padding: 5px 12px; border-radius: 20px; font-size: 13px; align-items: center; gap: 8px; white-space: nowrap;">
-        <i class="fas fa-user-circle"></i>
-        <span id="googleUserEmail" style="font-weight: 500;"></span>
-        <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; margin-left: 5px; font-size: 14px;" title="Выйти">
-            <i class="fas fa-sign-out-alt"></i>
-        </button>
-    </div>
-    
     <!-- Меню управления сметой -->
     <div class="dropdown-controls">
         <button class="btn btn-success dropdown-toggle" id="controlsDropdown">
@@ -2315,11 +2306,22 @@
             <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
         </button>
         <div class="dropdown-menu" id="controlsMenu">
-            <!-- Кнопка входа Google (внутри меню, видна когда не вошел) -->
+            <!-- БЛОК ПОЛЬЗОВАТЕЛЯ ВНУТРИ МЕНЮ (виден только когда вошел) -->
+            <div id="googleUserBlock" style="display: none; padding: 10px 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; margin-bottom: 5px; border-radius: 5px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-user-circle" style="font-size: 18px;"></i>
+                    <span id="googleUserEmail" style="font-weight: 500; flex: 1;"></span>
+                    <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px;" title="Выйти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Кнопка входа Google (видна когда не вошел) -->
             <button class="dropdown-item" id="googleLoginBtn" style="display: flex;">
                 <i class="fab fa-google"></i> Войти через Google
             </button>
-            <div class="dropdown-divider" id="googleLoginDivider" style="display: flex;"></div>
+            <div class="dropdown-divider" id="googleLoginDivider"></div>
             
             <button class="dropdown-item" id="refreshEstimateBtn">
                 <i class="fas fa-sync-alt"></i> Обновить смету
@@ -8216,14 +8218,19 @@ const googleLogoutBtn = document.getElementById('googleLogoutBtn');
 
 // Функция обновления UI после входа
 function updateGoogleUI(user) {
+    const googleUserBlock = document.getElementById('googleUserBlock');
+    const googleUserEmail = document.getElementById('googleUserEmail');
+    const googleLoginBtn = document.getElementById('googleLoginBtn');
+    const googleLoginDivider = document.getElementById('googleLoginDivider');
+    
     if (user && user.email) {
-        // Показываем блок с email снаружи
-        googleUserBlock.style.display = 'flex';
+        // Показываем блок с email ВНУТРИ меню
+        googleUserBlock.style.display = 'block';
         googleUserEmail.textContent = user.email;
         
-        // Скрываем кнопку входа в меню
-        document.getElementById('googleLoginBtn').style.display = 'none';
-        document.getElementById('googleLoginDivider').style.display = 'none';
+        // Скрываем кнопку входа и разделитель
+        googleLoginBtn.style.display = 'none';
+        googleLoginDivider.style.display = 'none';
         
         // Показываем кнопки Drive
         document.getElementById('saveToDriveBtn').style.display = 'flex';
@@ -8234,9 +8241,9 @@ function updateGoogleUI(user) {
         // Скрываем блок с email
         googleUserBlock.style.display = 'none';
         
-        // Показываем кнопку входа в меню
-        document.getElementById('googleLoginBtn').style.display = 'flex';
-        document.getElementById('googleLoginDivider').style.display = 'flex';
+        // Показываем кнопку входа и разделитель
+        googleLoginBtn.style.display = 'flex';
+        googleLoginDivider.style.display = 'block';
         
         // Скрываем кнопки Drive
         document.getElementById('saveToDriveBtn').style.display = 'none';
