@@ -73,6 +73,18 @@ self.addEventListener('fetch', event => {
     return;
   }
   
+  // ⚠️ ВАЖНО: Пропускаем все POST-запросы (Google API, сохранение и т.д.)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
+  // ⚠️ ВАЖНО: Пропускаем запросы к Google API
+  if (event.request.url.includes('googleapis.com') || 
+      event.request.url.includes('accounts.google.com') ||
+      event.request.url.includes('firebaseapp.com')) {
+    return;
+  }
+  
   // Универсальная проверка для главной страницы
   const isMainPage = (
     // Любой из этих вариантов
@@ -86,7 +98,7 @@ self.addEventListener('fetch', event => {
   // Для главной страницы - всегда свежая версия из сети
   if (isMainPage) {
     event.respondWith(
-      fetch(event.request, { cache: 'no-store' }) // ← ЗАПРЕЩАЕМ КЕШ БРАУЗЕРА
+      fetch(event.request, { cache: 'no-store' })
         .then(networkResponse => {
           // Всегда обновляем кеш Service Worker
           if (networkResponse.ok) {
@@ -104,7 +116,7 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Для остальных запросов - кеш с фоновым обновлением
+  // Для остальных GET-запросов - кеш с фоновым обновлением
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
@@ -125,7 +137,6 @@ self.addEventListener('fetch', event => {
       })
   );
 });
-
 // Получение сообщений
 self.addEventListener('message', event => {
   if (event.data.action === 'skipWaiting') {
