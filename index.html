@@ -2706,26 +2706,30 @@
                 </div>
             </div>
             
-            <!-- ЛОГОТИП - компактно -->
-            <div style="background: #fff0e0; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #f39c12;">
-                <h4 style="margin: 0 0 8px 0; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
-                    <i class="fas fa-image" style="font-size: 0.9rem;"></i> Логотип
-                </h4>
-                <input type="file" id="logoUpload" accept="image/*" style="font-size: 0.8rem; padding: 3px; width: 100%; margin-bottom: 8px;">
-                
-                <div id="logoPreview" style="display: none; text-align: center; margin: 8px 0;">
-                    <img id="logoImage" style="max-height: 50px; max-width: 150px; object-fit: contain;">
-                </div>
-                
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn btn-sm btn-info" id="clearLogoBtn" style="display: none; font-size: 0.8rem; padding: 4px 10px;">
-                        <i class="fas fa-times"></i> Удалить
-                    </button>
-                    <button class="btn btn-sm btn-primary" id="saveLogoToDriveBtn" style="display: none; font-size: 0.8rem; padding: 4px 10px;">
-                        <i class="fab fa-google-drive"></i> В Drive
-                    </button>
-                </div>
-            </div>
+<!-- ЛОГОТИП - компактно с фиксированной высотой -->
+<div style="background: #FFFFFF; border-radius: 6px; margin-bottom: 0; border-left: 3px solid #f39c12; padding: 0; overflow: hidden;">
+    <h4 style="margin: 8px 0 4px 8px; font-size: 0.95rem; display: flex; align-items: center; gap: 5px;">
+        <i class="fas fa-image" style="font-size: 0.9rem;"></i> Логотип
+    </h4>
+    
+    <div style="padding: 0 8px 8px 8px;">
+        <input type="file" id="logoUpload" accept="image/*" style="font-size: 0.8rem; padding: 3px; width: 100%; margin-bottom: 5px;">
+        
+        <!-- Контейнер для предпросмотра с фиксированной высотой 150px -->
+        <div id="logoPreview" style="display: none; height: 100px; overflow: hidden; text-align: center; margin: 5px 0; background: #f9f9f9; border-radius: 4px;">
+            <img id="logoImage" style="max-height: 100px; max-width: 100px; object-fit: contain;">
+        </div>
+        
+        <div style="display: flex; gap: 8px; min-height: 32px;">
+            <button class="btn btn-sm btn-info" id="clearLogoBtn" style="display: none; font-size: 0.8rem; padding: 4px 10px;">
+                <i class="fas fa-times"></i> Удалить
+            </button>
+            <button class="btn btn-sm btn-primary" id="saveLogoToDriveBtn" style="display: none; font-size: 0.8rem; padding: 4px 10px;">
+                <i class="fab fa-google-drive"></i> В Drive
+            </button>
+        </div>
+    </div>
+</div>
             
             <!-- ЗАКАЗЧИК - компактно -->
             <div style="background: #f9f9f9; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; border-left: 3px solid #27ae60;">
