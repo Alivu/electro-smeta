@@ -8648,11 +8648,13 @@ async function getEstimateDetails(fileId) {
         );
         
         const data = await response.json();
+        
         // Проверяем, что это действительно наша смета
-        if (data && data.data && Array.isArray(data.data) && data.totals) {
+        if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
             return {
                 itemsCount: data.data.length,
-                total: data.totals?.totalAmount || 0
+                total: data.totals?.totalAmount || 0,
+                date: data.date
             };
         }
     } catch (error) {
@@ -8662,9 +8664,10 @@ async function getEstimateDetails(fileId) {
 }
 // Показать окно загрузки из Google Drive
 async function showGoogleDriveLoadModal() {
-	    // Сначала закрываем меню
+    // Сначала закрываем меню
     const menu = document.getElementById('controlsMenu');
     if (menu) menu.classList.remove('show');
+    
     const modal = document.getElementById('googleDriveLoadModal');
     const filesList = document.getElementById('googleDriveFilesList');
     const loading = document.getElementById('googleDriveLoading');
@@ -8685,103 +8688,112 @@ async function showGoogleDriveLoadModal() {
             return;
         }
         
-const response = await fetch(
-    'https://www.googleapis.com/drive/v3/files?q=mimeType="application/json" and trashed=false&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime,size)',
-    { headers: { 'Authorization': `Bearer ${token}` } }
-);
+        const response = await fetch(
+            'https://www.googleapis.com/drive/v3/files?q=mimeType="application/json" and trashed=false&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime,size)',
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        );
         
-const data = await response.json();
-console.log('Файлы из Drive:', data.files); // ← вот это добавить
-loading.style.display = 'none';
+        const data = await response.json();
+        console.log('Файлы из Drive:', data.files);
         
-if (data.files && data.files.length > 0) {
-    data.files.forEach(file => {
-        // Показываем только JSON файлы, которые содержат слово "Смета"
-        if (!file.name.toLowerCase().includes('смета')) {
-            return; // пропускаем все остальное
+        if (!data.files || data.files.length === 0) {
+            filesList.innerHTML = '<div class="empty-drive-files">📁 В Google Drive нет файлов</div>';
+            loading.style.display = 'none';
+            return;
         }
         
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'google-drive-item';
-        itemDiv.dataset.id = file.id;
-        itemDiv.dataset.name = file.name;
-                
-// Получаем имя файла без .json
-const fileName = file.name.replace('.json', '');
-
-// Пробуем извлечь дату из имени файла
-let displayDate = 'Дата неизвестна';
-
-// Ищем дату в формате ДД.ММ.ГГГГ
-const dateMatch = fileName.match(/(\d{2})\.(\d{2})\.(\d{4})/);
-if (dateMatch) {
-    displayDate = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
-}
-                
-// Сразу запрашиваем детали файла
-getEstimateDetails(file.id).then(details => {
-    // Проверяем, что это действительно наша смета (есть данные)
-    let itemsCount = '?';
-    let total = '?';
-    let isValidEstimate = false;
-    
-    if (details && details.itemsCount > 0 && details.total) {
-        itemsCount = details.itemsCount;
-        total = formatCurrency(details.total);
-        isValidEstimate = true;
-    }
-    
-    // Если это не смета (например, installed_apps), показываем предупреждение
-    const fileClass = isValidEstimate ? 'google-drive-item' : 'google-drive-item invalid-file';
-    const deleteButton = isValidEstimate ? 
-        `<button class="google-drive-delete-btn" onclick="deleteDriveFile('${file.id}')" title="Удалить">
-            <i class="fas fa-trash"></i>
-         </button>` : '';
-    
-    itemDiv.innerHTML = `
-        <div class="google-drive-item-info">
-            <div class="google-drive-item-name">
-                <i class="fas fa-file-alt"></i>
-                ${fileName}
-                ${!isValidEstimate ? '<span style="color: #e74c3c; font-size: 11px; margin-left: 8px;">(не смета)</span>' : ''}
-            </div>
-            <div class="google-drive-item-meta">
-                <span><i class="fas fa-calendar-alt"></i> ${displayDate}</span>
-                <span><i class="fas fa-list"></i> ${itemsCount} позиций</span>
-                <span><i class="fas fa-ruble-sign"></i> ${total}</span>
-            </div>
-        </div>
-        <div class="google-drive-item-actions">
-            <button class="google-drive-edit-btn" onclick="editDriveFileName('${file.id}', '${file.name}')" title="Редактировать название">
-                <i class="fas fa-edit"></i>
-            </button>
-            ${deleteButton}
-        </div>
-    `;
-    
-    // Если файл не является сметой, делаем его некликабельным
-    if (!isValidEstimate) {
-        itemDiv.style.opacity = '0.6';
-        itemDiv.style.pointerEvents = 'none';
-    }
-});
-                
-                itemDiv.addEventListener('click', function(e) {
-                    if (!e.target.closest('button')) {
-                        document.querySelectorAll('.google-drive-item').forEach(el => {
-                            el.classList.remove('selected');
-                        });
-                        this.classList.add('selected');
-                        selectedDriveFileId = file.id;
-                        if (loadBtn) loadBtn.style.display = 'inline-flex';
-                    }
-                });
-                
-                filesList.appendChild(itemDiv);
-            });
-        } else {
+        // Создаём массив промисов для проверки каждого файла
+        const filePromises = data.files.map(async file => {
+            try {
+                const details = await getEstimateDetails(file.id);
+                // Проверяем, что файл содержит данные сметы
+                if (details && details.itemsCount > 0) {
+                    return { file, details };
+                }
+            } catch (e) {
+                console.log('Ошибка проверки файла:', file.name);
+            }
+            return null;
+        });
+        
+        // Ждём все проверки
+        const results = await Promise.all(filePromises);
+        
+        // Отфильтровываем только валидные сметы
+        const validFiles = results.filter(r => r !== null);
+        
+        if (validFiles.length === 0) {
             filesList.innerHTML = '<div class="empty-drive-files">📁 В Google Drive нет файлов смет</div>';
+            loading.style.display = 'none';
+            return;
         }
+        
+        // Отображаем только валидные сметы
+        validFiles.forEach(({ file, details }) => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'google-drive-item';
+            itemDiv.dataset.id = file.id;
+            itemDiv.dataset.name = file.name;
+            
+            const fileName = file.name.replace('.json', '');
+            
+            // Получаем дату из данных файла (если есть)
+            let displayDate = 'Дата неизвестна';
+            if (details.date) {
+                try {
+                    const date = new Date(details.date);
+                    if (!isNaN(date.getTime())) {
+                        displayDate = date.toLocaleDateString('ru-RU');
+                    }
+                } catch (e) {}
+            }
+            
+            // Ищем дату в имени файла как запасной вариант
+            if (displayDate === 'Дата неизвестна') {
+                const dateMatch = fileName.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+                if (dateMatch) {
+                    displayDate = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
+                }
+            }
+            
+            itemDiv.innerHTML = `
+                <div class="google-drive-item-info">
+                    <div class="google-drive-item-name">
+                        <i class="fas fa-file-alt"></i>
+                        ${fileName}
+                    </div>
+                    <div class="google-drive-item-meta">
+                        <span><i class="fas fa-calendar-alt"></i> ${displayDate}</span>
+                        <span><i class="fas fa-list"></i> ${details.itemsCount} позиций</span>
+                        <span><i class="fas fa-ruble-sign"></i> ${formatCurrency(details.total)}</span>
+                    </div>
+                </div>
+                <div class="google-drive-item-actions">
+                    <button class="google-drive-edit-btn" onclick="editDriveFileName('${file.id}', '${file.name}')" title="Редактировать название">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="google-drive-delete-btn" onclick="deleteDriveFile('${file.id}')" title="Удалить">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            itemDiv.addEventListener('click', function(e) {
+                if (!e.target.closest('button')) {
+                    document.querySelectorAll('.google-drive-item').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    selectedDriveFileId = file.id;
+                    if (loadBtn) loadBtn.style.display = 'inline-flex';
+                }
+            });
+            
+            filesList.appendChild(itemDiv);
+        });
+        
+        loading.style.display = 'none';
+        
     } catch (error) {
         console.error('Ошибка загрузки из Drive:', error);
         loading.style.display = 'none';
