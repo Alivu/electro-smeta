@@ -2292,68 +2292,78 @@
         </button>
     </div>
     
-    <!-- Управление -->
-    <div class="estimate-controls">
-
-<button class="btn btn-info" id="toggleGlobalPanel" style="margin-right: 5px;">
-    <i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>
-</button>
-        
-        <!-- Меню управления сметой -->
-        <div class="dropdown-controls">
-            <button class="btn btn-success dropdown-toggle" id="controlsDropdown">
-                <i class="fas fa-bars"></i> Управление
-                <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
-            </button>
-            <div class="dropdown-menu" id="controlsMenu">
-                <button class="dropdown-item" id="refreshEstimateBtn">
-                    <i class="fas fa-sync-alt"></i> Обновить смету
-                </button>
-                
-                <button class="dropdown-item" id="addRowBtn">
-                    <i class="fas fa-plus"></i> Добавить строку
-                </button>
-                <button class="dropdown-item" id="addMaterialBtn">
-                    <i class="fas fa-box"></i> Добавить материал
-                </button>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item" id="saveEstimateBtn">
-                    <i class="fas fa-save"></i> Сохранить смету
-                </button>
-                <button class="dropdown-item" id="loadEstimateBtn">
-                    <i class="fas fa-folder-open"></i> Загрузить смету
-                </button>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item" id="saveAsPdfBtn">
-                    <i class="fas fa-file-pdf"></i> Сохранить в PDF
-                </button>
-                <button class="dropdown-item" id="printEstimateBtn">
-                    <i class="fas fa-print"></i> Печать сметы
-                </button>
-                <div class="dropdown-divider"></div>
-                <!-- НОВАЯ КНОПКА: Скачать PDF -->
-                <button class="dropdown-item" 
-                        onclick="window.open('https://github.com/Alivu/electro-smeta/raw/main/Price_Electric_GrouP.pdf', '_blank')">
-                    <i class="fas fa-download"></i> Скачать PDF прайс-лист
-                </button>
-                <button class="dropdown-item" onclick="window.open('https://accounts.google.com/o/oauth2/auth?client_id=10151274989-sirobiq4o2es78hs82gbotu34lkf11pb.apps.googleusercontent.com&redirect_uri=https://alivu.github.io/electro-smeta&response_type=token&scope=https://www.googleapis.com/auth/drive.file&state=electro_smeta', '_blank')">
-                    <i class="fab fa-google"></i> Тест Google Login
-                </button>
-
-                <!-- ДОБАВЬТЕ ЭТИ ДВЕ КНОПКИ: -->
-                <button class="dropdown-item" onclick="saveToDrive()" id="saveToDriveBtn" style="display:none">
-                    <i class="fab fa-google-drive"></i> Сохранить в Drive
-                </button>
-                <button class="dropdown-item" onclick="loadFromDrive()" id="loadFromDriveBtn" style="display:none">
-                    <i class="fas fa-download"></i> Загрузить из Drive
-                </button>
-                
-                <!-- Кнопка возврата -->
-                <button class="dropdown-item" 
-                        onclick="window.open('https://alivu.github.io/', '_blank')">
-                    <i class="fas fa-home"></i> Вернуться в Electric_Group
-                </button>
+<!-- Управление -->
+<div class="estimate-controls">
+    <!-- Кнопка скрытия панели -->
+    <button class="btn btn-info" id="toggleGlobalPanel" style="margin-right: 5px;">
+        <i class="fas fa-eye-slash"></i> <span id="togglePanelText">Скрыть панель</span>
+    </button>
+    
+    <!-- Меню управления сметой -->
+    <div class="dropdown-controls">
+        <button class="btn btn-success dropdown-toggle" id="controlsDropdown">
+            <i class="fas fa-bars"></i> Управление
+            <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
+        </button>
+        <div class="dropdown-menu" id="controlsMenu">
+            <!-- БЛОК ПОЛЬЗОВАТЕЛЯ (виден когда вошел) -->
+            <div id="googleUserBlock" style="display: none; padding: 10px 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; margin-bottom: 5px; border-radius: 5px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-user-circle" style="font-size: 18px;"></i>
+                    <span id="googleUserEmail" style="font-weight: 500; flex: 1;"></span>
+                    <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px;" title="Выйти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
             </div>
+            
+            <!-- Кнопка входа Google (видна когда не вошел) -->
+            <button class="dropdown-item" id="googleLoginBtn" style="display: flex;">
+                <i class="fab fa-google"></i> Войти через Google
+            </button>
+            <div class="dropdown-divider" id="googleLoginDivider"></div>
+            
+            <button class="dropdown-item" id="refreshEstimateBtn">
+                <i class="fas fa-sync-alt"></i> Обновить смету
+            </button>
+            
+            <button class="dropdown-item" id="addRowBtn">
+                <i class="fas fa-plus"></i> Добавить строку
+            </button>
+            <button class="dropdown-item" id="addMaterialBtn">
+                <i class="fas fa-box"></i> Добавить материал
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" id="saveEstimateBtn">
+                <i class="fas fa-save"></i> Сохранить смету
+            </button>
+            <button class="dropdown-item" id="loadEstimateBtn">
+                <i class="fas fa-folder-open"></i> Загрузить смету
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" id="saveAsPdfBtn">
+                <i class="fas fa-file-pdf"></i> Сохранить в PDF
+            </button>
+            <button class="dropdown-item" id="printEstimateBtn">
+                <i class="fas fa-print"></i> Печать сметы
+            </button>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" onclick="window.open('https://github.com/Alivu/electro-smeta/raw/main/Price_Electric_GrouP.pdf', '_blank')">
+                <i class="fas fa-download"></i> Скачать PDF прайс-лист
+            </button>
+            
+            <!-- Кнопки Google Drive -->
+            <button class="dropdown-item" onclick="saveToDrive()" id="saveToDriveBtn" style="display:none">
+                <i class="fab fa-google-drive"></i> Сохранить в Drive
+            </button>
+            <button class="dropdown-item" onclick="loadFromDrive()" id="loadFromDriveBtn" style="display:none">
+                <i class="fas fa-download"></i> Загрузить из Drive
+            </button>
+            
+            <!-- Кнопка возврата -->
+            <button class="dropdown-item" onclick="window.open('https://alivu.github.io/', '_blank')">
+                <i class="fas fa-home"></i> Вернуться в Electric_Group
+            </button>
         </div>
     </div>
 </div>
