@@ -9102,42 +9102,61 @@ document.addEventListener('DOMContentLoaded', function() {
 // ========== УПРАВЛЕНИЕ ЛОГОТИПОМ ==========
 let logoDataUrl = localStorage.getItem('companyLogo') || null;
 
-document.getElementById('logoUpload').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            logoDataUrl = event.target.result;
-            localStorage.setItem('companyLogo', logoDataUrl);
-            
-            const preview = document.getElementById('logoPreview');
-            const logoImg = document.getElementById('logoImage');
-            logoImg.src = logoDataUrl;
-            preview.style.display = 'block';
-            document.getElementById('clearLogoBtn').style.display = 'inline-block';
-            document.getElementById('saveLogoToDriveBtn').style.display = 'inline-block';
-        };
-        reader.readAsDataURL(file);
+// Функция инициализации логотипа
+function initLogoManagement() {
+    const logoUpload = document.getElementById('logoUpload');
+    const clearLogoBtn = document.getElementById('clearLogoBtn');
+    const saveLogoToDriveBtn = document.getElementById('saveLogoToDriveBtn');
+    const logoPreview = document.getElementById('logoPreview');
+    const logoImg = document.getElementById('logoImage');
+    
+    if (logoUpload) {
+        logoUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    logoDataUrl = event.target.result;
+                    localStorage.setItem('companyLogo', logoDataUrl);
+                    
+                    if (logoImg) logoImg.src = logoDataUrl;
+                    if (logoPreview) logoPreview.style.display = 'block';
+                    if (clearLogoBtn) clearLogoBtn.style.display = 'inline-block';
+                    if (saveLogoToDriveBtn) saveLogoToDriveBtn.style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     }
-});
-
-document.getElementById('clearLogoBtn').addEventListener('click', function() {
-    localStorage.removeItem('companyLogo');
-    logoDataUrl = null;
-    document.getElementById('logoPreview').style.display = 'none';
-    document.getElementById('logoUpload').value = '';
-    this.style.display = 'none';
-    document.getElementById('saveLogoToDriveBtn').style.display = 'none';
-});
+    
+    if (clearLogoBtn) {
+        clearLogoBtn.addEventListener('click', function() {
+            localStorage.removeItem('companyLogo');
+            logoDataUrl = null;
+            if (logoPreview) logoPreview.style.display = 'none';
+            if (logoUpload) logoUpload.value = '';
+            this.style.display = 'none';
+            if (saveLogoToDriveBtn) saveLogoToDriveBtn.style.display = 'none';
+        });
+    }
+}
 
 // Загружаем сохраненный логотип при открытии
 document.addEventListener('DOMContentLoaded', function() {
+    // Инициализируем управление логотипом
+    initLogoManagement();
+    
+    // Показываем сохраненный логотип если есть
     if (logoDataUrl) {
         const logoImg = document.getElementById('logoImage');
-        logoImg.src = logoDataUrl;
-        document.getElementById('logoPreview').style.display = 'block';
-        document.getElementById('clearLogoBtn').style.display = 'inline-block';
-        document.getElementById('saveLogoToDriveBtn').style.display = 'inline-block';
+        const logoPreview = document.getElementById('logoPreview');
+        const clearLogoBtn = document.getElementById('clearLogoBtn');
+        const saveLogoToDriveBtn = document.getElementById('saveLogoToDriveBtn');
+        
+        if (logoImg) logoImg.src = logoDataUrl;
+        if (logoPreview) logoPreview.style.display = 'block';
+        if (clearLogoBtn) clearLogoBtn.style.display = 'inline-block';
+        if (saveLogoToDriveBtn) saveLogoToDriveBtn.style.display = 'inline-block';
     }
 });
     </script>
