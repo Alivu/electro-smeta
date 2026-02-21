@@ -9116,6 +9116,19 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Кнопка загрузки логотипа из Drive
+    const loadLogoBtn = document.getElementById('loadLogoFromDriveBtn');
+    if (loadLogoBtn) {
+        loadLogoBtn.addEventListener('click', loadLogoFromDrive);
+    }
+    
+    // Кнопка сохранения логотипа в Drive
+    const saveLogoBtn = document.getElementById('saveLogoToDriveBtn');
+    if (saveLogoBtn) {
+        saveLogoBtn.addEventListener('click', saveLogoToDrive);
+    }
+});
+    
     // ===== НОВАЯ КНОПКА ДЛЯ ЛОГОТИПА =====
     const loadLogoBtn = document.getElementById('loadLogoFromDriveBtn');
     if (loadLogoBtn) {
