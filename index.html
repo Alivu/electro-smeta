@@ -8685,14 +8685,16 @@ loading.style.display = 'none';
                 itemDiv.dataset.id = file.id;
                 itemDiv.dataset.name = file.name;
                 
-let modifiedTime = 'Дата неизвестна';
-try {
-    const date = new Date(file.modifiedTime);
-    if (!isNaN(date.getTime())) {
-        modifiedTime = date.toLocaleDateString('ru-RU');
-    }
-} catch (e) {
-    console.log('Ошибка парсинга даты:', e);
+// Получаем имя файла без .json
+const fileName = file.name.replace('.json', '');
+
+// Пробуем извлечь дату из имени файла
+let displayDate = 'Дата неизвестна';
+
+// Ищем дату в формате ДД.ММ.ГГГГ
+const dateMatch = fileName.match(/(\d{2})\.(\d{2})\.(\d{4})/);
+if (dateMatch) {
+    displayDate = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
 }
                 
                 itemDiv.innerHTML = `
