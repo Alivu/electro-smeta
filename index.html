@@ -5276,6 +5276,25 @@ function setupEventListeners() {
     }
     
     console.log('Обработчики событий настроены');
+	// ===== АВТОМАТИЧЕСКОЕ ЗАКРЫТИЕ МЕНЮ =====
+document.querySelectorAll('#controlsMenu .dropdown-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+        // Список кнопок, после которых НЕ нужно закрывать меню
+        const keepOpenIds = [
+            'loadFromDriveBtn',      // старая кнопка Drive
+            'googleDriveLoadBtn',     // новая кнопка Drive
+            'saveToDriveBtn'          // сохранение в Drive
+        ];
+        
+        // Если это не кнопка Drive - закрываем меню
+        if (!keepOpenIds.includes(this.id)) {
+            setTimeout(() => {
+                const menu = document.getElementById('controlsMenu');
+                if (menu) menu.classList.remove('show');
+            }, 100);
+        }
+    });
+});
 }
 
         function setupRowEventListeners() {
