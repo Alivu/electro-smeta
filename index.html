@@ -6992,9 +6992,12 @@ function checkGoogleToken() {
         googleToken = token;
         localStorage.setItem('google_token', token);
         
-        // Показываем кнопки Drive
-        document.getElementById('saveToDriveBtn').style.display = 'flex';
-        document.getElementById('loadFromDriveBtn').style.display = 'flex';
+// Показываем кнопки Drive с проверкой
+const saveBtn = document.getElementById('saveToDriveBtn');
+const loadBtn = document.getElementById('loadFromDriveBtn');
+
+if (saveBtn) saveBtn.style.display = 'flex';
+if (loadBtn) loadBtn.style.display = 'flex';
         
         // Получаем информацию о пользователе
         fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
