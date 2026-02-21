@@ -2693,22 +2693,42 @@
             <button class="close-modal" id="closePrintModal">&times;</button>
         </div>
         <div class="modal-body">
-            <!-- ИНФОРМАЦИЯ ОБ ИСПОЛНИТЕЛЕ (сохраняется) -->
-            <div style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #3498db;">
-                <h4 style="margin: 0 0 10px 0; color: #2c3e50;"><i class="fas fa-building"></i> Исполнитель</h4>
-                <div class="form-group">
-                    <label for="executorName">Организация / ИП:</label>
-                    <input type="text" id="executorName" class="form-control" placeholder="Например: ООО ЭлектроСмета" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label for="executorInn">ИНН:</label>
-                    <input type="text" id="executorInn" class="form-control" placeholder="1234567890" autocomplete="off">
-                </div>
-                <div class="form-group">
-                    <label for="executorPhone">Телефон:</label>
-                    <input type="text" id="executorPhone" class="form-control" placeholder="+7 (999) 123-45-67" autocomplete="off">
-                </div>
-            </div>
+<!-- ИНФОРМАЦИЯ ОБ ИСПОЛНИТЕЛЕ (сохраняется) -->
+<div style="background: #f0f8ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #3498db;">
+    <h4 style="margin: 0 0 10px 0; color: #2c3e50;"><i class="fas fa-building"></i> Исполнитель</h4>
+    <div class="form-group">
+        <label for="executorName">Организация / ИП:</label>
+        <input type="text" id="executorName" class="form-control" placeholder="Например: ООО ЭлектроСмета" autocomplete="off">
+    </div>
+    <div class="form-group">
+        <label for="executorInn">ИНН:</label>
+        <input type="text" id="executorInn" class="form-control" placeholder="1234567890" autocomplete="off">
+    </div>
+    <div class="form-group">
+        <label for="executorPhone">Телефон:</label>
+        <input type="text" id="executorPhone" class="form-control" placeholder="+7 (999) 123-45-67" autocomplete="off">
+    </div>
+</div>
+
+<!-- ===== НОВЫЙ БЛОК: ЛОГОТИП ===== -->
+<div style="background: #fff0e0; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #f39c12;">
+    <h4 style="margin: 0 0 10px 0; color: #2c3e50;"><i class="fas fa-image"></i> Логотип</h4>
+    <div class="form-group">
+        <label for="logoUpload">Загрузить логотип для печати:</label>
+        <input type="file" id="logoUpload" accept="image/*" class="form-control">
+    </div>
+    <div id="logoPreview" style="text-align: center; margin-top: 0px; display: none;">
+        <img id="logoImage" style="max-height: 150px; max-width: 150px; object-fit: contain;">
+    </div>
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button class="btn btn-sm btn-info" id="clearLogoBtn" style="display: none;">
+            <i class="fas fa-times"></i> Удалить логотип
+        </button>
+        <button class="btn btn-sm btn-primary" id="saveLogoToDriveBtn" style="display: none;">
+            <i class="fab fa-google-drive"></i> Сохранить в Drive
+        </button>
+    </div>
+</div>
             
             <!-- ИНФОРМАЦИЯ О КЛИЕНТЕ -->
             <div style="background: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 15px; border-left: 4px solid #27ae60;">
