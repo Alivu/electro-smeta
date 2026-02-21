@@ -6106,7 +6106,6 @@ function generatePrint() {  // ← ОБРАТИТЕ ВНИМАНИЕ: остав
     const notes = document.getElementById('notes').value;
     const filledRows = estimateData.filter(row => row.priceId || row.name.trim() !== '');
 	const logoHtml = logoDataUrl ? 
-	const logoHtml = logoDataUrl ? 
     `<div style="height: 10px; position: relative;">
         <div style="position: absolute; top: -13px; left: -5;">
             <img src="${logoDataUrl}" style="max-height: 160px; max-width: 160px; object-fit: contain;">
@@ -8357,7 +8356,7 @@ function loadExecutorData() {
             const data = JSON.parse(savedData);
             document.getElementById('executorName').value = data.name || '';
             document.getElementById('executorInn').value = data.inn || '';
-            document.getElementById('executorPhone').value = data.phone || '';
+            document.getElementById('executorPhone').value = formatPhoneNumber(data.phone || '');
         } catch (e) {
             console.error('Ошибка загрузки данных исполнителя:', e);
         }
@@ -8370,15 +8369,21 @@ function loadExecutorData() {
 }
 
 function saveExecutorData() {
+    const rawPhone = document.getElementById('executorPhone').value;
+    const formattedPhone = formatPhoneNumber(rawPhone);
+    
     const executorData = {
         name: document.getElementById('executorName').value,
         inn: document.getElementById('executorInn').value,
-        phone: document.getElementById('executorPhone').value,
+        phone: formattedPhone,
         lastUpdated: new Date().toISOString()
     };
     
     // Сохраняем локально
     localStorage.setItem('executorData', JSON.stringify(executorData));
+    
+    // Обновляем поле ввода, чтобы показать отформатированный номер
+    document.getElementById('executorPhone').value = formattedPhone;
     
     // Сохраняем в Google Drive если есть токен
     if (googleToken || localStorage.getItem('google_token')) {
@@ -8469,7 +8474,7 @@ async function loadExecutorFromDrive() {
             
             document.getElementById('executorName').value = data.name || '';
             document.getElementById('executorInn').value = data.inn || '';
-            document.getElementById('executorPhone').value = data.phone || '';
+            document.getElementById('executorPhone').value = formatPhoneNumber(data.phone || '');
             
             // Обновляем localStorage
             localStorage.setItem('executorData', JSON.stringify(data));
@@ -8724,7 +8729,28 @@ function updateGoogleUI(user) {
         if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'none';
     }
 }
-
+// Форматирование номера телефона
+function formatPhoneNumber(phone) {
+    if (!phone) return '';
+    
+    // Убираем все нецифровые символы
+    const cleaned = phone.replace(/\D/g, '');
+    
+    // Проверяем длину для российских номеров
+    if (cleaned.length === 11) {
+        if (cleaned.startsWith('8')) {
+            return `+7 (${cleaned.substring(1, 4)}) ${cleaned.substring(4, 7)}-${cleaned.substring(7, 9)}-${cleaned.substring(9, 11)}`;
+        }
+        if (cleaned.startsWith('7')) {
+            return `+7 (${cleaned.substring(1, 4)}) ${cleaned.substring(4, 7)}-${cleaned.substring(7, 9)}-${cleaned.substring(9, 11)}`;
+        }
+    }
+    // Если номер 10 цифр (без кода)
+    if (cleaned.length === 10) {
+        return `+7 (${cleaned.substring(0, 3)}) ${cleaned.substring(3, 6)}-${cleaned.substring(6, 8)}-${cleaned.substring(8, 10)}`;
+    }
+    return phone;
+}
 // Новая функция для проверки логотипа в Drive
 async function checkLogoInDrive() {
     const token = localStorage.getItem('google_token');
