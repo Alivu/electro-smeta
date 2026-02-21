@@ -9128,12 +9128,6 @@ document.addEventListener('DOMContentLoaded', function() {
         saveLogoBtn.addEventListener('click', saveLogoToDrive);
     }
 });
-    
-    // ===== НОВАЯ КНОПКА ДЛЯ ЛОГОТИПА =====
-    const loadLogoBtn = document.getElementById('loadLogoFromDriveBtn');
-    if (loadLogoBtn) {
-        loadLogoBtn.addEventListener('click', loadLogoFromDrive);
-    }
 // ========== УПРАВЛЕНИЕ ЛОГОТИПОМ ==========
 let logoDataUrl = localStorage.getItem('companyLogo') || null;
 
