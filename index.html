@@ -8763,6 +8763,73 @@ async function deleteDriveFile(fileId) {
         showNotification('❌ Ошибка при удалении');
     }
 }
+// Загрузка данных из Drive в смету
+function loadDriveEstimateData(data) {
+    console.log('Загрузка сметы из Drive:', data.name);
+    
+    // Очищаем текущие данные
+    estimateData = [];
+    
+    // Загружаем данные
+    if (data.data && data.data.length > 0) {
+        data.data.forEach((item, index) => {
+            estimateData.push({ 
+                ...item,
+                id: index + 1,
+                coefficient: item.coefficient || 1.0,
+                coeffComment: item.coeffComment || '',
+                discount: item.discount || 0,
+                discountComment: item.discountComment || '',
+                rowComment: item.rowComment || '',
+                originalPrice: item.originalPrice || item.price || 0
+            });
+        });
+    }
+    
+    // Добавляем пустые строки до 50
+    while (estimateData.length < 50) {
+        estimateData.push({
+            id: estimateData.length + 1,
+            priceId: "",
+            name: "",
+            unit: "",
+            price: 0,
+            quantity: 1,
+            total: 0,
+            notes: "",
+            isMaterial: false,
+            coefficient: 1.0,
+            coeffComment: "",
+            discount: 0,
+            discountComment: "",
+            rowComment: "",
+            originalPrice: 0
+        });
+    }
+    
+    // Загружаем глобальные настройки если есть
+    if (data.globalSettings) {
+        document.getElementById('globalDiscount').value = data.globalSettings.discount || 0;
+        document.getElementById('globalCoefficient').value = data.globalSettings.coefficient || 1.0;
+        document.getElementById('globalComment').value = data.globalSettings.comment || '';
+    }
+    
+    // Загружаем масштаб если есть
+    if (data.zoom) {
+        zoomFactor = data.zoom;
+        if (zoomFactor < MIN_ZOOM) zoomFactor = MIN_ZOOM;
+        if (zoomFactor > MAX_ZOOM) zoomFactor = MAX_ZOOM;
+        applyZoom();
+    }
+    
+    // Рендерим таблицу
+    renderEstimateTable();
+    updateTotals();
+    updateEstimateCounter();
+    showTab('estimate');
+    
+    showNotification(`✅ Загружена смета: ${data.name || 'из Drive'}`);
+}
 
 // Загрузка выбранного файла из Drive
 async function loadSelectedDriveFile() {
@@ -8780,8 +8847,8 @@ async function loadSelectedDriveFile() {
         const data = await response.json();
         
         if (data && data.data) {
-            // Загружаем данные в смету
-            loadEstimateData(data);
+            // Загружаем данные в смету - используем новую функцию
+            loadDriveEstimateData(data);
             document.getElementById('googleDriveLoadModal').style.display = 'none';
             showNotification('✅ Смета загружена из Google Drive');
         }
@@ -8790,7 +8857,32 @@ async function loadSelectedDriveFile() {
         showNotification('❌ Ошибка при загрузке');
     }
 }
-
+// Загрузка выбранного файла из Drive
+async function loadSelectedDriveFile() {
+    if (!selectedDriveFileId) return;
+    
+    const token = localStorage.getItem('google_token');
+    if (!token) return;
+    
+    try {
+        const response = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${selectedDriveFileId}?alt=media`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        
+        const data = await response.json();
+        
+        if (data && data.data) {
+            // Загружаем данные в смету - используем существующую логику
+            loadDriveEstimateData(data);
+            document.getElementById('googleDriveLoadModal').style.display = 'none';
+            showNotification('✅ Смета загружена из Google Drive');
+        }
+    } catch (error) {
+        console.error('Ошибка загрузки файла:', error);
+        showNotification('❌ Ошибка при загрузке');
+    }
+}
 // Добавь обработчики при загрузке
 document.addEventListener('DOMContentLoaded', function() {
     // Кнопка загрузки выбранного файла из Drive
