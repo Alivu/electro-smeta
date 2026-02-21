@@ -2424,6 +2424,25 @@
     padding: 30px;
     font-style: italic;
 }
+		.google-drive-item-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.8rem;
+    color: #666;
+    flex-wrap: wrap;
+}
+
+.google-drive-item-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.google-drive-item-meta i {
+    font-size: 0.75rem;
+    color: #3498db;
+}
     </style>
 </head>
 <body>
@@ -8668,6 +8687,29 @@ document.addEventListener('DOMContentLoaded', function() {
     checkGoogleAuth();
 });
 let selectedDriveFileId = null;	
+		// Получение деталей сметы из файла
+async function getEstimateDetails(fileId) {
+    const token = localStorage.getItem('google_token');
+    if (!token) return null;
+    
+    try {
+        const response = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        
+        const data = await response.json();
+        if (data && data.data) {
+            return {
+                itemsCount: data.data.length,
+                total: data.totals?.totalAmount || 0
+            };
+        }
+    } catch (error) {
+        console.error('Ошибка получения деталей файла:', error);
+    }
+    return null;
+}
 // Показать окно загрузки из Google Drive
 async function showGoogleDriveLoadModal() {
 	    // Сначала закрываем меню
@@ -8693,11 +8735,10 @@ async function showGoogleDriveLoadModal() {
             return;
         }
         
-        // Получаем список JSON файлов из Drive
-        const response = await fetch(
-            'https://www.googleapis.com/drive/v3/files?q=mimeType="application/json" and trashed=false&orderBy=modifiedTime desc',
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        );
+const response = await fetch(
+    'https://www.googleapis.com/drive/v3/files?q=mimeType="application/json" and trashed=false&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime,size)',
+    { headers: { 'Authorization': `Bearer ${token}` } }
+);
         
 const data = await response.json();
 console.log('Файлы из Drive:', data.files); // ← вот это добавить
@@ -8722,25 +8763,33 @@ if (dateMatch) {
     displayDate = `${dateMatch[1]}.${dateMatch[2]}.${dateMatch[3]}`;
 }
                 
-                itemDiv.innerHTML = `
-                    <div class="google-drive-item-info">
-                        <div class="google-drive-item-name">
-                            <i class="fas fa-file-alt"></i>
-                            ${file.name.replace('.json', '')}
-                        </div>
-                        <div class="google-drive-item-meta">
-                            <span><i class="fas fa-calendar-alt"></i> ${displayDate}</span>
-                        </div>
-                    </div>
-                    <div class="google-drive-item-actions">
-                        <button class="google-drive-edit-btn" onclick="editDriveFileName('${file.id}', '${file.name}')" title="Редактировать название">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="google-drive-delete-btn" onclick="deleteDriveFile('${file.id}')" title="Удалить">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
+// Сразу запрашиваем детали файла
+getEstimateDetails(file.id).then(details => {
+    const itemsCount = details ? details.itemsCount : '?';
+    const total = details ? formatCurrency(details.total) : '?';
+    
+    itemDiv.innerHTML = `
+        <div class="google-drive-item-info">
+            <div class="google-drive-item-name">
+                <i class="fas fa-file-alt"></i>
+                ${fileName}
+            </div>
+            <div class="google-drive-item-meta">
+                <span><i class="fas fa-calendar-alt"></i> ${displayDate}</span>
+                <span><i class="fas fa-list"></i> ${itemsCount} позиций</span>
+                <span><i class="fas fa-ruble-sign"></i> ${total}</span>
+            </div>
+        </div>
+        <div class="google-drive-item-actions">
+            <button class="google-drive-edit-btn" onclick="editDriveFileName('${file.id}', '${file.name}')" title="Редактировать название">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="google-drive-delete-btn" onclick="deleteDriveFile('${file.id}')" title="Удалить">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+});
                 
                 itemDiv.addEventListener('click', function(e) {
                     if (!e.target.closest('button')) {
