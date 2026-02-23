@@ -9894,18 +9894,28 @@ function loadDriveEstimateData(data) {
     showNotification(`✅ Загружена смета: ${data.name || 'из Drive'}`);
 }
 
-// Загрузка выбранного файла из Drive (ОДНА функция)
+// Загрузка выбранного файла из Drive
 async function loadSelectedDriveFile() {
     if (!selectedDriveFileId) return;
     
-    const token = localStorage.getItem('google_token');
-    if (!token) return;
+    // ✅ ИСПРАВЛЕНО: используем правильный токен с правами Drive
+    const token = await getValidAccessToken();
+    if (!token) {
+        showNotification('❌ Ошибка авторизации');
+        return;
+    }
     
     try {
+        showNotification('⏳ Загрузка сметы...');
+        
         const response = await fetch(
             `https://www.googleapis.com/drive/v3/files/${selectedDriveFileId}?alt=media`,
             { headers: { 'Authorization': `Bearer ${token}` } }
         );
+        
+        if (!response.ok) {
+            throw new Error(`Ошибка загрузки: ${response.status}`);
+        }
         
         const data = await response.json();
         
@@ -9913,10 +9923,12 @@ async function loadSelectedDriveFile() {
             loadDriveEstimateData(data);
             document.getElementById('googleDriveLoadModal').style.display = 'none';
             showNotification('✅ Смета загружена из Google Drive');
+        } else {
+            showNotification('❌ Неверный формат файла');
         }
     } catch (error) {
         console.error('Ошибка загрузки файла:', error);
-        showNotification('❌ Ошибка при загрузке');
+        showNotification(`❌ Ошибка: ${error.message}`);
     }
 }
 
