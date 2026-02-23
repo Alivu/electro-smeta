@@ -7811,16 +7811,17 @@ async function saveToDrive() {
     }
 }
 
-// ========== ФУНКЦИЯ ЗАПРОСА ПРАВ НА DRIVE ==========
 async function requestDriveScope() {
     return new Promise((resolve) => {
         const clientId = GOOGLE_CLIENT_ID;
         const redirectUri = encodeURIComponent('https://electro-smeta.vercel.app/oauth-callback.html');
         
-        // Только права на Drive
+        // ВАЖНО: Сохраняем codeVerifier перед открытием окна
+        const codeVerifier = localStorage.getItem('pkce_code_verifier') || generateRandomString(128);
+        localStorage.setItem('pkce_code_verifier', codeVerifier);
+        
         const scope = encodeURIComponent('https://www.googleapis.com/auth/drive.file');
         
-        // Открываем окно для дополнительной авторизации
         const authWindow = window.open('', 'authPopup', 'width=600,height=700,left=200,top=100');
         
         const url = `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -7828,34 +7829,33 @@ async function requestDriveScope() {
             `&redirect_uri=${redirectUri}` +
             `&response_type=code` +
             `&scope=${scope}` +
+            `&code_challenge=${await generateCodeChallenge(codeVerifier)}` +
+            `&code_challenge_method=S256` +
             `&access_type=offline` +
             `&prompt=consent` +
             `&state=drive_scope`;
         
         authWindow.location.href = url;
         
-        // Слушаем ответ
         function messageHandler(event) {
             if (event.origin !== 'https://electro-smeta.vercel.app') return;
             
             if (event.data.type === 'auth_code' && event.data.state === 'drive_scope') {
                 window.removeEventListener('message', messageHandler);
-                authWindow.close();
                 
-                // Обмениваем код на токены
-                const code = event.data.code;
-                const codeVerifier = localStorage.getItem('pkce_code_verifier');
+                // Получаем codeVerifier (уже должен быть в localStorage)
+                const savedCodeVerifier = localStorage.getItem('pkce_code_verifier');
                 
                 fetch('https://oauth2.googleapis.com/token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: new URLSearchParams({
-                        code: code,
+                        code: event.data.code,
                         client_id: clientId,
                         client_secret: GOOGLE_CLIENT_SECRET,
                         redirect_uri: 'https://electro-smeta.vercel.app/oauth-callback.html',
                         grant_type: 'authorization_code',
-                        code_verifier: codeVerifier
+                        code_verifier: savedCodeVerifier
                     })
                 })
                 .then(r => r.json())
@@ -7865,6 +7865,9 @@ async function requestDriveScope() {
                     }
                     sessionStorage.setItem('google_access_token', tokens.access_token);
                     sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
+                    
+                    // Закрываем окно
+                    try { authWindow.close(); } catch(e) {}
                     resolve(true);
                 })
                 .catch(() => resolve(false));
