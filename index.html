@@ -7387,7 +7387,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // ========== GOOGLE DRIVE СИНХРОНИЗАЦИЯ ==========
 const GOOGLE_CLIENT_ID = '1005885507362-vsplr1th18mhk2uj6prb2akump2c20tb.apps.googleusercontent.com';
-
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
 let googleToken = '';
 
 // Шаг 1: Генерация PKCE (вставьте перед googleLogin)
@@ -7419,8 +7419,10 @@ function generatePKCE() {
 
 // Шаг 1: Новая функция входа (заменяет старую googleLogin)
 function googleLogin() {
-    const clientId = '1005885507362-vsplr1th18mhk2uj6prb2akump2c20tb.apps.googleusercontent.com';
-    const redirectUri = encodeURIComponent('https://alivu.github.io/electro-smeta/oauth-callback.html');
+    const clientId = GOOGLE_CLIENT_ID; // используем константу
+    
+    // ⚠️ ВАЖНО: Используем домен Vercel, а не GitHub!
+    const redirectUri = encodeURIComponent('https://electro-smeta.vercel.app/electro-smeta/oauth-callback.html');
     
     const scope = encodeURIComponent([
         'https://www.googleapis.com/auth/userinfo.email',
@@ -7439,77 +7441,16 @@ function googleLogin() {
             `&prompt=consent` +
             `&state=base_auth`;
         
-        // ОТКРЫВАЕМ В НОВОМ ОКНЕ, а не в этой же вкладке
+        // ОТКРЫВАЕМ В НОВОМ ОКНЕ
         window.open(url, 'authWindow', 'width=600,height=700,left=200,top=100');
-        
-        // Не закрываем текущую страницу!
     });
 }
 
 
-
-		
-// Проверяем токен при загрузке
-function checkGoogleToken() {
-    const hash = window.location.hash;
-    if (hash.includes('access_token')) {
-        const token = hash.split('access_token=')[1].split('&')[0];
-        googleToken = token;
-        localStorage.setItem('google_token', token);
-        
-        // Показываем кнопки Drive с проверкой
-        const saveBtn = document.getElementById('saveToDriveBtn');
-        const loadBtn = document.getElementById('loadFromDriveBtn');
-        
-        if (saveBtn) saveBtn.style.display = 'flex';
-        if (loadBtn) loadBtn.style.display = 'flex';
-        
-        // Получаем информацию о пользователе
-        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(response => response.json())
-        .then(user => {
-            localStorage.setItem('google_user', JSON.stringify(user));
-            console.log('✅ Пользователь:', user.email);
-            showNotification(`✅ Вход выполнен: ${user.email}`);
-            
-            // ===== ДОБАВЬ ЭТОТ БЛОК =====
-            // Обновляем UI с данными пользователя
-            const googleUserBlock = document.getElementById('googleUserBlock');
-            const googleUserEmail = document.getElementById('googleUserEmail');
-            const googleLoginBtn = document.getElementById('googleLoginBtn');
-            const googleDriveLoadBtn = document.getElementById('googleDriveLoadBtn');
-            
-            if (googleUserBlock) googleUserBlock.style.display = 'block';
-            if (googleUserEmail) googleUserEmail.textContent = user.email;
-            if (googleLoginBtn) {
-                googleLoginBtn.style.display = 'none';
-                googleLoginBtn.classList.add('google-login-hidden');
-            }
-            if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'flex';
-            // ===== КОНЕЦ БЛОКА =====
-            
-            // Можно добавить отображение email где-то на странице
-            const userEmailSpan = document.getElementById('userEmail');
-            if (userEmailSpan) {
-                userEmailSpan.textContent = user.email;
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка получения данных пользователя:', error);
-            showNotification('✅ Вход выполнен (email не получен)');
-        });
-        
-        // Убираем хэш из URL
-        history.replaceState(null, null, ' ');
-    }
-}
-
 // Шаг 3: Слушатель сообщений от окна callback
 window.addEventListener('message', async function(event) {
-    // Проверяем, что сообщение от нашего домена
-    if (event.origin !== 'https://alivu.github.io') return;
+    // Проверяем, что сообщение от нашего домена (Vercel)
+    if (event.origin !== 'https://electro-smeta.vercel.app') return;
     
     if (event.data.type === 'auth_code') {
         const code = event.data.code;
@@ -7521,7 +7462,6 @@ window.addEventListener('message', async function(event) {
         }
         
         try {
-            // Показываем индикатор загрузки
             showNotification('⏳ Получение токенов...');
             
             // Обмениваем код на токены
@@ -7532,8 +7472,9 @@ window.addEventListener('message', async function(event) {
                 },
                 body: new URLSearchParams({
                     code: code,
-                    client_id: '1005885507362-vsplr1th18mhk2uj6prb2akump2c20tb.apps.googleusercontent.com',
-                    redirect_uri: 'https://alivu.github.io/electro-smeta/oauth-callback.html',
+                    client_id: GOOGLE_CLIENT_ID,
+                    client_secret: GOOGLE_CLIENT_SECRET, // ← секрет из переменной!
+                    redirect_uri: 'https://electro-smeta.vercel.app/electro-smeta/oauth-callback.html',
                     grant_type: 'authorization_code',
                     code_verifier: codeVerifier
                 })
@@ -7545,18 +7486,17 @@ window.addEventListener('message', async function(event) {
                 throw new Error(tokens.error_description || tokens.error);
             }
             
-            console.log('Токены получены:', tokens);
+            console.log('✅ Токены получены:', tokens);
             
-            // ✅ Сохраняем refresh token (живет долго)
+            // Сохраняем refresh token
             if (tokens.refresh_token) {
                 localStorage.setItem('google_refresh_token', tokens.refresh_token);
             }
             
-            // ✅ Access token храним временно
+            // Access token храним временно
             sessionStorage.setItem('google_access_token', tokens.access_token);
             sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
             
-            // Очищаем PKCE verifier
             localStorage.removeItem('pkce_code_verifier');
             
             // Получаем информацию о пользователе
@@ -7566,9 +7506,8 @@ window.addEventListener('message', async function(event) {
             
             const user = await userResponse.json();
             
-            // Сохраняем пользователя
             localStorage.setItem('google_user', JSON.stringify(user));
-            localStorage.setItem('google_token', tokens.access_token); // для обратной совместимости
+            localStorage.setItem('google_token', tokens.access_token);
             window.googleToken = tokens.access_token;
             
             // Обновляем UI
@@ -7577,12 +7516,11 @@ window.addEventListener('message', async function(event) {
             showNotification(`✅ Вход выполнен: ${user.email}`);
             
         } catch (error) {
-            console.error('Ошибка получения токенов:', error);
+            console.error('❌ Ошибка:', error);
             showNotification('❌ Ошибка авторизации: ' + error.message);
         }
     }
-}); // ← ЗДЕСЬ ЗАКРЫВАЕТСЯ СЛУШАТЕЛЬ!
-
+});
 // ========== ЭТОТ БЛОК ДОЛЖЕН БЫТЬ ПОСЛЕ СЛУШАТЕЛЯ, А НЕ ВНУТРИ ==========
 (function() {
     const tempCode = localStorage.getItem('temp_auth_code');
