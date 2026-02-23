@@ -7921,71 +7921,16 @@ async function loadFromDrive() {
                 showNotification('❌ Ошибка получения токена');
                 return;
             }
-            // Продолжаем загрузку с новым токеном
         }
         
-        // Получаем список файлов JSON (ищем файлы смет)
-        const listResponse = await fetch(
-            'https://www.googleapis.com/drive/v3/files?q=mimeType="application/json" and trashed=false&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime)',
-            { headers: { 'Authorization': `Bearer ${token}` } }
-        );
-        
-        if (!listResponse.ok) {
-            throw new Error(`Ошибка получения списка: ${listResponse.status}`);
-        }
-        
-        const filesData = await listResponse.json();
-        
-        // Фильтруем только файлы, которые похожи на сметы (содержат "Смета" в названии)
-        const smetaFiles = filesData.files?.filter(f => 
-            f.name.includes('Смета') || f.name.includes('смета')
-        ) || [];
-        
-        if (smetaFiles.length === 0) {
-            // Если нет файлов с "Смета", показываем все JSON файлы
-            if (filesData.files && filesData.files.length > 0) {
-                const allFilesList = filesData.files.map((f, i) => 
-                    `${i+1}. ${f.name.replace('.json', '')} (${new Date(f.modifiedTime).toLocaleDateString('ru-RU')})`
-                ).join('\n');
-                
-                const useAll = confirm('В Drive нет файлов с пометкой "Смета". Показать все JSON файлы?');
-                if (!useAll) {
-                    showNotification('📁 Загрузка отменена');
-                    return;
-                }
-                
-                // Показываем список всех JSON файлов
-                const choice = prompt(`Выберите файл:\n\n${allFilesList}`, '1');
-                const index = parseInt(choice) - 1;
-                
-                if (index >= 0 && index < filesData.files.length) {
-                    await loadSingleFile(filesData.files[index].id, token);
-                }
-            } else {
-                showNotification('📁 В вашем Drive нет JSON файлов');
-            }
-            return;
-        }
-        
-        // Показываем список файлов смет
-        const fileList = smetaFiles.map((f, i) => 
-            `${i+1}. ${f.name.replace('.json', '')} (${new Date(f.modifiedTime).toLocaleDateString('ru-RU')})`
-        ).join('\n');
-        
-        const choice = prompt(`Выберите смету:\n\n${fileList}`, '1');
-        const index = parseInt(choice) - 1;
-        
-        if (index >= 0 && index < smetaFiles.length) {
-            await loadSingleFile(smetaFiles[index].id, token);
-        }
+        // ✅ ВЫЗЫВАЕМ ВАШЕ ПРЕКРАСНОЕ МОДАЛЬНОЕ ОКНО
+        await showGoogleDriveLoadModal();
         
     } catch (error) {
         console.error('Ошибка загрузки из Drive:', error);
         
-        // Обрабатываем ошибки авторизации
         if (error.message.includes('401') || error.message.includes('403')) {
             showNotification('⚠️ Проблема с доступом. Попробуйте войти заново.');
-            // Очищаем проблемные токены
             localStorage.removeItem('google_refresh_token');
             sessionStorage.removeItem('google_access_token');
         } else {
