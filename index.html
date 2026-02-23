@@ -9561,28 +9561,6 @@ function checkGoogleAuth() {
     } else {
         updateGoogleUI(null);
     }
-
-    
-    // Проверяем hash в URL (при возврате с Google)
-    const hash = window.location.hash;
-    if (hash.includes('access_token')) {
-        const token = hash.split('access_token=')[1].split('&')[0];
-        
-        // Получаем данные пользователя
-        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-        .then(r => r.json())
-        .then(user => {
-            localStorage.setItem('google_token', token);
-            localStorage.setItem('google_user', JSON.stringify(user));
-            window.googleToken = token;
-            updateGoogleUI(user);
-            
-            // Убираем hash из URL
-            history.replaceState(null, null, ' ');
-        });
-    }
 }
 
 // Назначаем обработчики (только если элементы существуют)
