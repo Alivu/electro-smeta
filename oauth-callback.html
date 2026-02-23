@@ -99,7 +99,7 @@
                                 type: 'auth_code',
                                 code: code,
                                 state: state
-                            }, 'https://alivu.github.io');
+                            }, 'https://electro-smeta.vercel.app'); // ← ИЗМЕНИЛ ДОМЕН!
                             console.log('✅ Код отправлен через postMessage');
                         } catch (e) {
                             console.log('Не удалось отправить postMessage:', e);
@@ -110,7 +110,7 @@
                     messageDiv.innerHTML = `
                         <div class="success-icon">✅</div>
                         <h2>Успешно!</h2>
-                        <p>Авторизация завершена успешно, выможите сохронять и загружать данные ЭлектроСметы на вош Google Диск.</p>
+                        <p>Авторизация завершена успешно!<br>Теперь вы можете сохранять и загружать данные ЭлектроСметы на ваш Google Диск.</p>
                         <p>Окно закроется автоматически через 2 секунды...</p>
                     `;
                     
