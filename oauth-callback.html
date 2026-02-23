@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Авторизация Google</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация Google - ЭлектроСмета</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,6 +20,7 @@
             background: rgba(255,255,255,0.1);
             padding: 30px;
             border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             max-width: 400px;
         }
         .loader {
@@ -34,6 +36,26 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .success-icon {
+            font-size: 60px;
+            margin: 20px 0;
+            color: #4CAF50;
+        }
+        .btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
@@ -45,34 +67,88 @@
 
     <script>
         (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state') || 'base_auth';
-            
-            if (code) {
-                console.log('✅ Код получен, сохраняем...');
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                const state = urlParams.get('state') || 'base_auth';
+                const error = urlParams.get('error');
                 
-                // Сохраняем код в localStorage
-                localStorage.setItem('temp_auth_code', code);
-                localStorage.setItem('temp_auth_state', state);
+                const messageDiv = document.getElementById('message');
                 
-                // Показываем сообщение об успехе
-                document.getElementById('message').innerHTML = `
-                    <h2>✅ Успешно!</h2>
-                    <p>Авторизация завершена.</p>
-                    <p>Возврат в приложение...</p>
-                `;
+                if (error) {
+                    // Ошибка авторизации
+                    messageDiv.innerHTML = `
+                        <h2>❌ Ошибка авторизации</h2>
+                        <p>${error}</p>
+                        <button class="btn" onclick="window.close()">Закрыть окно</button>
+                    `;
+                    return;
+                }
                 
-                // Возвращаемся в основное приложение
-                setTimeout(() => {
-                    window.location.href = 'https://alivu.github.io/electro-smeta/';
-                }, 1500);
-                
-            } else {
+                if (code) {
+                    console.log('✅ Код получен, сохраняем в localStorage');
+                    
+                    // Сохраняем код в localStorage
+                    localStorage.setItem('temp_auth_code', code);
+                    localStorage.setItem('temp_auth_state', state);
+                    
+                    // Пробуем отправить через postMessage (если есть opener)
+                    if (window.opener && !window.opener.closed) {
+                        try {
+                            window.opener.postMessage({
+                                type: 'auth_code',
+                                code: code,
+                                state: state
+                            }, 'https://alivu.github.io');
+                            console.log('✅ Код отправлен через postMessage');
+                        } catch (e) {
+                            console.log('Не удалось отправить postMessage:', e);
+                        }
+                    }
+                    
+                    // Показываем сообщение об успехе
+                    messageDiv.innerHTML = `
+                        <div class="success-icon">✅</div>
+                        <h2>Успешно!</h2>
+                        <p>Авторизация завершена успешно, выможите сохронять и загружать данные ЭлектроСметы на вош Google Диск.</p>
+                        <p>Окно закроется автоматически через 2 секунды...</p>
+                    `;
+                    
+                    // ЗАКРЫВАЕМ ОКНО через 2 секунды
+                    setTimeout(() => {
+                        console.log('Закрываю окно...');
+                        window.close();
+                        
+                        // Если не закрылось (некоторые браузеры блокируют window.close),
+                        // показываем кнопку для ручного закрытия
+                        setTimeout(() => {
+                            if (!window.closed) {
+                                messageDiv.innerHTML += `
+                                    <p style="color: #ffaa00; margin-top: 20px;">
+                                        ⚠️ Браузер заблокировал автоматическое закрытие.<br>
+                                        Пожалуйста, закройте окно вручную.
+                                    </p>
+                                    <button class="btn" onclick="window.close()">Закрыть окно</button>
+                                `;
+                            }
+                        }, 1000);
+                        
+                    }, 2000);
+                    
+                } else {
+                    // Нет кода в URL
+                    messageDiv.innerHTML = `
+                        <h2>⚠️ Ошибка</h2>
+                        <p>Не получен код авторизации</p>
+                        <button class="btn" onclick="window.close()">Закрыть окно</button>
+                    `;
+                }
+            } catch (e) {
+                console.error('Ошибка в callback:', e);
                 document.getElementById('message').innerHTML = `
                     <h2>❌ Ошибка</h2>
-                    <p>Не получен код авторизации</p>
-                    <button onclick="window.close()">Закрыть</button>
+                    <p>${e.message}</p>
+                    <button class="btn" onclick="window.close()">Закрыть окно</button>
                 `;
             }
         })();
