@@ -7420,21 +7420,18 @@ function generatePKCE() {
 // Шаг 1: Новая функция входа (заменяет старую googleLogin)
 function googleLogin() {
     const clientId = '1005885507362-vsplr1th18mhk2uj6prb2akump2c20tb.apps.googleusercontent.com';
-    // ВАЖНО: создайте этот файл на GitHub
     const redirectUri = encodeURIComponent('https://alivu.github.io/electro-smeta/oauth-callback.html');
     
-    // ТОЛЬКО базовые права при входе
     const scope = encodeURIComponent([
         'https://www.googleapis.com/auth/userinfo.email',
         'https://www.googleapis.com/auth/userinfo.profile'
     ].join(' '));
     
-    // Генерируем PKCE
     generatePKCE().then(codeChallenge => {
         const url = `https://accounts.google.com/o/oauth2/v2/auth?` +
             `client_id=${clientId}` +
             `&redirect_uri=${redirectUri}` +
-            `&response_type=code` +  // ВАЖНО: code, а не token
+            `&response_type=code` +
             `&scope=${scope}` +
             `&code_challenge=${codeChallenge}` +
             `&code_challenge_method=S256` +
@@ -7442,7 +7439,10 @@ function googleLogin() {
             `&prompt=consent` +
             `&state=base_auth`;
         
-        window.location.href = url;
+        // ОТКРЫВАЕМ В НОВОМ ОКНЕ, а не в этой же вкладке
+        window.open(url, 'authWindow', 'width=600,height=700,left=200,top=100');
+        
+        // Не закрываем текущую страницу!
     });
 }
 
