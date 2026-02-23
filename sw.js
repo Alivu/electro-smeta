@@ -6,14 +6,13 @@ const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 const VERSION_NOTIFICATION = {
   version: APP_VERSION,
   title: '📢 Что нового в версии ' + APP_VERSION,
-  message: '✨ Добавлено 110	Розетка выдвижная (Pop-Up) для мебели	шт.	2500, Обнавлен 109п, 166п, 167.'
+  message: '✨ Добавлено 110 Розетка выдвижная (Pop-Up) для мебели шт. 2500, Обновлен 109п, 166п, 167.'
 };
 
 // Установка
 self.addEventListener('install', event => {
   console.log(`Установка версии ${APP_VERSION}`);
   
-  // Сохраняем уведомление в кэш
   event.waitUntil(
     caches.open('app-notifications')
       .then(cache => {
@@ -35,7 +34,6 @@ self.addEventListener('activate', event => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          // Удаляем ВСЕ старые кеши
           if (cacheName.startsWith('electro-smeta-') && 
               cacheName !== CACHE_NAME) {
             console.log('🗑️ Удаляем старый кеш:', cacheName);
@@ -44,7 +42,6 @@ self.addEventListener('activate', event => {
         })
       );
     }).then(() => {
-      // Отправляем уведомление всем открытым клиентам
       return self.clients.matchAll().then(clients => {
         clients.forEach(client => {
           client.postMessage({
@@ -55,7 +52,6 @@ self.addEventListener('activate', event => {
         });
       });
     }).then(() => {
-      // Немедленно забираем контроль
       return self.clients.claim();
     })
   );
@@ -65,7 +61,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   
-  // Пропускаем Яндекс.Метрику и внешние ресурсы
+  // Пропускаем внешние ресурсы
   if (event.request.url.includes('yandex.ru') || 
       event.request.url.includes('mc.yandex') ||
       event.request.url.includes('cdnjs.cloudflare.com') ||
@@ -85,13 +81,19 @@ self.addEventListener('fetch', event => {
     return;
   }
   
+  // ⚠️ ДОБАВЛЯЕМ: Пропускаем запросы к api.aladhan.com (исламский календарь)
+  if (event.request.url.includes('api.aladhan.com')) {
+    return;
+  }
+  
   // Универсальная проверка для главной страницы
   const isMainPage = (
-    // Любой из этих вариантов
-    url.pathname.endsWith('/electro-smeta/') ||
-    url.pathname.endsWith('/electro-smeta/index.html') ||
+    // Для Vercel (новый домен)
     url.pathname === '/' ||
     url.pathname === '/index.html' ||
+    // Для GitHub Pages (старый домен, для обратной совместимости)
+    url.pathname.endsWith('/electro-smeta/') ||
+    url.pathname.endsWith('/electro-smeta/index.html') ||
     event.request.mode === 'navigate'
   );
   
@@ -100,7 +102,6 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request, { cache: 'no-store' })
         .then(networkResponse => {
-          // Всегда обновляем кеш Service Worker
           if (networkResponse.ok) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME)
@@ -109,7 +110,6 @@ self.addEventListener('fetch', event => {
           return networkResponse;
         })
         .catch(() => {
-          // Только если сеть недоступна - отдаем из кеша
           return caches.match('./index.html');
         })
     );
@@ -120,7 +120,6 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(cachedResponse => {
-        // Параллельно загружаем свежую версию для следующего раза
         const fetchPromise = fetch(event.request)
           .then(networkResponse => {
             if (networkResponse.ok) {
@@ -130,13 +129,13 @@ self.addEventListener('fetch', event => {
             }
             return networkResponse;
           })
-          .catch(() => null); // Игнорируем ошибки сети
+          .catch(() => null);
         
-        // Сразу возвращаем кеш (если есть) или сеть
         return cachedResponse || fetchPromise;
       })
   );
 });
+
 // Получение сообщений
 self.addEventListener('message', event => {
   if (event.data.action === 'skipWaiting') {
@@ -147,7 +146,6 @@ self.addEventListener('message', event => {
     caches.delete(CACHE_NAME);
   }
   
-  // Клиент запрашивает уведомление
   if (event.data && event.data.type === 'GET_NOTIFICATION') {
     caches.open('app-notifications').then(cache => {
       cache.match('latest-notification').then(response => {
