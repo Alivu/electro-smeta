@@ -1,96 +1,105 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизация Google</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-        }
-        .message {
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .loader {
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <div class="message">
-        <h2>Авторизация Google</h2>
-        <div class="loader"></div>
-        <p>Обработка данных... Это окно можно закрыть</p>
-    </div>
+// После объявления window.addEventListener('message', ...)
+// Добавьте проверку сохраненного кода
 
-    <script>
-        (function() {
-            try {
-                // Получаем код из URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const code = urlParams.get('code');
-                const state = urlParams.get('state');
-                
-                console.log('Callback получил code:', code ? 'да' : 'нет');
-                console.log('State:', state);
-                
-                if (code) {
-                    // Отправляем код обратно в основное приложение
-                    if (window.opener) {
-                        window.opener.postMessage({
-                            type: 'auth_code',
-                            code: code,
-                            state: state || 'base_auth'
-                        }, 'https://alivu.github.io');
-                        
-                        // Обновляем сообщение на странице
-                        document.querySelector('.message').innerHTML = `
-                            <h2>✓ Успешно!</h2>
-                            <p>Авторизация завершена. Это окно можно закрыть.</p>
-                        `;
-                        
-                        // Закрываем окно через 2 секунды
-                        setTimeout(() => window.close(), 2000);
-                    } else {
-                        document.querySelector('.message').innerHTML = `
-                            <h2>⚠️ Внимание</h2>
-                            <p>Окно открыто не из родительского приложения.<br>Вы можете закрыть это окно и вернуться к приложению.</p>
-                        `;
-                    }
-                } else {
-                    const error = urlParams.get('error');
-                    document.querySelector('.message').innerHTML = `
-                        <h2>❌ Ошибка</h2>
-                        <p>${error ? 'Ошибка: ' + error : 'Не получен код авторизации'}</p>
-                        <p><button onclick="window.close()" style="padding: 10px 20px; background: white; border: none; border-radius: 5px; cursor: pointer;">Закрыть</button></p>
-                    `;
+// Проверяем, есть ли временный код в localStorage
+const tempCode = localStorage.getItem('temp_auth_code');
+const tempState = localStorage.getItem('temp_auth_state');
+
+if (tempCode) {
+    console.log('Найден сохраненный код авторизации');
+    
+    // Очищаем временное хранилище
+    localStorage.removeItem('temp_auth_code');
+    localStorage.removeItem('temp_auth_state');
+    
+    // Обрабатываем код как если бы пришло сообщение
+    setTimeout(() => {
+        // Имитируем сообщение
+        const fakeEvent = {
+            data: {
+                type: 'auth_code',
+                code: tempCode,
+                state: tempState || 'base_auth'
+            },
+            origin: 'https://alivu.github.io'
+        };
+        
+        // Вызываем обработчик
+        const messageHandler = window.onmessage || 
+            window.addEventListener('message', function handler(event) {
+                if (event.data.type === 'auth_code') {
+                    window.removeEventListener('message', handler);
+                    // Здесь должен быть ваш код обработки кода
+                    handleAuthCode(event.data.code, event.data.state);
                 }
-            } catch (e) {
-                console.error('Ошибка в callback:', e);
-                document.body.innerHTML = '<h2>Ошибка обработки</h2><p>Попробуйте еще раз</p>';
-            }
-        })();
-    </script>
-</body>
-</html>
+            });
+        
+        // Или просто обменяем код на токены напрямую
+        exchangeCodeForTokens(tempCode, tempState);
+        
+    }, 500);
+}
+
+// Функция для обмена кода на токены
+async function exchangeCodeForTokens(code, state) {
+    const codeVerifier = localStorage.getItem('pkce_code_verifier');
+    
+    if (!codeVerifier) {
+        console.error('Нет code verifier');
+        return;
+    }
+    
+    try {
+        showNotification('⏳ Получение токенов...');
+        
+        const response = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                code: code,
+                client_id: '1005885507362-vsplr1th18mhk2uj6prb2akump2c20tb.apps.googleusercontent.com',
+                redirect_uri: 'https://alivu.github.io/electro-smeta/oauth-callback.html',
+                grant_type: 'authorization_code',
+                code_verifier: codeVerifier
+            })
+        });
+        
+        const tokens = await response.json();
+        
+        if (tokens.error) {
+            throw new Error(tokens.error_description || tokens.error);
+        }
+        
+        console.log('Токены получены:', tokens);
+        
+        // Сохраняем токены
+        if (tokens.refresh_token) {
+            localStorage.setItem('google_refresh_token', tokens.refresh_token);
+        }
+        
+        sessionStorage.setItem('google_access_token', tokens.access_token);
+        sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
+        
+        localStorage.removeItem('pkce_code_verifier');
+        
+        // Получаем информацию о пользователе
+        const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { 'Authorization': `Bearer ${tokens.access_token}` }
+        });
+        
+        const user = await userResponse.json();
+        
+        localStorage.setItem('google_user', JSON.stringify(user));
+        localStorage.setItem('google_token', tokens.access_token);
+        window.googleToken = tokens.access_token;
+        
+        updateGoogleUI(user);
+        showNotification(`✅ Вход выполнен: ${user.email}`);
+        
+    } catch (error) {
+        console.error('Ошибка получения токенов:', error);
+        showNotification('❌ Ошибка авторизации: ' + error.message);
+    }
+}
