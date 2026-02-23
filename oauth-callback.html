@@ -76,7 +76,6 @@
                 const messageDiv = document.getElementById('message');
                 
                 if (error) {
-                    // Ошибка авторизации
                     messageDiv.innerHTML = `
                         <h2>❌ Ошибка авторизации</h2>
                         <p>${error}</p>
@@ -88,25 +87,38 @@
                 if (code) {
                     console.log('✅ Код получен, сохраняем в localStorage');
                     
-                    // Сохраняем код в localStorage
+                    // Сохраняем код
                     localStorage.setItem('temp_auth_code', code);
                     localStorage.setItem('temp_auth_state', state);
                     
-                    // Пробуем отправить через postMessage (если есть opener)
+                    // ВАЖНО: Сохраняем codeVerifier из родительского окна
                     if (window.opener && !window.opener.closed) {
+                        try {
+                            // Пытаемся получить codeVerifier из родительского окна
+                            const codeVerifier = window.opener.localStorage.getItem('pkce_code_verifier');
+                            if (codeVerifier) {
+                                localStorage.setItem('pkce_code_verifier', codeVerifier);
+                                console.log('✅ codeVerifier сохранен из родителя');
+                            } else {
+                                console.log('⚠️ codeVerifier не найден в родительском окне');
+                            }
+                        } catch (e) {
+                            console.log('Не удалось получить codeVerifier из родителя:', e);
+                        }
+                        
+                        // Отправляем сообщение родительскому окну
                         try {
                             window.opener.postMessage({
                                 type: 'auth_code',
                                 code: code,
                                 state: state
-                            }, 'https://electro-smeta.vercel.app'); // ← ИЗМЕНИЛ ДОМЕН!
+                            }, 'https://electro-smeta.vercel.app');
                             console.log('✅ Код отправлен через postMessage');
                         } catch (e) {
                             console.log('Не удалось отправить postMessage:', e);
                         }
                     }
                     
-                    // Показываем сообщение об успехе
                     messageDiv.innerHTML = `
                         <div class="success-icon">✅</div>
                         <h2>Успешно!</h2>
@@ -114,13 +126,11 @@
                         <p>Окно закроется автоматически через 2 секунды...</p>
                     `;
                     
-                    // ЗАКРЫВАЕМ ОКНО через 2 секунды
+                    // Закрываем окно через 2 секунды
                     setTimeout(() => {
                         console.log('Закрываю окно...');
                         window.close();
                         
-                        // Если не закрылось (некоторые браузеры блокируют window.close),
-                        // показываем кнопку для ручного закрытия
                         setTimeout(() => {
                             if (!window.closed) {
                                 messageDiv.innerHTML += `
@@ -136,7 +146,6 @@
                     }, 2000);
                     
                 } else {
-                    // Нет кода в URL
                     messageDiv.innerHTML = `
                         <h2>⚠️ Ошибка</h2>
                         <p>Не получен код авторизации</p>
