@@ -8442,7 +8442,7 @@ async function checkVideoExists(number) {
 
 /**
  * Воспроизводит видео или показывает изображение по номеру.
- * Автоматически определяет тип файла по расширению.
+ * Автоматически определяет тип файла по расширению и содержимому.
  */
 async function playVideoByNumber(number) {
     // Показываем индикатор загрузки
@@ -8455,86 +8455,186 @@ async function playVideoByNumber(number) {
         // Получаем ссылку из словаря
         let mediaUrl = videoLinks[number];
         
-        // Убираем индикатор загрузки
-        document.body.removeChild(loadingDiv);
+        if (!mediaUrl) {
+            document.body.removeChild(loadingDiv);
+            showNotification(`❌ Материал для позиции №${number} не найден`);
+            return;
+        }
         
-        if (mediaUrl) {
-            // Определяем тип файла по расширению
-            const fileExtension = mediaUrl.split('.').pop().toLowerCase().split('?')[0]; // Убираем возможные параметры запроса
-            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif'];
-            const isImage = imageExtensions.includes(fileExtension);
+        // Определяем тип файла по расширению
+        const fileExtension = mediaUrl.split('.').pop().toLowerCase().split('?')[0];
+        const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif', 'jpe', 'jif', 'jfif', 'jfi'];
+        const isImage = imageExtensions.includes(fileExtension);
+        
+        // Создаем модальное окно для медиа
+        const mediaModal = document.createElement('div');
+        mediaModal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10001;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            backdrop-filter: blur(5px);
+        `;
+        
+        // Контейнер для контента
+        const contentContainer = document.createElement('div');
+        contentContainer.style.cssText = `
+            max-width: 90%;
+            max-height: 80%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        `;
+        
+        // Кнопка закрытия
+        const closeButton = document.createElement('button');
+        closeButton.innerHTML = '✕ Закрыть';
+        closeButton.style.cssText = `
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            transition: all 0.3s ease;
+        `;
+        closeButton.onmouseover = () => {
+            closeButton.style.transform = 'scale(1.05)';
+            closeButton.style.boxShadow = '0 6px 20px rgba(231, 76, 60, 0.4)';
+        };
+        closeButton.onmouseout = () => {
+            closeButton.style.transform = 'scale(1)';
+            closeButton.style.boxShadow = '0 4px 15px rgba(231, 76, 60, 0.3)';
+        };
+        closeButton.onclick = () => document.body.removeChild(mediaModal);
+        
+        if (isImage) {
+            // Для изображений
+            console.log('Загружаем изображение:', mediaUrl);
             
-            // Создаем модальное окно для медиа
-            const mediaModal = document.createElement('div');
-            mediaModal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.9);
-                z-index: 10001;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
+            const img = document.createElement('img');
+            img.style.cssText = `
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                object-fit: contain;
             `;
             
-            if (isImage) {
-                // Если это изображение
-                mediaModal.innerHTML = `
-                    <img src="${mediaUrl}" style="max-width: 90%; max-height: 80%; border-radius: 10px; object-fit: contain;" alt="Изображение к позиции ${number}">
-                    <button style="
-                        margin-top: 20px;
-                        padding: 10px 30px;
-                        background: #e74c3c;
-                        color: white;
-                        border: none;
-                        border-radius: 5px;
-                        font-size: 16px;
-                        cursor: pointer;
-                    " onclick="this.parentElement.remove()">
-                        Закрыть
-                    </button>
-                `;
-            } else {
-                // Если это видео
-                mediaModal.innerHTML = `
-                    <video controls autoplay style="max-width: 90%; max-height: 80%; border-radius: 10px;">
-                        <source src="${mediaUrl}" type="video/${fileExtension === 'mp4' ? 'mp4' : 'webm'}">
-                        Ваш браузер не поддерживает видео.
-                    </video>
-                    <button style="
-                        margin-top: 20px;
-                        padding: 10px 30px;
-                        background: #e74c3c;
-                        color: white;
-                        border: none;
-                        border-radius: 5px;
-                        font-size: 16px;
-                        cursor: pointer;
-                    " onclick="this.parentElement.remove()">
-                        Закрыть
-                    </button>
-                `;
-            }
+            // Обработчик успешной загрузки
+            img.onload = () => {
+                document.body.removeChild(loadingDiv);
+                console.log('✅ Изображение загружено');
+            };
             
-            document.body.appendChild(mediaModal);
+            // Обработчик ошибки загрузки
+            img.onerror = () => {
+                document.body.removeChild(loadingDiv);
+                console.error('❌ Ошибка загрузки изображения');
+                
+                // Показываем сообщение об ошибке в модальном окне
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = `
+                    color: white;
+                    text-align: center;
+                    padding: 20px;
+                `;
+                errorDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #e74c3c; margin-bottom: 15px;"></i>
+                    <p style="font-size: 18px;">Не удалось загрузить изображение</p>
+                    <p style="font-size: 14px; color: #999; margin-top: 10px;">${mediaUrl}</p>
+                `;
+                contentContainer.appendChild(errorDiv);
+            };
             
-            // Добавляем в кэш
-            videoCache.add(number);
+            img.src = mediaUrl;
+            contentContainer.appendChild(img);
             
         } else {
-            // Медиа не найдено
-            showNotification(`❌ Материал для позиции №${number} не найден`);
+            // Для видео
+            console.log('Загружаем видео:', mediaUrl);
+            
+            const video = document.createElement('video');
+            video.controls = true;
+            video.autoplay = true;
+            video.style.cssText = `
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            `;
+            
+            // Обработчик успешной загрузки
+            video.onloadeddata = () => {
+                document.body.removeChild(loadingDiv);
+                console.log('✅ Видео загружено');
+            };
+            
+            // Обработчик ошибки загрузки
+            video.onerror = () => {
+                document.body.removeChild(loadingDiv);
+                console.error('❌ Ошибка загрузки видео');
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = `
+                    color: white;
+                    text-align: center;
+                    padding: 20px;
+                `;
+                errorDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #e74c3c; margin-bottom: 15px;"></i>
+                    <p style="font-size: 18px;">Не удалось загрузить видео</p>
+                    <p style="font-size: 14px; color: #999; margin-top: 10px;">${mediaUrl}</p>
+                `;
+                contentContainer.appendChild(errorDiv);
+            };
+            
+            // Определяем MIME тип
+            const mimeType = fileExtension === 'mp4' ? 'video/mp4' : 'video/webm';
+            
+            const source = document.createElement('source');
+            source.src = mediaUrl;
+            source.type = mimeType;
+            
+            video.appendChild(source);
+            video.innerHTML += 'Ваш браузер не поддерживает видео.';
+            contentContainer.appendChild(video);
         }
+        
+        // Собираем модальное окно
+        mediaModal.appendChild(contentContainer);
+        mediaModal.appendChild(closeButton);
+        
+        // Добавляем возможность закрыть кликом на фон
+        mediaModal.addEventListener('click', (e) => {
+            if (e.target === mediaModal) {
+                document.body.removeChild(mediaModal);
+            }
+        });
+        
+        document.body.appendChild(mediaModal);
+        
+        // Добавляем в кэш
+        videoCache.add(number);
+        
     } catch (error) {
         // Убираем индикатор загрузки в случае ошибки
         if (loadingDiv.parentNode) {
             document.body.removeChild(loadingDiv);
         }
         console.error('Ошибка при загрузке:', error);
-        showNotification(`❌ Ошибка загрузки для №${number}`);
+        showNotification(`❌ Ошибка загрузки: ${error.message}`);
     }
 }
 /**
