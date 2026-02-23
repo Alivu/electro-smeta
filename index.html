@@ -7861,20 +7861,19 @@ async function requestDriveScope() {
                     })
                 })
                 .then(r => r.json())
-				.then(tokens => {
-  				  if (tokens.refresh_token) {
-  				      localStorage.setItem('google_refresh_token', tokens.refresh_token);
-  				  }
-  				  sessionStorage.setItem('google_access_token', tokens.access_token);
-  				  sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
+.then(tokens => {
+    if (tokens.refresh_token) {
+        localStorage.setItem('google_refresh_token', tokens.refresh_token);
+    }
+    sessionStorage.setItem('google_access_token', tokens.access_token);
+    sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
     
-   				 // ✅ НЕ запрашиваем userinfo с токеном Drive
-   				 // Просто сообщаем об успехе
-   				 showNotification('✅ Доступ к Google Drive получен!');
+    // ✅ УБИРАЕМ запрос к userinfo
+    showNotification('✅ Доступ к Google Drive получен!');
     
-   				 try { authWindow.close(); } catch(e) {}
-   				 resolve(true);
-				})
+    try { authWindow.close(); } catch(e) {}
+    resolve(true);
+})
                 .catch(() => resolve(false));
             }
         }
