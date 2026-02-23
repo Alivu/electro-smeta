@@ -7812,13 +7812,16 @@ async function saveToDrive() {
 }
 
 async function requestDriveScope() {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
         const clientId = GOOGLE_CLIENT_ID;
         const redirectUri = encodeURIComponent('https://electro-smeta.vercel.app/oauth-callback.html');
         
         // ВАЖНО: Сохраняем codeVerifier перед открытием окна
         const codeVerifier = localStorage.getItem('pkce_code_verifier') || generateRandomString(128);
         localStorage.setItem('pkce_code_verifier', codeVerifier);
+        
+        // Генерируем codeChallenge отдельно
+        const codeChallenge = await generateCodeChallenge(codeVerifier);
         
         const scope = encodeURIComponent('https://www.googleapis.com/auth/drive.file');
         
@@ -7829,7 +7832,7 @@ async function requestDriveScope() {
             `&redirect_uri=${redirectUri}` +
             `&response_type=code` +
             `&scope=${scope}` +
-            `&code_challenge=${await generateCodeChallenge(codeVerifier)}` +
+            `&code_challenge=${codeChallenge}` +
             `&code_challenge_method=S256` +
             `&access_type=offline` +
             `&prompt=consent` +
@@ -7843,7 +7846,6 @@ async function requestDriveScope() {
             if (event.data.type === 'auth_code' && event.data.state === 'drive_scope') {
                 window.removeEventListener('message', messageHandler);
                 
-                // Получаем codeVerifier (уже должен быть в localStorage)
                 const savedCodeVerifier = localStorage.getItem('pkce_code_verifier');
                 
                 fetch('https://oauth2.googleapis.com/token', {
@@ -7866,7 +7868,6 @@ async function requestDriveScope() {
                     sessionStorage.setItem('google_access_token', tokens.access_token);
                     sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
                     
-                    // Закрываем окно
                     try { authWindow.close(); } catch(e) {}
                     resolve(true);
                 })
