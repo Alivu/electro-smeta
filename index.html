@@ -8441,26 +8441,32 @@ async function checkVideoExists(number) {
 }
 
 /**
- * Воспроизводит видео по номеру
+ * Воспроизводит видео или показывает изображение по номеру.
+ * Автоматически определяет тип файла по расширению.
  */
 async function playVideoByNumber(number) {
     // Показываем индикатор загрузки
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'video-loading';
-    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка видео...';
+    loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
     document.body.appendChild(loadingDiv);
     
     try {
         // Получаем ссылку из словаря
-        let videoUrl = videoLinks[number];
+        let mediaUrl = videoLinks[number];
         
         // Убираем индикатор загрузки
         document.body.removeChild(loadingDiv);
         
-        if (videoUrl) {
-            // Создаем модальное окно для видео
-            const videoModal = document.createElement('div');
-            videoModal.style.cssText = `
+        if (mediaUrl) {
+            // Определяем тип файла по расширению
+            const fileExtension = mediaUrl.split('.').pop().toLowerCase().split('?')[0]; // Убираем возможные параметры запроса
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'jfif'];
+            const isImage = imageExtensions.includes(fileExtension);
+            
+            // Создаем модальное окно для медиа
+            const mediaModal = document.createElement('div');
+            mediaModal.style.cssText = `
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -8474,44 +8480,63 @@ async function playVideoByNumber(number) {
                 flex-direction: column;
             `;
             
-            videoModal.innerHTML = `
-                <video controls autoplay style="max-width: 90%; max-height: 80%; border-radius: 10px;">
-                    <source src="${videoUrl}" type="video/${videoUrl.split('.').pop()}">
-                    Ваш браузер не поддерживает видео.
-                </video>
-                <button style="
-                    margin-top: 20px;
-                    padding: 10px 30px;
-                    background: #e74c3c;
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    font-size: 16px;
-                    cursor: pointer;
-                " onclick="this.parentElement.remove()">
-                    Закрыть
-                </button>
-            `;
+            if (isImage) {
+                // Если это изображение
+                mediaModal.innerHTML = `
+                    <img src="${mediaUrl}" style="max-width: 90%; max-height: 80%; border-radius: 10px; object-fit: contain;" alt="Изображение к позиции ${number}">
+                    <button style="
+                        margin-top: 20px;
+                        padding: 10px 30px;
+                        background: #e74c3c;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    " onclick="this.parentElement.remove()">
+                        Закрыть
+                    </button>
+                `;
+            } else {
+                // Если это видео
+                mediaModal.innerHTML = `
+                    <video controls autoplay style="max-width: 90%; max-height: 80%; border-radius: 10px;">
+                        <source src="${mediaUrl}" type="video/${fileExtension === 'mp4' ? 'mp4' : 'webm'}">
+                        Ваш браузер не поддерживает видео.
+                    </video>
+                    <button style="
+                        margin-top: 20px;
+                        padding: 10px 30px;
+                        background: #e74c3c;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    " onclick="this.parentElement.remove()">
+                        Закрыть
+                    </button>
+                `;
+            }
             
-            document.body.appendChild(videoModal);
+            document.body.appendChild(mediaModal);
             
             // Добавляем в кэш
             videoCache.add(number);
             
         } else {
-            // Видео не найдено - показываем уведомление
-            showNotification(`❌ Видео для позиции №${number} не найдено`);
+            // Медиа не найдено
+            showNotification(`❌ Материал для позиции №${number} не найден`);
         }
     } catch (error) {
         // Убираем индикатор загрузки в случае ошибки
         if (loadingDiv.parentNode) {
             document.body.removeChild(loadingDiv);
         }
-        console.error('Ошибка при загрузке видео:', error);
-        showNotification(`❌ Ошибка загрузки видео для №${number}`);
+        console.error('Ошибка при загрузке:', error);
+        showNotification(`❌ Ошибка загрузки для №${number}`);
     }
 }
-
 /**
  * Предзагрузка информации о видео
  */
