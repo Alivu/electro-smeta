@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация Google</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        .message {
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .loader {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="message">
+        <h2>Авторизация Google</h2>
+        <div class="loader"></div>
+        <p>Обработка данных... Это окно можно закрыть</p>
+    </div>
+
+    <script>
+        (function() {
+            try {
+                // Получаем код из URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const code = urlParams.get('code');
+                const state = urlParams.get('state');
+                
+                console.log('Callback получил code:', code ? 'да' : 'нет');
+                console.log('State:', state);
+                
+                if (code) {
+                    // Отправляем код обратно в основное приложение
+                    if (window.opener) {
+                        window.opener.postMessage({
+                            type: 'auth_code',
+                            code: code,
+                            state: state || 'base_auth'
+                        }, 'https://alivu.github.io');
+                        
+                        // Обновляем сообщение на странице
+                        document.querySelector('.message').innerHTML = `
+                            <h2>✓ Успешно!</h2>
+                            <p>Авторизация завершена. Это окно можно закрыть.</p>
+                        `;
+                        
+                        // Закрываем окно через 2 секунды
+                        setTimeout(() => window.close(), 2000);
+                    } else {
+                        document.querySelector('.message').innerHTML = `
+                            <h2>⚠️ Внимание</h2>
+                            <p>Окно открыто не из родительского приложения.<br>Вы можете закрыть это окно и вернуться к приложению.</p>
+                        `;
+                    }
+                } else {
+                    const error = urlParams.get('error');
+                    document.querySelector('.message').innerHTML = `
+                        <h2>❌ Ошибка</h2>
+                        <p>${error ? 'Ошибка: ' + error : 'Не получен код авторизации'}</p>
+                        <p><button onclick="window.close()" style="padding: 10px 20px; background: white; border: none; border-radius: 5px; cursor: pointer;">Закрыть</button></p>
+                    `;
+                }
+            } catch (e) {
+                console.error('Ошибка в callback:', e);
+                document.body.innerHTML = '<h2>Ошибка обработки</h2><p>Попробуйте еще раз</p>';
+            }
+        })();
+    </script>
+</body>
+</html>
