@@ -9677,28 +9677,6 @@ async function showGoogleDriveLoadModal() {
             return;
         }
         
-        // Проверяем, что токен рабочий
-        console.log('🔵 [6] Проверяем токен через userinfo...');
-        try {
-            const userCheck = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            console.log('🔵 [7] Проверка токена статус:', userCheck.status);
-            
-            if (!userCheck.ok) {
-                console.log('🔴 [8] Токен недействителен! Статус:', userCheck.status);
-                showNotification('❌ Токен истек. Войдите заново.');
-                localStorage.removeItem('google_token');
-                localStorage.removeItem('google_user');
-                sessionStorage.removeItem('google_access_token');
-                sessionStorage.removeItem('google_token_expiry');
-                modal.style.display = 'none';
-                return;
-            }
-        } catch (e) {
-            console.log('🔴 [8] Ошибка проверки токена:', e);
-        }
-        
         console.log('🔵 [9] Запрашиваем файлы из Drive API...');
         
         // Загружаем ВСЕ страницы файлов
