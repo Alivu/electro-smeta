@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7422,7 +7421,7 @@ function googleLogin() {
     const clientId = GOOGLE_CLIENT_ID; // используем константу
     
     // ⚠️ ВАЖНО: Используем домен Vercel, а не GitHub!
-    const redirectUri = encodeURIComponent('https://electro-smeta.vercel.app/electro-smeta/oauth-callback.html');
+    const redirectUri = encodeURIComponent('https://electro-smeta.vercel.app/oauth-callback.html');
     
     const scope = encodeURIComponent([
         'https://www.googleapis.com/auth/userinfo.email',
