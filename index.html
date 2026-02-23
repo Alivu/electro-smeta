@@ -9651,8 +9651,14 @@ async function showGoogleDriveLoadModal() {
             return;
         }
         
+        // ✅ ИЗМЕНЕНО: ищем по расширению .json, а не по MIME-типу
         const response = await fetch(
-            'https://www.googleapis.com/drive/v3/files?q=mimeType="application/json" and trashed=false&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime,size)',
+            'https://www.googleapis.com/drive/v3/files?' + new URLSearchParams({
+                q: "name contains '.json' and trashed=false",
+                orderBy: 'modifiedTime desc',
+                fields: 'files(id,name,modifiedTime)',
+                pageSize: 100
+            }),
             { headers: { 'Authorization': `Bearer ${token}` } }
         );
         
@@ -9665,8 +9671,13 @@ async function showGoogleDriveLoadModal() {
             return;
         }
         
+        // Дополнительно фильтруем по расширению .json (на всякий случай)
+        const jsonFiles = data.files.filter(file => 
+            file.name.toLowerCase().endsWith('.json')
+        );
+        
         // Создаём массив промисов для проверки каждого файла
-        const filePromises = data.files.map(async file => {
+        const filePromises = jsonFiles.map(async file => {
             try {
                 const details = await getEstimateDetails(file.id);
                 // Проверяем, что файл содержит данные сметы
@@ -9761,55 +9772,6 @@ async function showGoogleDriveLoadModal() {
         console.error('Ошибка загрузки из Drive:', error);
         loading.style.display = 'none';
         filesList.innerHTML = '<div class="empty-drive-files">❌ Ошибка загрузки файлов</div>';
-    }
-}
-
-// Редактирование имени файла в Drive
-async function editDriveFileName(fileId, currentName) {
-    const newName = prompt('Введите новое название файла:', currentName.replace('.json', ''));
-    if (!newName || newName.trim() === '') return;
-    
-    const token = localStorage.getItem('google_token');
-    if (!token) return;
-    
-    try {
-        await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: newName + '.json'
-            })
-        });
-        
-        showNotification('✅ Название файла изменено');
-        showGoogleDriveLoadModal(); // Обновляем список
-    } catch (error) {
-        console.error('Ошибка переименования:', error);
-        showNotification('❌ Ошибка при переименовании');
-    }
-}
-
-// Удаление файла из Drive
-async function deleteDriveFile(fileId) {
-    if (!confirm('Удалить этот файл из Google Drive?')) return;
-    
-    const token = localStorage.getItem('google_token');
-    if (!token) return;
-    
-    try {
-        await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        
-        showNotification('✅ Файл удален из Google Drive');
-        showGoogleDriveLoadModal(); // Обновляем список
-    } catch (error) {
-        console.error('Ошибка удаления:', error);
-        showNotification('❌ Ошибка при удалении');
     }
 }
 // Загрузка данных из Drive в смету
