@@ -7581,7 +7581,23 @@ window.addEventListener('message', async function(event) {
             showNotification('❌ Ошибка авторизации: ' + error.message);
         }
     }
-});
+}); // ← ЗДЕСЬ ЗАКРЫВАЕТСЯ СЛУШАТЕЛЬ!
+
+// ========== ЭТОТ БЛОК ДОЛЖЕН БЫТЬ ПОСЛЕ СЛУШАТЕЛЯ, А НЕ ВНУТРИ ==========
+(function() {
+    const tempCode = localStorage.getItem('temp_auth_code');
+    const tempState = localStorage.getItem('temp_auth_state');
+    
+    if (tempCode) {
+        console.log('Найден сохраненный код авторизации');
+        localStorage.removeItem('temp_auth_code');
+        localStorage.removeItem('temp_auth_state');
+        
+        setTimeout(() => {
+            exchangeCodeForTokens(tempCode, tempState);
+        }, 500);
+    }
+})();
 
 // Шаг 3: Функция получения валидного access token
 async function getValidAccessToken() {
