@@ -9622,8 +9622,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 let selectedDriveFileId = null;	
 		// Получение деталей сметы из файла
+// Получение деталей сметы из файла
 async function getEstimateDetails(fileId) {
-    // ✅ ИСПРАВЛЕНО: используем правильный токен с правами Drive
     const token = await getValidAccessToken();
     if (!token) {
         console.log('❌ Нет токена для getEstimateDetails');
@@ -9645,21 +9645,29 @@ async function getEstimateDetails(fileId) {
         const data = await response.json();
         console.log(`📄 Файл загружен, данные:`, data);
         
-        // Проверяем, что это действительно наша смета
-        if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
+        // ✅ Проверяем, что это JSON с данными сметы
+        // Проверяем наличие основных полей сметы
+        const isValidEstimate = data && 
+                                data.data && 
+                                Array.isArray(data.data) && 
+                                data.data.length > 0;  // Любое количество позиций (не только > 0)
+        
+        if (isValidEstimate) {
             console.log(`✅ Файл валиден: ${data.data.length} позиций`);
             return {
                 itemsCount: data.data.length,
                 total: data.totals?.totalAmount || 0,
-                date: data.date
+                date: data.date || file.modifiedTime,
+                name: data.name || "Смета без названия"
             };
         } else {
-            console.log(`❌ Файл не является сметой`);
+            console.log(`❌ Файл не является сметой (нет data.data)`);
+            return null;
         }
     } catch (error) {
         console.error('❌ Ошибка получения деталей файла:', error);
+        return null;
     }
-    return null;
 }
 async function showGoogleDriveLoadModal() {
     console.log('🔵 [1] ========== НАЧАЛО showGoogleDriveLoadModal ==========');
@@ -9787,23 +9795,24 @@ async function showGoogleDriveLoadModal() {
         
         console.log(`📊 [14] JSON файлов: ${jsonFiles.length}`);
         
-        // Создаём массив промисов для проверки каждого файла
-        console.log('🔵 [15] Начинаем проверку файлов...');
-        const filePromises = jsonFiles.map(async (file, index) => {
-            console.log(`🔍 [16] Проверка файла ${index+1}/${jsonFiles.length}: ${file.name}`);
-            try {
-                const details = await getEstimateDetails(file.id);
-                if (details && details.itemsCount > 0) {
-                    console.log(`✅ [17] Файл валиден: ${file.name} (${details.itemsCount} позиций)`);
-                    return { file, details };
-                } else {
-                    console.log(`❌ [17] Файл невалиден: ${file.name}`);
-                }
-            } catch (e) {
-                console.log(`❌ [16] Ошибка проверки файла ${file.name}:`, e);
-            }
+// Создаём массив промисов для проверки каждого файла
+console.log('🔵 [15] Начинаем проверку файлов...');
+const filePromises = jsonFiles.map(async (file, index) => {
+    console.log(`🔍 [16] Проверка файла ${index+1}/${jsonFiles.length}: ${file.name}`);
+    try {
+        const details = await getEstimateDetails(file.id);
+        if (details && details.itemsCount > 0) {
+            console.log(`✅ [17] Файл валиден: ${file.name} (${details.itemsCount} позиций)`);
+            return { file, details };
+        } else {
+            console.log(`❌ [17] Файл невалиден: ${file.name} (нет данных)`);
             return null;
-        });
+        }
+    } catch (e) {
+        console.log(`❌ [16] Ошибка проверки файла ${file.name}:`, e);
+        return null;
+    }
+});
         
         console.log('🔵 [18] Ожидаем все проверки...');
         const results = await Promise.all(filePromises);
