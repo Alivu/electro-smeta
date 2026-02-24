@@ -9516,8 +9516,12 @@ function formatPhoneNumber(phone) {
 }
 // Новая функция для проверки логотипа в Drive
 async function checkLogoInDrive() {
-    const token = localStorage.getItem('google_token');
-    if (!token) return;
+    // ✅ ИСПРАВЛЕНО: используем правильный токен
+    const token = await getValidAccessToken();
+    if (!token) {
+        console.log('❌ Нет токена для проверки логотипа');
+        return;
+    }
     
     try {
         const response = await fetch(
@@ -9525,18 +9529,35 @@ async function checkLogoInDrive() {
             { headers: { 'Authorization': `Bearer ${token}` } }
         );
         
+        // ✅ Добавляем обработку 403
+        if (response.status === 403) {
+            console.log('⚠️ Нет прав на Drive, запрашиваем...');
+            const granted = await requestDriveScope();
+            if (granted) {
+                // Повторяем проверку после получения прав
+                setTimeout(() => checkLogoInDrive(), 1000);
+            }
+            return;
+        }
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ошибка: ${response.status}`);
+        }
+        
         const data = await response.json();
         
-        // Если логотип есть в Drive - показываем кнопку "Загрузить"
-        if (data.files && data.files.length > 0) {
-            const loadLogoBtn = document.getElementById('loadLogoFromDriveBtn');
-            if (loadLogoBtn) {
+        // Показываем кнопку если логотип есть
+        const loadLogoBtn = document.getElementById('loadLogoFromDriveBtn');
+        if (loadLogoBtn) {
+            if (data.files && data.files.length > 0) {
                 loadLogoBtn.style.display = 'inline-block';
-                console.log('✅ Логотип найден в Drive, кнопка загрузки активна');
+                console.log('✅ Логотип найден в Drive');
+            } else {
+                loadLogoBtn.style.display = 'none';
             }
         }
     } catch (error) {
-        console.error('Ошибка проверки логотипа в Drive:', error);
+        console.error('❌ Ошибка проверки логотипа:', error);
     }
 }
 
