@@ -7498,19 +7498,6 @@ window.addEventListener('message', async function(event) {
             
             localStorage.removeItem('pkce_code_verifier');
             
-            // Получаем информацию о пользователе
-            const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { 'Authorization': `Bearer ${tokens.access_token}` }
-            });
-            
-            const user = await userResponse.json();
-            
-            localStorage.setItem('google_user', JSON.stringify(user));
-            localStorage.setItem('google_token', tokens.access_token);
-            window.googleToken = tokens.access_token;
-            
-            // Обновляем UI
-            updateGoogleUI(user);
             
             showNotification(`✅ Вход выполнен: ${user.email}`);
             
@@ -7572,20 +7559,6 @@ async function exchangeCodeForTokens(code, state) {
         // Очищаем PKCE verifier
         localStorage.removeItem('pkce_code_verifier');
         
-        // Получаем информацию о пользователе
-        const userResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { 'Authorization': `Bearer ${tokens.access_token}` }
-        });
-        
-        const user = await userResponse.json();
-        
-        // Сохраняем пользователя
-        localStorage.setItem('google_user', JSON.stringify(user));
-        localStorage.setItem('google_token', tokens.access_token);
-        window.googleToken = tokens.access_token;
-        
-        // Обновляем UI
-        updateGoogleUI(user);
         
         showNotification(`✅ Вход выполнен: ${user.email}`);
         
