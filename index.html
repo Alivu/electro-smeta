@@ -9562,7 +9562,6 @@ const googleUserEmail = document.getElementById('googleUserEmail');
 const googleLogoutBtn = document.getElementById('googleLogoutBtn');
 const googleLoginDivider = document.getElementById('googleLoginDivider');
 
-// Функция обновления UI после входа
 function updateGoogleUI(user) {
     const googleUserBlock = document.getElementById('googleUserBlock');
     const googleUserEmail = document.getElementById('googleUserEmail');
@@ -9605,37 +9604,26 @@ function updateGoogleUI(user) {
                 </div>
             `;
             
-            // Переназначаем обработчики для кнопок
+            // Переназначаем обработчики
             const logoutBtn = document.getElementById('googleLogoutBtn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', googleLogout);
-            }
-            
-            const saveBtn = document.getElementById('saveToDriveBtn');
-            if (saveBtn) {
-                saveBtn.onclick = saveToDrive;
-            }
-            
-            const loadBtn = document.getElementById('loadFromDriveBtn');
-            if (loadBtn) {
-                loadBtn.onclick = loadFromDrive;
             }
         }
         
         if (googleUserEmail) googleUserEmail.textContent = user.email;
         
-        // Скрываем старую кнопку входа
+        // Скрываем кнопку входа
         if (googleLoginBtn) {
             googleLoginBtn.style.display = 'none';
-            googleLoginBtn.classList.add('google-login-hidden');
         }
-        if (googleLoginDivider) googleLoginDivider.style.display = 'none';
+        if (googleLoginDivider) {
+            googleLoginDivider.style.display = 'none';
+        }
         
-        // Проверяем логотип
+        // ✅ ПРОСТО ПОКАЗЫВАЕМ КНОПКУ ЛОГОТИПА (без авто загрузки)
         if (loadLogoBtn) {
-            setTimeout(() => {
-                checkLogoInDrive();
-            }, 1000);
+            loadLogoBtn.style.display = 'inline-block';
         }
         
     } else {
@@ -9649,11 +9637,12 @@ function updateGoogleUI(user) {
         // Показываем кнопку входа
         if (googleLoginBtn) {
             googleLoginBtn.style.display = 'flex';
-            googleLoginBtn.classList.remove('google-login-hidden');
         }
-        if (googleLoginDivider) googleLoginDivider.style.display = 'block';
+        if (googleLoginDivider) {
+            googleLoginDivider.style.display = 'block';
+        }
         
-        // Прячем кнопку логотипа
+        // Прячем кнопки
         if (loadLogoBtn) {
             loadLogoBtn.style.display = 'none';
         }
