@@ -7205,25 +7205,14 @@ document.addEventListener('DOMContentLoaded', function() {
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('sw.js')
+            // Используем относительный путь
+            navigator.serviceWorker.register('./sw.js')
                 .then(function(registration) {
                     console.log('✅ Service Worker зарегистрирован');
-                    
-                    // Проверка обновлений
-                    registration.onupdatefound = function() {
-                        const installingWorker = registration.installing;
-                        installingWorker.onstatechange = function() {
-                            if (installingWorker.state === 'installed') {
-                                if (navigator.serviceWorker.controller) {
-                                    console.log('🔄 Доступно обновление!');
-                                    showNotification('Обновление доступно! Перезагрузите страницу.');
-                                }
-                            }
-                        };
-                    };
                 })
                 .catch(function(error) {
                     console.log('❌ Ошибка Service Worker:', error);
+                    // Не показываем ошибку пользователю
                 });
         });
     }
