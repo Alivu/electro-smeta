@@ -7512,13 +7512,42 @@ window.addEventListener('message', async function(event) {
 async function exchangeCodeForTokens(code, state) {
     console.log('🔄 exchangeCodeForTokens вызвана', { code, state });
     
-    const codeVerifier = localStorage.getItem('pkce_code_verifier');
+    // Пробуем получить codeVerifier из разных мест
+    let codeVerifier = localStorage.getItem('pkce_code_verifier');
+    
+    // Если нет в localStorage, пробуем из sessionStorage
+    if (!codeVerifier) {
+        codeVerifier = sessionStorage.getItem('pkce_code_verifier');
+        if (codeVerifier) {
+            localStorage.setItem('pkce_code_verifier', codeVerifier);
+            console.log('✅ codeVerifier восстановлен из sessionStorage');
+        }
+    }
+    
+    // Если все еще нет - создаем новый (но это крайний случай)
+    if (!codeVerifier) {
+        console.log('⚠️ codeVerifier не найден, создаем новый');
+        codeVerifier = generateRandomString(128);
+        localStorage.setItem('pkce_code_verifier', codeVerifier);
+        sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+    }
     
     if (!codeVerifier) {
         console.error('❌ Нет code verifier');
         showNotification('❌ Ошибка: не найден code verifier');
         return;
     }
+    
+    try {
+        showNotification('⏳ Получение токенов...');
+        
+        // ... остальной код функции (обмен токенов) ...
+        
+    } catch (error) {
+        console.error('❌ Ошибка получения токенов:', error);
+        showNotification('❌ Ошибка авторизации: ' + error.message);
+    }
+}
     
     try {
         showNotification('⏳ Получение токенов...');
