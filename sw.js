@@ -1,5 +1,10 @@
 // Service Worker для ЭлектроСметы
 const APP_VERSION = '2.2.4';
+const urlsToCache = [
+  './',
+  './index.html',
+  './manifest.json'
+];
 const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 
 // Текст уведомления для этой версии
