@@ -7499,7 +7499,7 @@ window.addEventListener('message', async function(event) {
             localStorage.removeItem('pkce_code_verifier');
             
             
-            showNotification(`✅ Вход выполнен: ${user.email}`);
+            showNotification(`✅ Вход выполнен!`);
             
         } catch (error) {
             console.error('❌ Ошибка:', error);
@@ -7560,7 +7560,7 @@ async function exchangeCodeForTokens(code, state) {
         localStorage.removeItem('pkce_code_verifier');
         
         
-        showNotification(`✅ Вход выполнен: ${user.email}`);
+        showNotification(`✅ Вход выполнен!`);
         
     } catch (error) {
         console.error('❌ Ошибка получения токенов:', error);
