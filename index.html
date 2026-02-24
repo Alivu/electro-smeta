@@ -7586,7 +7586,7 @@ async function exchangeCodeForTokens(code, state) {
         
         try {
             // JWT токен: header.payload.signature
-            const tokenParts = tokens.access_token.split('.');
+            const tokenParts = tokens.id_token.split('.');
             if (tokenParts.length > 1) {
                 const payload = JSON.parse(atob(tokenParts[1]));
                 console.log('📧 Данные из токена:', payload);
