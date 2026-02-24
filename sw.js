@@ -1,5 +1,5 @@
 // Service Worker для ЭлектроСметы
-const APP_VERSION = '2.2.4';
+const APP_VERSION = '2.2.5';
 const urlsToCache = [
   './',
   './index.html',
