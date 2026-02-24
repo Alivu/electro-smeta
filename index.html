@@ -6296,11 +6296,12 @@ function generatePrint() {
                 </div>
             </div>
             
-           <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>
             
             <script>
-                function saveAsPDFFromPrint() {
+                // Глобальные функции для доступа из onclick
+                window.saveAsPDFFromPrint = function() {
                     window.opener.postMessage({
                         action: 'savePDFFromPrint',
                         data: {
@@ -6312,13 +6313,13 @@ function generatePrint() {
                             projectName: '${projectName}',
                             estimateNumber: '${estimateNumber}',
                             estimateDate: '${estimateDate}',
-                            notes: '${notes ? notes.replace(/'/g, "\\'").replace(/\\/g, "\\\\") : ''}'
+                            notes: '${notes ? notes.replace(/'/g, "\\'").replace(/\\/g, "\\\\") : ''}',
                             logoDataUrl: '${logoDataUrl || ''}'
                         }
                     }, '*');
-                }
+                };
                 
-                async function sharePDF() {
+                window.sharePDF = async function() {
                     try {
                         // Показываем индикатор загрузки
                         const loadingDiv = document.createElement('div');
@@ -6393,7 +6394,7 @@ function generatePrint() {
                         console.error('Ошибка при отправке PDF:', error);
                         alert('❌ Не удалось отправить PDF. Попробуйте сохранить файл и отправить вручную.');
                     }
-                }
+                };
                 
                 window.onafterprint = function() {
                     setTimeout(() => {
