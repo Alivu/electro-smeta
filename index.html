@@ -7846,21 +7846,31 @@ async function saveToDrive() {
     }
 }
 
+// ========== ФУНКЦИЯ ЗАПРОСА ПРАВ НА DRIVE ==========
 async function requestDriveScope() {
+    console.log('🔄 Запрашиваем права на Drive...');
+    
     return new Promise(async (resolve) => {
         const clientId = GOOGLE_CLIENT_ID;
         const redirectUri = encodeURIComponent('https://electro-smeta.vercel.app/oauth-callback.html');
         
-        // ВАЖНО: Сохраняем codeVerifier перед открытием окна
-        const codeVerifier = localStorage.getItem('pkce_code_verifier') || generateRandomString(128);
+        // Генерируем codeVerifier
+        const codeVerifier = generateRandomString(128);
         localStorage.setItem('pkce_code_verifier', codeVerifier);
-        
-        // Генерируем codeChallenge отдельно
         const codeChallenge = await generateCodeChallenge(codeVerifier);
         
         const scope = encodeURIComponent('https://www.googleapis.com/auth/drive.file');
         
-        const authWindow = window.open('', 'authPopup', 'width=600,height=700,left=200,top=100');
+        // Пытаемся открыть окно
+        const authWindow = window.open('', '_blank', 'width=600,height=700,left=200,top=100');
+        
+        // ВАЖНО: Проверяем, удалось ли открыть окно (не заблокировано ли всплывающее окно)
+        if (!authWindow) {
+            console.error('❌ Не удалось открыть окно авторизации. Возможно, оно заблокировано браузером.');
+            showNotification('❌ Разрешите всплывающие окна для этого сайта, чтобы авторизоваться в Drive.');
+            resolve(false);
+            return;
+        }
         
         const url = `https://accounts.google.com/o/oauth2/v2/auth?` +
             `client_id=${clientId}` +
@@ -7873,13 +7883,20 @@ async function requestDriveScope() {
             `&prompt=consent` +
             `&state=drive_scope`;
         
+        // Устанавливаем URL для окна
         authWindow.location.href = url;
         
+        // Слушаем ответ
         function messageHandler(event) {
             if (event.origin !== 'https://electro-smeta.vercel.app') return;
             
             if (event.data.type === 'auth_code' && event.data.state === 'drive_scope') {
                 window.removeEventListener('message', messageHandler);
+                
+                // Проверяем и закрываем окно, если оно еще открыто
+                if (authWindow && !authWindow.closed) {
+                    authWindow.close();
+                }
                 
                 const savedCodeVerifier = localStorage.getItem('pkce_code_verifier');
                 
@@ -7896,29 +7913,38 @@ async function requestDriveScope() {
                     })
                 })
                 .then(r => r.json())
-.then(tokens => {
-    if (tokens.refresh_token) {
-        localStorage.setItem('google_refresh_token', tokens.refresh_token);
-    }
-    sessionStorage.setItem('google_access_token', tokens.access_token);
-    sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
-    
-    // ✅ УБИРАЕМ запрос к userinfo
-    showNotification('✅ Доступ к Google Drive получен!');
-    
-    try { authWindow.close(); } catch(e) {}
-    resolve(true);
-})
-                .catch(() => resolve(false));
+                .then(tokens => {
+                    if (tokens.refresh_token) {
+                        localStorage.setItem('google_refresh_token', tokens.refresh_token);
+                    }
+                    if (tokens.access_token) {
+                        sessionStorage.setItem('google_access_token', tokens.access_token);
+                        sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
+                        console.log('✅ Права на Drive получены');
+                        showNotification('✅ Доступ к Drive получен!');
+                        resolve(true);
+                    } else {
+                        resolve(false);
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Ошибка получения токена Drive:', error);
+                    resolve(false);
+                });
             }
         }
         
         window.addEventListener('message', messageHandler);
         
+        // Таймаут на случай, если пользователь не завершил авторизацию
         setTimeout(() => {
             window.removeEventListener('message', messageHandler);
+            if (authWindow && !authWindow.closed) {
+                authWindow.close();
+            }
+            console.log('⏱️ Время ожидания авторизации истекло');
             resolve(false);
-        }, 60000);
+        }, 120000); // 2 минуты
     });
 }
 		
