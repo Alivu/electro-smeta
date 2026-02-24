@@ -9517,7 +9517,6 @@ const googleLogoutBtn = document.getElementById('googleLogoutBtn');
 const googleLoginDivider = document.getElementById('googleLoginDivider');
 
 // Функция обновления UI после входа
-// Шаг 5: Обновление интерфейса
 function updateGoogleUI(user) {
     const googleUserBlock = document.getElementById('googleUserBlock');
     const googleUserEmail = document.getElementById('googleUserEmail');
@@ -9530,7 +9529,31 @@ function updateGoogleUI(user) {
     
     if (user && user.email) {
         // Пользователь авторизован
-        if (googleUserBlock) googleUserBlock.style.display = 'block';
+        if (googleUserBlock) {
+            // Показываем имя и email
+            const displayName = user.name || user.email.split('@')[0];
+            googleUserBlock.style.display = 'block';
+            googleUserBlock.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; padding: 10px 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border-radius: 5px;">
+                    <i class="fas fa-user-circle" style="font-size: 24px;"></i>
+                    <div style="flex: 1; overflow: hidden;">
+                        <div style="font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${displayName}
+                        </div>
+                        <div style="font-size: 12px; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${user.email}
+                        </div>
+                    </div>
+                    <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;" title="Выйти">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            `;
+            
+            // Переназначаем обработчик для кнопки выхода
+            document.getElementById('googleLogoutBtn').addEventListener('click', googleLogout);
+        }
+        
         if (googleUserEmail) googleUserEmail.textContent = user.email;
         if (googleLoginBtn) googleLoginBtn.style.display = 'none';
         if (googleLoginDivider) googleLoginDivider.style.display = 'none';
@@ -9540,9 +9563,8 @@ function updateGoogleUI(user) {
         if (loadFromDriveBtn) loadFromDriveBtn.style.display = 'flex';
         if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'flex';
         
-        // ✅ ИСПРАВЛЕНО: НЕ скрываем кнопку логотипа, а проверяем наличие файла
+        // Проверяем логотип
         if (loadLogoBtn) {
-            // Запускаем проверку наличия логотипа в Drive
             setTimeout(() => {
                 checkLogoInDrive();
             }, 1000);
@@ -9550,7 +9572,10 @@ function updateGoogleUI(user) {
         
     } else {
         // Пользователь НЕ авторизован
-        if (googleUserBlock) googleUserBlock.style.display = 'none';
+        if (googleUserBlock) {
+            googleUserBlock.style.display = 'none';
+            googleUserBlock.innerHTML = ''; // Очищаем содержимое
+        }
         if (googleUserEmail) googleUserEmail.textContent = '';
         if (googleLoginBtn) googleLoginBtn.style.display = 'flex';
         if (googleLoginDivider) googleLoginDivider.style.display = 'block';
