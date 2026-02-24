@@ -7545,7 +7545,6 @@ window.addEventListener('message', async function(event) {
 });
 
 // ========== ФУНКЦИЯ ОБМЕНА КОДА НА ТОКЕНЫ ==========
-// ========== ФУНКЦИЯ ОБМЕНА КОДА НА ТОКЕНЫ ==========
 async function exchangeCodeForTokens(code, state) {
     console.log('🔄 exchangeCodeForTokens вызвана', { code, state });
     
@@ -7602,36 +7601,35 @@ async function exchangeCodeForTokens(code, state) {
         
         localStorage.removeItem('pkce_code_verifier');
         
-        // ✅ ЕСЛИ ЕСТЬ id_token - СОХРАНЯЕМ ПОЛЬЗОВАТЕЛЯ
+        // ✅ АВТОМАТИЧЕСКИ СОХРАНЯЕМ ПОЛЬЗОВАТЕЛЯ (работает для всех!)
         if (tokens.id_token) {
             try {
                 const tokenParts = tokens.id_token.split('.');
                 if (tokenParts.length > 1) {
                     const payload = JSON.parse(atob(tokenParts[1]));
-                    console.log('📧 Данные пользователя из id_token:', payload);
+                    console.log('📧 Данные пользователя:', payload);
                     
+                    // Создаем объект с реальными данными
                     const user = {
                         email: payload.email || "Пользователь",
                         name: payload.name || payload.given_name || payload.email?.split('@')[0] || "Пользователь"
                     };
                     
+                    // Сохраняем в localStorage
                     localStorage.setItem('google_user', JSON.stringify(user));
-                    console.log('✅ Сохраняем пользователя:', user);
+                    console.log('✅ Пользователь сохранен:', user);
                     
-                    // Обновляем UI
+                    // Обновляем интерфейс
                     updateGoogleUI(user);
                 }
             } catch (e) {
                 console.log('⚠️ Ошибка декодирования id_token:', e);
             }
         } else {
-            console.log('ℹ️ Нет id_token в ответе (это запрос на Drive)');
-            
-            // Если это запрос на Drive, просто обновляем токен, но НЕ меняем пользователя
+            // Если это запрос на Drive, просто обновляем интерфейс с существующим пользователем
             const existingUser = localStorage.getItem('google_user');
             if (existingUser) {
-                const user = JSON.parse(existingUser);
-                updateGoogleUI(user);
+                updateGoogleUI(JSON.parse(existingUser));
             }
         }
         
