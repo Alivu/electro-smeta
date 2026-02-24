@@ -9570,18 +9570,15 @@ function updateGoogleUI(user) {
                         </button>
                     </div>
                     
-                    <!-- КНОПКИ DRIVE ПОД ШАПКОЙ -->
-                    <div style="display: flex; gap: 8px; margin-top: 5px;">
-                        <button id="saveToDriveBtn" class="btn btn-sm btn-primary" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="saveToDrive()">
-                            <i class="fas fa-save"></i> Сохранить
-                        </button>
-                        <button id="loadFromDriveBtn" class="btn btn-sm btn-success" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="loadFromDrive()">
-                            <i class="fas fa-download"></i> Загрузить
-                        </button>
-                        <button id="googleDriveLoadBtn" class="btn btn-sm btn-info" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="showGoogleDriveLoadModal()">
-                            <i class="fab fa-google-drive"></i> Диск
-                        </button>
-                    </div>
+					<!-- КНОПКИ DRIVE ПОД ШАПКОЙ (исправлено) -->
+					<div style="display: flex; gap: 8px; margin-top: 5px;">
+    					<button id="saveToDriveBtn" class="btn btn-sm btn-primary" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="saveToDrive()">
+      					<i class="fas fa-save"></i> Сохранить
+    					</button>
+    					<button id="loadFromDriveBtn" class="btn btn-sm btn-success" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="loadFromDrive()">
+        					<i class="fas fa-download"></i> Загрузить
+    					</button>
+					</div>
                 </div>
             `;
             
