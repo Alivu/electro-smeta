@@ -7541,17 +7541,6 @@ async function exchangeCodeForTokens(code, state) {
     try {
         showNotification('⏳ Получение токенов...');
         
-        // ... остальной код функции (обмен токенов) ...
-        
-    } catch (error) {
-        console.error('❌ Ошибка получения токенов:', error);
-        showNotification('❌ Ошибка авторизации: ' + error.message);
-    }
-}
-    
-    try {
-        showNotification('⏳ Получение токенов...');
-        
         const response = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
             headers: {
@@ -7575,19 +7564,16 @@ async function exchangeCodeForTokens(code, state) {
         
         console.log('✅ Токены получены:', tokens);
         
-        // Сохраняем refresh token (живет долго)
+        // Сохраняем refresh token
         if (tokens.refresh_token) {
             localStorage.setItem('google_refresh_token', tokens.refresh_token);
-            console.log('✅ Refresh token сохранен');
         }
         
         // Access token храним временно
         sessionStorage.setItem('google_access_token', tokens.access_token);
         sessionStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
         
-        // Очищаем PKCE verifier
         localStorage.removeItem('pkce_code_verifier');
-        
         
         showNotification(`✅ Вход выполнен!`);
         
