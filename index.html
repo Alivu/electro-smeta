@@ -9542,6 +9542,9 @@ function updateGoogleUI(user) {
     const googleUserEmail = document.getElementById('googleUserEmail');
     const googleLoginBtn = document.getElementById('googleLoginBtn');
     const googleLoginDivider = document.getElementById('googleLoginDivider');
+    const googleDriveLoadBtn = document.getElementById('googleDriveLoadBtn');
+    const saveToDriveBtn = document.getElementById('saveToDriveBtn');
+    const loadFromDriveBtn = document.getElementById('loadFromDriveBtn');
     const loadLogoBtn = document.getElementById('loadLogoFromDriveBtn');
     
     if (user && user.email) {
@@ -9575,6 +9578,9 @@ function updateGoogleUI(user) {
                         <button id="loadFromDriveBtn" class="btn btn-sm btn-success" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="loadFromDrive()">
                             <i class="fas fa-download"></i> Загрузить
                         </button>
+                        <button id="googleDriveLoadBtn" class="btn btn-sm btn-info" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="showGoogleDriveLoadModal()">
+                            <i class="fab fa-google-drive"></i> Диск
+                        </button>
                     </div>
                 </div>
             `;
@@ -9594,6 +9600,11 @@ function updateGoogleUI(user) {
             if (loadBtn) {
                 loadBtn.onclick = loadFromDrive;
             }
+            
+            const driveLoadBtn = document.getElementById('googleDriveLoadBtn');
+            if (driveLoadBtn) {
+                driveLoadBtn.onclick = showGoogleDriveLoadModal;
+            }
         }
         
         if (googleUserEmail) googleUserEmail.textContent = user.email;
@@ -9604,6 +9615,17 @@ function updateGoogleUI(user) {
             googleLoginBtn.classList.add('google-login-hidden');
         }
         if (googleLoginDivider) googleLoginDivider.style.display = 'none';
+        
+        // Скрываем старые кнопки Drive (они теперь внутри блока)
+        if (saveToDriveBtn && saveToDriveBtn !== document.getElementById('saveToDriveBtn')) {
+            saveToDriveBtn.style.display = 'none';
+        }
+        if (loadFromDriveBtn && loadFromDriveBtn !== document.getElementById('loadFromDriveBtn')) {
+            loadFromDriveBtn.style.display = 'none';
+        }
+        if (googleDriveLoadBtn && googleDriveLoadBtn !== document.getElementById('googleDriveLoadBtn')) {
+            googleDriveLoadBtn.style.display = 'none';
+        }
         
         // Проверяем логотип
         if (loadLogoBtn) {
@@ -9627,10 +9649,11 @@ function updateGoogleUI(user) {
         }
         if (googleLoginDivider) googleLoginDivider.style.display = 'block';
         
-        // Прячем кнопку логотипа
-        if (loadLogoBtn) {
-            loadLogoBtn.style.display = 'none';
-        }
+        // Показываем оригинальные кнопки Drive (они будут скрыты до входа)
+        if (saveToDriveBtn) saveToDriveBtn.style.display = 'none';
+        if (loadFromDriveBtn) loadFromDriveBtn.style.display = 'none';
+        if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'none';
+        if (loadLogoBtn) loadLogoBtn.style.display = 'none';
     }
 }
 // Форматирование номера телефона
