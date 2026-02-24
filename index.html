@@ -9716,12 +9716,12 @@ async function showGoogleDriveLoadModal() {
         
         do {
             pageCount++;
-            let url = 'https://www.googleapis.com/drive/v3/files?' + new URLSearchParams({
-                q: "name contains '.json' and trashed=false",
-                orderBy: 'modifiedTime desc',
-                fields: 'files(id,name,modifiedTime),nextPageToken',
-                pageSize: 100
-            });
+let url = 'https://www.googleapis.com/drive/v3/files?' + new URLSearchParams({
+    q: "name contains '.json' and trashed=false",  // Ищем по расширению в имени
+    orderBy: 'modifiedTime desc',
+    fields: 'files(id,name,modifiedTime),nextPageToken',
+    pageSize: 100
+});
             
             if (pageToken) {
                 url += `&pageToken=${pageToken}`;
