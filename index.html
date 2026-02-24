@@ -2525,6 +2525,35 @@
         </button>
         <div class="dropdown-menu" id="controlsMenu">
             <!-- БЛОК ПОЛЬЗОВАТЕЛЯ (виден когда вошел) -->
+<div id="googleUserBlock" style="display: none; margin-bottom: 5px;">
+    <div style="padding: 10px 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border-radius: 5px;">
+        <!-- ШАПКА С ИМЕНЕМ И EMAIL -->
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <i class="fas fa-user-circle" style="font-size: 24px;"></i>
+            <div style="flex: 1; overflow: hidden;">
+                <div id="googleUserName" style="font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    Пользователь
+                </div>
+                <div id="googleUserEmail" style="font-size: 12px; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    email@example.com
+                </div>
+            </div>
+            <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;" title="Выйти">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+        
+        <!-- КНОПКИ DRIVE -->
+        <div style="display: flex; gap: 8px;">
+            <button id="saveToDriveBtn" class="btn btn-sm btn-primary" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                <i class="fas fa-save"></i> Сохранить
+            </button>
+            <button id="loadFromDriveBtn" class="btn btn-sm btn-success" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                <i class="fas fa-download"></i> Загрузить
+            </button>
+        </div>
+    </div>
+</div>
             <div id="googleUserBlock" style="display: none; padding: 10px 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; margin-bottom: 5px; border-radius: 5px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-user-circle" style="font-size: 18px;"></i>
@@ -4297,9 +4326,13 @@ function setupDate() {
             }
         });
 
-async function initializeApp() { // ← ДОБАВЬТЕ async
-    console.log('Инициализация приложения');
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 Инициализация приложения...');
     
+    // ВАЖНО: Сначала проверяем авторизацию
+    await checkGoogleAuth();
+    
+    // Затем остальная инициализация
     initializeEstimateData();
     renderPriceList();
     renderEstimateTable();
@@ -4307,14 +4340,14 @@ async function initializeApp() { // ← ДОБАВЬТЕ async
     updateEstimateCounter();
     setupEventListeners();
     setupDate();
-    await initializeIslamicFeatures(); // ← ДОБАВЬТЕ await
+    await initializeIslamicFeatures();
     showTab('price');
     
     // Загружаем сохраненный масштаб
     loadZoomFactor();
     
-    console.log('Приложение инициализировано');
-}
+    console.log('✅ Приложение инициализировано');
+});
 
 function initializeEstimateData() {
     // Создаем 50 пустых строк для сметы с новыми полями
@@ -9558,88 +9591,55 @@ const googleLoginDivider = document.getElementById('googleLoginDivider');
 
 function updateGoogleUI(user) {
     const googleUserBlock = document.getElementById('googleUserBlock');
+    const googleUserName = document.getElementById('googleUserName');
     const googleUserEmail = document.getElementById('googleUserEmail');
     const googleLoginBtn = document.getElementById('googleLoginBtn');
     const googleLoginDivider = document.getElementById('googleLoginDivider');
-    const loadLogoBtn = document.getElementById('loadLogoFromDriveBtn');
+    const saveToDriveBtn = document.getElementById('saveToDriveBtn');
+    const loadFromDriveBtn = document.getElementById('loadFromDriveBtn');
     
     if (user && user.email) {
-        // Пользователь авторизован
-        if (googleUserBlock) {
-            const displayName = user.name || user.email.split('@')[0];
-            googleUserBlock.style.display = 'block';
-            googleUserBlock.innerHTML = `
-                <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border-radius: 5px;">
-                    <!-- ШАПКА С ИМЕНЕМ И EMAIL -->
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-user-circle" style="font-size: 24px;"></i>
-                        <div style="flex: 1; overflow: hidden;">
-                            <div style="font-weight: bold; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${displayName}
-                            </div>
-                            <div style="font-size: 12px; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                ${user.email}
-                            </div>
-                        </div>
-                        <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; font-size: 18px;" title="Выйти">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
-                    
-                    <!-- КНОПКИ DRIVE ПОД ШАПКОЙ -->
-                    <div style="display: flex; gap: 8px; margin-top: 5px;">
-                        <button id="saveToDriveBtn" class="btn btn-sm btn-primary" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="saveToDrive()">
-                            <i class="fas fa-save"></i> Сохранить
-                        </button>
-                        <button id="loadFromDriveBtn" class="btn btn-sm btn-success" style="flex: 1; font-size: 12px; padding: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;" onclick="loadFromDrive()">
-                            <i class="fas fa-download"></i> Загрузить
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Переназначаем обработчики
-            const logoutBtn = document.getElementById('googleLogoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', googleLogout);
-            }
-        }
+        // Пользователь авторизован - ПОКАЗЫВАЕМ БЛОК
+        console.log('✅ Показываем пользователя:', user.email);
         
+        // Заполняем данные
+        if (googleUserName) googleUserName.textContent = user.name || user.email.split('@')[0];
         if (googleUserEmail) googleUserEmail.textContent = user.email;
         
-        // Скрываем кнопку входа
-        if (googleLoginBtn) {
-            googleLoginBtn.style.display = 'none';
-        }
-        if (googleLoginDivider) {
-            googleLoginDivider.style.display = 'none';
+        // Показываем блок пользователя
+        if (googleUserBlock) {
+            googleUserBlock.style.display = 'block';
         }
         
-        // ✅ ПРОСТО ПОКАЗЫВАЕМ КНОПКУ ЛОГОТИПА (без авто загрузки)
-        if (loadLogoBtn) {
-            loadLogoBtn.style.display = 'inline-block';
+        // Скрываем кнопку входа
+        if (googleLoginBtn) googleLoginBtn.style.display = 'none';
+        if (googleLoginDivider) googleLoginDivider.style.display = 'none';
+        
+        // Назначаем обработчики для кнопок Drive
+        if (saveToDriveBtn) {
+            saveToDriveBtn.onclick = saveToDrive;
+        }
+        if (loadFromDriveBtn) {
+            loadFromDriveBtn.onclick = loadFromDrive;
+        }
+        
+        // Обработчик выхода
+        const logoutBtn = document.getElementById('googleLogoutBtn');
+        if (logoutBtn) {
+            logoutBtn.onclick = googleLogout;
         }
         
     } else {
-        // Пользователь НЕ авторизован
+        // Пользователь НЕ авторизован - СКРЫВАЕМ БЛОК
+        console.log('❌ Скрываем блок пользователя');
+        
         if (googleUserBlock) {
             googleUserBlock.style.display = 'none';
-            googleUserBlock.innerHTML = '';
         }
-        if (googleUserEmail) googleUserEmail.textContent = '';
         
         // Показываем кнопку входа
-        if (googleLoginBtn) {
-            googleLoginBtn.style.display = 'flex';
-        }
-        if (googleLoginDivider) {
-            googleLoginDivider.style.display = 'block';
-        }
-        
-        // Прячем кнопки
-        if (loadLogoBtn) {
-            loadLogoBtn.style.display = 'none';
-        }
+        if (googleLoginBtn) googleLoginBtn.style.display = 'flex';
+        if (googleLoginDivider) googleLoginDivider.style.display = 'block';
     }
 }
 // Форматирование номера телефона
@@ -9755,37 +9755,44 @@ function googleLogout() {
 
 		
 // Шаг 4: Проверка авторизации при загрузке (ИСПРАВЛЕНО)
-async function checkGoogleAuth() {  // ← Убрал await, оставил async
+async function checkGoogleAuth() {
     const refreshToken = localStorage.getItem('google_refresh_token');
     const userJson = localStorage.getItem('google_user');
+    
+    console.log('🔍 Проверка авторизации...');
+    console.log('refreshToken:', refreshToken ? 'есть' : 'нет');
+    console.log('userJson:', userJson ? 'есть' : 'нет');
     
     if (refreshToken && userJson) {
         try {
             const user = JSON.parse(userJson);
+            console.log('📧 Пользователь из localStorage:', user);
             
             // Проверяем, можем ли получить access token
-            const accessToken = await getValidAccessToken();  // ← используем await вместо .then()
+            const accessToken = await getValidAccessToken();
+            
             if (accessToken) {
                 window.googleToken = accessToken;
-                localStorage.setItem('google_token', accessToken); // для совместимости
+                localStorage.setItem('google_token', accessToken);
                 updateGoogleUI(user);
+                console.log('✅ Авторизация подтверждена');
             } else {
-                // Не удалось обновить - очищаем
+                console.log('⚠️ Не удалось обновить токен');
                 localStorage.removeItem('google_refresh_token');
                 localStorage.removeItem('google_user');
                 updateGoogleUI(null);
             }
             
         } catch (e) {
-            console.error('Ошибка парсинга пользователя');
+            console.error('❌ Ошибка парсинга пользователя:', e);
             localStorage.removeItem('google_user');
             updateGoogleUI(null);
         }
     } else {
+        console.log('ℹ️ Нет сохраненной авторизации');
         updateGoogleUI(null);
     }
 }
-
 // Назначаем обработчики (только если элементы существуют)
 if (googleLoginBtn) {
     googleLoginBtn.addEventListener('click', googleLogin);
