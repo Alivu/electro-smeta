@@ -7472,7 +7472,7 @@ window.addEventListener('message', async function(event) {
                 body: new URLSearchParams({
                     code: code,
                     client_id: GOOGLE_CLIENT_ID,
-                    client_secret: GOOGLE_CLIENT_SECRET, // ← секрет из переменной!
+                    client_secret: GOOGLE_CLIENT_SECRET,
                     redirect_uri: 'https://electro-smeta.vercel.app/oauth-callback.html',
                     grant_type: 'authorization_code',
                     code_verifier: codeVerifier
@@ -7498,8 +7498,39 @@ window.addEventListener('message', async function(event) {
             
             localStorage.removeItem('pkce_code_verifier');
             
+            // ✅ СОЗДАЕМ И СОХРАНЯЕМ ПОЛЬЗОВАТЕЛЯ
+            // Пробуем получить email из JWT токена
+            let userEmail = "Пользователь Google";
             
-            showNotification(`✅ Вход выполнен!`);
+            try {
+                // Декодируем JWT токен (середина между точками)
+                const tokenParts = tokens.access_token.split('.');
+                if (tokenParts.length > 1) {
+                    const payload = JSON.parse(atob(tokenParts[1]));
+                    console.log('📧 Данные из токена:', payload);
+                    if (payload.email) {
+                        userEmail = payload.email;
+                    }
+                }
+            } catch (e) {
+                console.log('⚠️ Не удалось декодировать токен:', e);
+            }
+            
+            // Создаем объект пользователя
+            const user = { 
+                email: userEmail,
+                name: userEmail === "Пользователь Google" ? "Пользователь" : userEmail.split('@')[0]
+            };
+            
+            // Сохраняем пользователя
+            localStorage.setItem('google_user', JSON.stringify(user));
+            localStorage.setItem('google_token', tokens.access_token);
+            window.googleToken = tokens.access_token;
+            
+            // ✅ Обновляем UI
+            updateGoogleUI(user);
+            
+            showNotification(`✅ Вход выполнен: ${user.email}`);
             
         } catch (error) {
             console.error('❌ Ошибка:', error);
