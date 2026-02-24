@@ -9642,52 +9642,35 @@ async function getEstimateDetails(fileId) {
         }
         
         const fileData = await response.json();
-        console.log(`📄 Файл загружен, проверяем наличие полей сметы...`);
+        console.log(`📄 Файл загружен, ищем поле totalAmount...`);
         
-        // Список полей, которые указывают на то, что это смета
-        const estimateFields = [
-            'id', 'name', 'date', 'isMaterial', 'priceId', 
-            'total', 'quantity', 'unit', 'totalAmount'
-        ];
+        // 🔥 ПРОВЕРЯЕМ ТОЛЬКО НАЛИЧИЕ ПОЛЯ totalAmount (не значение!)
+        let hasTotalAmount = false;
         
-        // Проверяем, есть ли ХОТЯ БЫ ОДНО из этих полей
-        let hasEstimateField = false;
-        for (const field of estimateFields) {
-            if (fileData.hasOwnProperty(field)) {
-                console.log(`✅ Найдено поле: ${field}`);
-                hasEstimateField = true;
-                break;
-            }
+        // Проверяем на разных уровнях
+        if (fileData.totalAmount !== undefined) {
+            hasTotalAmount = true;
+            console.log(`✅ Найдено поле totalAmount на верхнем уровне`);
+        } else if (fileData.totals && fileData.totals.totalAmount !== undefined) {
+            hasTotalAmount = true;
+            console.log(`✅ Найдено поле totalAmount в объекте totals`);
         }
         
-        // Также проверяем вложенные данные (если есть массив data)
-        if (!hasEstimateField && fileData.data && Array.isArray(fileData.data)) {
-            for (const item of fileData.data) {
-                for (const field of estimateFields) {
-                    if (item.hasOwnProperty(field)) {
-                        console.log(`✅ Найдено поле ${field} в элементе data`);
-                        hasEstimateField = true;
-                        break;
-                    }
-                }
-                if (hasEstimateField) break;
-            }
-        }
-        
-        if (hasEstimateField) {
-            console.log(`✅ Файл является сметой!`);
+        // Если нашли поле totalAmount - это смета!
+        if (hasTotalAmount) {
+            console.log(`🎉 Файл опознан как смета!`);
             
-            // Подсчитываем количество позиций
-            const itemsCount = fileData.data && Array.isArray(fileData.data) ? fileData.data.length : 0;
+            // Получаем значение (если нужно для отображения)
+            const totalValue = fileData.totalAmount || fileData.totals?.totalAmount || 0;
             
             return {
-                itemsCount: itemsCount,
-                total: fileData.totals?.totalAmount || fileData.total || 0,
+                itemsCount: fileData.data && Array.isArray(fileData.data) ? fileData.data.length : 0,
+                total: totalValue,
                 date: fileData.date || new Date().toISOString(),
                 name: fileData.name || "Смета"
             };
         } else {
-            console.log(`❌ Файл не содержит полей сметы`);
+            console.log(`❌ Поле totalAmount не найдено - это не смета`);
             return null;
         }
         
