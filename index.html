@@ -8696,9 +8696,9 @@ function initMagnifier() {
     }
 }
 // ========== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ==========
-document.addEventListener('DOMContentLoaded', function() {
-    await checkGoogleAuth();
-    await checkSavedToken();
+document.addEventListener('DOMContentLoaded', async function() {  // ← добавили async
+    await checkGoogleAuth();   // ← теперь работает
+    await checkSavedToken();   // ← теперь работает
     
     // Скрываем кнопку сразу
     const toggleBtn = document.getElementById('magnifierToggle');
