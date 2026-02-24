@@ -9650,13 +9650,29 @@ async function showGoogleDriveLoadModal() {
     loading.style.display = 'block';
     
     try {
-        const token = localStorage.getItem('google_token');
+        // ✅ ИСПРАВЛЕНО: используем getValidAccessToken() вместо localStorage
+        let token = await getValidAccessToken();
+        
         if (!token) {
-            showNotification('❌ Сначала войдите в Google');
-            modal.style.display = 'none';
-            return;
+            showNotification('⚠️ Требуется доступ к Google Drive');
+            
+            const granted = await requestDriveScope();
+            if (!granted) {
+                showNotification('❌ Нет доступа к Google Drive');
+                modal.style.display = 'none';
+                return;
+            }
+            
+            // Получаем новый токен с правами
+            token = await getValidAccessToken();
+            if (!token) {
+                showNotification('❌ Ошибка получения токена');
+                modal.style.display = 'none';
+                return;
+            }
         }
         
+        // Теперь токен есть - запрашиваем файлы
         const response = await fetch(
             'https://www.googleapis.com/drive/v3/files?q=mimeType="application/json" and trashed=false&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime,size)',
             { headers: { 'Authorization': `Bearer ${token}` } }
