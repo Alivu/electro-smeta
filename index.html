@@ -7500,22 +7500,7 @@ window.addEventListener('message', async function(event) {
             
             // ✅ СОЗДАЕМ И СОХРАНЯЕМ ПОЛЬЗОВАТЕЛЯ
             // Пробуем получить email из JWT токена
-            let userEmail = "Пользователь Google";
-            
-            try {
-                // Декодируем JWT токен (середина между точками)
-                const tokenParts = tokens.access_token.split('.');
-                if (tokenParts.length > 1) {
-                    const payload = JSON.parse(atob(tokenParts[1]));
-                    console.log('📧 Данные из токена:', payload);
-                    if (payload.email) {
-                        userEmail = payload.email;
-                    }
-                }
-            } catch (e) {
-                console.log('⚠️ Не удалось декодировать токен:', e);
-            }
-            
+            let userEmail = "Пользователь Google";            
             // Создаем объект пользователя
             const user = { 
                 email: userEmail,
