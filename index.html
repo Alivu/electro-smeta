@@ -9530,7 +9530,6 @@ function updateGoogleUI(user) {
     if (user && user.email) {
         // Пользователь авторизован
         if (googleUserBlock) {
-            // Показываем имя и email
             const displayName = user.name || user.email.split('@')[0];
             googleUserBlock.style.display = 'block';
             googleUserBlock.innerHTML = `
@@ -9551,11 +9550,19 @@ function updateGoogleUI(user) {
             `;
             
             // Переназначаем обработчик для кнопки выхода
-            document.getElementById('googleLogoutBtn').addEventListener('click', googleLogout);
+            const logoutBtn = document.getElementById('googleLogoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', googleLogout);
+            }
         }
         
         if (googleUserEmail) googleUserEmail.textContent = user.email;
-        if (googleLoginBtn) googleLoginBtn.style.display = 'none';
+        
+        // ✅ СКРЫВАЕМ КНОПКУ ВХОДА И РАЗДЕЛИТЕЛЬ
+        if (googleLoginBtn) {
+            googleLoginBtn.style.display = 'none';
+            googleLoginBtn.classList.add('google-login-hidden');
+        }
         if (googleLoginDivider) googleLoginDivider.style.display = 'none';
         
         // Показываем кнопки Drive
@@ -9574,10 +9581,15 @@ function updateGoogleUI(user) {
         // Пользователь НЕ авторизован
         if (googleUserBlock) {
             googleUserBlock.style.display = 'none';
-            googleUserBlock.innerHTML = ''; // Очищаем содержимое
+            googleUserBlock.innerHTML = '';
         }
         if (googleUserEmail) googleUserEmail.textContent = '';
-        if (googleLoginBtn) googleLoginBtn.style.display = 'flex';
+        
+        // ✅ ПОКАЗЫВАЕМ КНОПКУ ВХОДА
+        if (googleLoginBtn) {
+            googleLoginBtn.style.display = 'flex';
+            googleLoginBtn.classList.remove('google-login-hidden');
+        }
         if (googleLoginDivider) googleLoginDivider.style.display = 'block';
         
         // Прячем кнопки Drive
