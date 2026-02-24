@@ -7509,6 +7509,7 @@ window.addEventListener('message', async function(event) {
 });
 
 // ========== ФУНКЦИЯ ОБМЕНА КОДА НА ТОКЕНЫ ==========
+// ========== ФУНКЦИЯ ОБМЕНА КОДА НА ТОКЕНЫ ==========
 async function exchangeCodeForTokens(code, state) {
     console.log('🔄 exchangeCodeForTokens вызвана', { code, state });
     
@@ -7577,13 +7578,41 @@ async function exchangeCodeForTokens(code, state) {
         
         localStorage.removeItem('pkce_code_verifier');
         
-        // Временно сохраняем заглушку пользователя
-        const user = { email: "Пользователь Google" };
+        // ✅ ПОЛУЧАЕМ ИНФОРМАЦИЮ О ПОЛЬЗОВАТЕЛЕ (исправлено!)
+        // Декодируем JWT токен, чтобы получить email
+        let userEmail = "Пользователь Google"; // Значение по умолчанию
+        
+        try {
+            // Пробуем получить email из JWT
+            const tokenParts = tokens.access_token.split('.');
+            if (tokenParts.length > 1) {
+                const payload = JSON.parse(atob(tokenParts[1]));
+                console.log('📧 Данные из токена:', payload);
+                if (payload.email) {
+                    userEmail = payload.email;
+                } else if (payload.sub) {
+                    // Если нет email, используем sub как идентификатор
+                    console.log('ℹ️ Email не найден в токене, используем sub');
+                }
+            }
+        } catch (e) {
+            console.log('⚠️ Не удалось декодировать токен:', e);
+        }
+        
+        // Создаем объект пользователя
+        const user = { 
+            email: userEmail,
+            name: userEmail === "Пользователь Google" ? "Пользователь" : userEmail.split('@')[0]
+        };
+        
+        console.log('✅ Сохраняем пользователя:', user);
+        
+        // Сохраняем пользователя
         localStorage.setItem('google_user', JSON.stringify(user));
         localStorage.setItem('google_token', tokens.access_token);
         window.googleToken = tokens.access_token;
         
-        // Обновляем UI
+        // ✅ Обновляем UI с данными пользователя
         updateGoogleUI(user);
         
         showNotification(`✅ Вход выполнен: ${user.email}`);
@@ -7594,21 +7623,6 @@ async function exchangeCodeForTokens(code, state) {
     }
 }
 		
-// ========== ЭТОТ БЛОК ДОЛЖЕН БЫТЬ ПОСЛЕ СЛУШАТЕЛЯ, А НЕ ВНУТРИ ==========
-(function() {
-    const tempCode = localStorage.getItem('temp_auth_code');
-    const tempState = localStorage.getItem('temp_auth_state');
-    
-    if (tempCode) {
-        console.log('Найден сохраненный код авторизации');
-        localStorage.removeItem('temp_auth_code');
-        localStorage.removeItem('temp_auth_state');
-        
-        setTimeout(() => {
-            exchangeCodeForTokens(tempCode, tempState);
-        }, 500);
-    }
-})();
 
 // Шаг 3: Функция получения валидного access token
 async function getValidAccessToken() {
