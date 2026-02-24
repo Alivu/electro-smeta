@@ -7545,6 +7545,7 @@ window.addEventListener('message', async function(event) {
 });
 
 // ========== ФУНКЦИЯ ОБМЕНА КОДА НА ТОКЕНЫ ==========
+// ========== ФУНКЦИЯ ОБМЕНА КОДА НА ТОКЕНЫ ==========
 async function exchangeCodeForTokens(code, state) {
     console.log('🔄 exchangeCodeForTokens вызвана', { code, state });
     
@@ -7601,60 +7602,46 @@ async function exchangeCodeForTokens(code, state) {
         
         localStorage.removeItem('pkce_code_verifier');
         
-        // ✅ ПОЛУЧАЕМ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ ИЗ ID_TOKEN
-        let userEmail = "Пользователь";
-        let userName = "Пользователь";
-        
+        // ✅ ЕСЛИ ЕСТЬ id_token - СОХРАНЯЕМ ПОЛЬЗОВАТЕЛЯ
         if (tokens.id_token) {
             try {
                 const tokenParts = tokens.id_token.split('.');
                 if (tokenParts.length > 1) {
                     const payload = JSON.parse(atob(tokenParts[1]));
-                    console.log('📧 Данные из id_token:', payload);
+                    console.log('📧 Данные пользователя из id_token:', payload);
                     
-                    // Получаем email
-                    if (payload.email) {
-                        userEmail = payload.email;
-                    }
+                    const user = {
+                        email: payload.email || "Пользователь",
+                        name: payload.name || payload.given_name || payload.email?.split('@')[0] || "Пользователь"
+                    };
                     
-                    // ✅ ПОЛУЧАЕМ ИМЯ (разные варианты)
-                    if (payload.name) {
-                        userName = payload.name;
-                    } else if (payload.given_name && payload.family_name) {
-                        userName = `${payload.given_name} ${payload.family_name}`;
-                    } else if (payload.given_name) {
-                        userName = payload.given_name;
-                    }
+                    localStorage.setItem('google_user', JSON.stringify(user));
+                    console.log('✅ Сохраняем пользователя:', user);
+                    
+                    // Обновляем UI
+                    updateGoogleUI(user);
                 }
             } catch (e) {
                 console.log('⚠️ Ошибка декодирования id_token:', e);
             }
+        } else {
+            console.log('ℹ️ Нет id_token в ответе (это запрос на Drive)');
+            
+            // Если это запрос на Drive, просто обновляем токен, но НЕ меняем пользователя
+            const existingUser = localStorage.getItem('google_user');
+            if (existingUser) {
+                const user = JSON.parse(existingUser);
+                updateGoogleUI(user);
+            }
         }
         
-        // Создаем объект пользователя с именем и email
-        const user = { 
-            email: userEmail,
-            name: userName
-        };
-        
-        console.log('✅ Сохраняем пользователя:', user);
-        
-        // Сохраняем пользователя
-        localStorage.setItem('google_user', JSON.stringify(user));
-        localStorage.setItem('google_token', tokens.access_token);
-        window.googleToken = tokens.access_token;
-        
-        // Обновляем UI с реальными данными
-        updateGoogleUI(user);
-        
-        showNotification(`✅ Вход выполнен: ${user.name} (${user.email})`);
+        showNotification(`✅ Вход выполнен!`);
         
     } catch (error) {
         console.error('❌ Ошибка:', error);
         showNotification('❌ Ошибка авторизации: ' + error.message);
     }
 }
-
 // Шаг 3: Функция получения валидного access token
 async function getValidAccessToken() {
     const accessToken = sessionStorage.getItem('google_access_token');
