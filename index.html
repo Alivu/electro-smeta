@@ -8064,7 +8064,7 @@ async function loadSingleFile(fileId, token) {
 }
 
 // Обновленный обработчик событий для кнопок
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // Проверяем авторизацию при загрузке
     await checkGoogleAuth();
     
