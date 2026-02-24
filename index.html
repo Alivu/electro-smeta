@@ -7525,34 +7525,23 @@ window.addEventListener('message', async function(event) {
 });
 
 // ========== ФУНКЦИЯ ОБМЕНА КОДА НА ТОКЕНЫ ==========
-// ========== ФУНКЦИЯ ОБМЕНА КОДА НА ТОКЕНЫ ==========
 async function exchangeCodeForTokens(code, state) {
     console.log('🔄 exchangeCodeForTokens вызвана', { code, state });
     
-    // Пробуем получить codeVerifier из разных мест
     let codeVerifier = localStorage.getItem('pkce_code_verifier');
     
-    // Если нет в localStorage, пробуем из sessionStorage
     if (!codeVerifier) {
         codeVerifier = sessionStorage.getItem('pkce_code_verifier');
         if (codeVerifier) {
             localStorage.setItem('pkce_code_verifier', codeVerifier);
-            console.log('✅ codeVerifier восстановлен из sessionStorage');
         }
     }
     
-    // Если все еще нет - создаем новый (но это крайний случай)
     if (!codeVerifier) {
         console.log('⚠️ codeVerifier не найден, создаем новый');
         codeVerifier = generateRandomString(128);
         localStorage.setItem('pkce_code_verifier', codeVerifier);
         sessionStorage.setItem('pkce_code_verifier', codeVerifier);
-    }
-    
-    if (!codeVerifier) {
-        console.error('❌ Нет code verifier');
-        showNotification('❌ Ошибка: не найден code verifier');
-        return;
     }
     
     try {
@@ -7576,8 +7565,7 @@ async function exchangeCodeForTokens(code, state) {
         const tokens = await response.json();
         
         if (tokens.error) {
-            console.error('❌ Ошибка от Google:', tokens);
-            throw new Error(tokens.error_description || tokens.error || 'Bad Request');
+            throw new Error(tokens.error_description || tokens.error);
         }
         
         console.log('✅ Токены получены:', tokens);
@@ -7585,7 +7573,6 @@ async function exchangeCodeForTokens(code, state) {
         // Сохраняем refresh token
         if (tokens.refresh_token) {
             localStorage.setItem('google_refresh_token', tokens.refresh_token);
-            console.log('✅ Refresh token сохранен');
         }
         
         // Access token храним временно
@@ -7594,31 +7581,31 @@ async function exchangeCodeForTokens(code, state) {
         
         localStorage.removeItem('pkce_code_verifier');
         
-        // ✅ ПОЛУЧАЕМ ИНФОРМАЦИЮ О ПОЛЬЗОВАТЕЛЕ (исправлено!)
-        // Декодируем JWT токен, чтобы получить email
-        let userEmail = "Пользователь Google"; // Значение по умолчанию
+        // ✅ ПОЛУЧАЕМ РЕАЛЬНЫЙ EMAIL ИЗ ТОКЕНА
+        let userEmail = "Пользователь Google";
         
         try {
-            // Пробуем получить email из JWT
+            // JWT токен: header.payload.signature
             const tokenParts = tokens.access_token.split('.');
             if (tokenParts.length > 1) {
                 const payload = JSON.parse(atob(tokenParts[1]));
                 console.log('📧 Данные из токена:', payload);
+                
+                // В токене может быть email или sub (идентификатор)
                 if (payload.email) {
                     userEmail = payload.email;
                 } else if (payload.sub) {
-                    // Если нет email, используем sub как идентификатор
-                    console.log('ℹ️ Email не найден в токене, используем sub');
+                    userEmail = `user_${payload.sub.substring(0, 8)}`;
                 }
             }
         } catch (e) {
-            console.log('⚠️ Не удалось декодировать токен:', e);
+            console.log('⚠️ Не удалось декодировать токен, используем заглушку');
         }
         
-        // Создаем объект пользователя
+        // Создаем объект пользователя с реальным email
         const user = { 
             email: userEmail,
-            name: userEmail === "Пользователь Google" ? "Пользователь" : userEmail.split('@')[0]
+            name: userEmail.split('@')[0] || "Пользователь"
         };
         
         console.log('✅ Сохраняем пользователя:', user);
@@ -7628,17 +7615,16 @@ async function exchangeCodeForTokens(code, state) {
         localStorage.setItem('google_token', tokens.access_token);
         window.googleToken = tokens.access_token;
         
-        // ✅ Обновляем UI с данными пользователя
+        // Обновляем UI с реальным email
         updateGoogleUI(user);
         
         showNotification(`✅ Вход выполнен: ${user.email}`);
         
     } catch (error) {
-        console.error('❌ Ошибка получения токенов:', error);
+        console.error('❌ Ошибка:', error);
         showNotification('❌ Ошибка авторизации: ' + error.message);
     }
 }
-		
 
 // Шаг 3: Функция получения валидного access token
 async function getValidAccessToken() {
