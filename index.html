@@ -7601,31 +7601,40 @@ async function exchangeCodeForTokens(code, state) {
         
         localStorage.removeItem('pkce_code_verifier');
         
-        // ✅ ПОЛУЧАЕМ РЕАЛЬНЫЙ EMAIL ИЗ ТОКЕНА
-        let userEmail = "Пользователь Google";
+        // ✅ ПОЛУЧАЕМ ДАННЫЕ ПОЛЬЗОВАТЕЛЯ ИЗ ID_TOKEN
+        let userEmail = "Пользователь";
+        let userName = "Пользователь";
         
-        try {
-            // JWT токен: header.payload.signature
-            const tokenParts = tokens.id_token.split('.');
-            if (tokenParts.length > 1) {
-                const payload = JSON.parse(atob(tokenParts[1]));
-                console.log('📧 Данные из токена:', payload);
-                
-                // В токене может быть email или sub (идентификатор)
-                if (payload.email) {
-                    userEmail = payload.email;
-                } else if (payload.sub) {
-                    userEmail = `user_${payload.sub.substring(0, 8)}`;
+        if (tokens.id_token) {
+            try {
+                const tokenParts = tokens.id_token.split('.');
+                if (tokenParts.length > 1) {
+                    const payload = JSON.parse(atob(tokenParts[1]));
+                    console.log('📧 Данные из id_token:', payload);
+                    
+                    // Получаем email
+                    if (payload.email) {
+                        userEmail = payload.email;
+                    }
+                    
+                    // ✅ ПОЛУЧАЕМ ИМЯ (разные варианты)
+                    if (payload.name) {
+                        userName = payload.name;
+                    } else if (payload.given_name && payload.family_name) {
+                        userName = `${payload.given_name} ${payload.family_name}`;
+                    } else if (payload.given_name) {
+                        userName = payload.given_name;
+                    }
                 }
+            } catch (e) {
+                console.log('⚠️ Ошибка декодирования id_token:', e);
             }
-        } catch (e) {
-            console.log('⚠️ Не удалось декодировать токен, используем заглушку');
         }
         
-        // Создаем объект пользователя с реальным email
+        // Создаем объект пользователя с именем и email
         const user = { 
             email: userEmail,
-            name: userEmail.split('@')[0] || "Пользователь"
+            name: userName
         };
         
         console.log('✅ Сохраняем пользователя:', user);
@@ -7635,10 +7644,10 @@ async function exchangeCodeForTokens(code, state) {
         localStorage.setItem('google_token', tokens.access_token);
         window.googleToken = tokens.access_token;
         
-        // Обновляем UI с реальным email
+        // Обновляем UI с реальными данными
         updateGoogleUI(user);
         
-        showNotification(`✅ Вход выполнен: ${user.email}`);
+        showNotification(`✅ Вход выполнен: ${user.name} (${user.email})`);
         
     } catch (error) {
         console.error('❌ Ошибка:', error);
