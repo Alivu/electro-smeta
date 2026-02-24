@@ -8066,7 +8066,7 @@ async function loadSingleFile(fileId, token) {
 // Обновленный обработчик событий для кнопок
 document.addEventListener('DOMContentLoaded', function() {
     // Проверяем авторизацию при загрузке
-    checkGoogleAuth();
+    await checkGoogleAuth();
     
     // Назначаем обработчики для кнопок Drive
     const saveBtn = document.getElementById('saveToDriveBtn');
@@ -8092,19 +8092,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // ========== УПРАВЛЕНИЕ КНОПКАМИ GOOGLE DRIVE ==========
 
-// 2. Проверяем есть ли сохраненный токен
-function checkSavedToken() {
-    const token = localStorage.getItem('google_token');
+// 2. Проверяем есть ли сохраненный токен (ИСПРАВЛЕНО)
+async function checkSavedToken() {
+    // ✅ Используем правильный токен с правами на Drive
+    const token = await getValidAccessToken();
+    
+    const saveBtn = document.getElementById('saveToDriveBtn');
+    const loadBtn = document.getElementById('loadFromDriveBtn');
+    const googleDriveLoadBtn = document.getElementById('googleDriveLoadBtn');
+    
     if (token) {
-        const saveBtn = document.getElementById('saveToDriveBtn');
-        const loadBtn = document.getElementById('loadFromDriveBtn');
-        
+        console.log('✅ Токен есть, показываем кнопки Drive');
         if (saveBtn) saveBtn.style.display = 'flex';
         if (loadBtn) loadBtn.style.display = 'flex';
-        
+        if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'flex';
         return token;
+    } else {
+        console.log('❌ Токена нет, скрываем кнопки Drive');
+        if (saveBtn) saveBtn.style.display = 'none';
+        if (loadBtn) loadBtn.style.display = 'none';
+        if (googleDriveLoadBtn) googleDriveLoadBtn.style.display = 'none';
+        return null;
     }
-    return null;
 }
 
 class Magnifier {
@@ -8688,8 +8697,8 @@ function initMagnifier() {
 }
 // ========== ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ==========
 document.addEventListener('DOMContentLoaded', function() {
-    checkGoogleAuth();
-    checkSavedToken();
+    await checkGoogleAuth();
+    await checkSavedToken();
     
     // Скрываем кнопку сразу
     const toggleBtn = document.getElementById('magnifierToggle');
@@ -9162,24 +9171,45 @@ function saveExecutorData() {
     }
 }
 
+// Сохранить данные исполнителя в Google Drive (ИСПРАВЛЕНО)
 async function saveExecutorToDrive(executorData) {
-    const token = googleToken || localStorage.getItem('google_token');
-    if (!token) return;
+    // ✅ ИСПРАВЛЕНО: используем правильный токен с правами на Drive
+    const token = await getValidAccessToken();
+    if (!token) {
+        console.log('❌ Нет токена для сохранения данных исполнителя');
+        showNotification('❌ Ошибка авторизации');
+        return;
+    }
     
     try {
+        console.log('💾 Сохраняем данные исполнителя в Drive...');
+        
         // Проверяем, есть ли уже файл
         const listResponse = await fetch('https://www.googleapis.com/drive/v3/files?q=name="executor_data.json"', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (!listResponse.ok) {
+            if (listResponse.status === 403) {
+                showNotification('⚠️ Нет прав доступа к Drive');
+                const granted = await requestDriveScope();
+                if (granted) {
+                    // Повторяем сохранение после получения прав
+                    return saveExecutorToDrive(executorData);
+                }
+            }
+            throw new Error(`Ошибка: ${listResponse.status}`);
+        }
         
         const files = await listResponse.json();
         let fileId = null;
         
         if (files.files && files.files.length > 0) {
             fileId = files.files[0].id;
+            console.log('📁 Обновляем существующий файл');
             
             // Обновляем существующий файл
-            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+            const updateResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -9187,7 +9217,13 @@ async function saveExecutorToDrive(executorData) {
                 },
                 body: JSON.stringify(executorData)
             });
+            
+            if (!updateResponse.ok) {
+                throw new Error(`Ошибка обновления: ${updateResponse.status}`);
+            }
         } else {
+            console.log('📁 Создаем новый файл');
+            
             // Создаем новый файл
             const fileResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
                 method: 'POST',
@@ -9201,10 +9237,15 @@ async function saveExecutorToDrive(executorData) {
                 })
             });
             
+            if (!fileResponse.ok) {
+                throw new Error(`Ошибка создания файла: ${fileResponse.status}`);
+            }
+            
             const file = await fileResponse.json();
             fileId = file.id;
             
-            await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
+            // Загружаем содержимое
+            const uploadResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -9212,49 +9253,87 @@ async function saveExecutorToDrive(executorData) {
                 },
                 body: JSON.stringify(executorData)
             });
+            
+            if (!uploadResponse.ok) {
+                throw new Error(`Ошибка загрузки: ${uploadResponse.status}`);
+            }
         }
         
         showNotification('✅ Данные исполнителя сохранены в Google Drive');
+        console.log('✅ Данные исполнителя успешно сохранены');
+        
     } catch (error) {
-        console.error('Ошибка сохранения в Drive:', error);
+        console.error('❌ Ошибка сохранения в Drive:', error);
         showNotification('⚠️ Данные сохранены только локально');
     }
 }
 
+// Загрузить данные исполнителя из Google Drive (ИСПРАВЛЕНО)
 async function loadExecutorFromDrive() {
-    const token = googleToken || localStorage.getItem('google_token');
-    if (!token) return;
+    // ✅ ИСПРАВЛЕНО: используем правильный токен с правами на Drive
+    const token = await getValidAccessToken();
+    if (!token) {
+        console.log('❌ Нет токена для загрузки данных исполнителя');
+        return;
+    }
     
     try {
+        console.log('📂 Загружаем данные исполнителя из Drive...');
+        
         const listResponse = await fetch('https://www.googleapis.com/drive/v3/files?q=name="executor_data.json"', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
+        
+        if (!listResponse.ok) {
+            if (listResponse.status === 403) {
+                showNotification('⚠️ Нет прав доступа к Drive');
+                const granted = await requestDriveScope();
+                if (granted) {
+                    // Повторяем загрузку после получения прав
+                    return loadExecutorFromDrive();
+                }
+            }
+            throw new Error(`Ошибка: ${listResponse.status}`);
+        }
         
         const files = await listResponse.json();
         
         if (files.files && files.files.length > 0) {
             const fileId = files.files[0].id;
+            console.log('📁 Найден файл с ID:', fileId);
             
             const fileResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             
-            const data = await fileResponse.json();
+            if (!fileResponse.ok) {
+                throw new Error(`Ошибка загрузки файла: ${fileResponse.status}`);
+            }
             
-            document.getElementById('executorName').value = data.name || '';
-            document.getElementById('executorInn').value = data.inn || '';
-            document.getElementById('executorPhone').value = formatPhoneNumber(data.phone || '');
+            const data = await fileResponse.json();
+            console.log('📄 Данные загружены:', data);
+            
+            // Заполняем поля формы
+            const executorName = document.getElementById('executorName');
+            const executorInn = document.getElementById('executorInn');
+            const executorPhone = document.getElementById('executorPhone');
+            
+            if (executorName) executorName.value = data.name || '';
+            if (executorInn) executorInn.value = data.inn || '';
+            if (executorPhone) executorPhone.value = formatPhoneNumber(data.phone || '');
             
             // Обновляем localStorage
             localStorage.setItem('executorData', JSON.stringify(data));
             
             console.log('✅ Данные исполнителя загружены из Drive');
+            showNotification('✅ Данные исполнителя загружены');
+        } else {
+            console.log('ℹ️ Файл с данными исполнителя не найден');
         }
     } catch (error) {
-        console.error('Ошибка загрузки из Drive:', error);
+        console.error('❌ Ошибка загрузки из Drive:', error);
     }
 }
-
 // Обновляем функцию showPrintModal для загрузки данных
 const originalShowPrintModal = showPrintModal;
 showPrintModal = function() {
@@ -9597,8 +9676,8 @@ function googleLogout() {
 
 
 		
-// Шаг 4: Проверка авторизации при загрузке
-function checkGoogleAuth() {
+// Шаг 4: Проверка авторизации при загрузке (ИСПРАВЛЕНО)
+async function checkGoogleAuth() {  // ← Убрал await, оставил async
     const refreshToken = localStorage.getItem('google_refresh_token');
     const userJson = localStorage.getItem('google_user');
     
@@ -9607,18 +9686,17 @@ function checkGoogleAuth() {
             const user = JSON.parse(userJson);
             
             // Проверяем, можем ли получить access token
-            getValidAccessToken().then(accessToken => {
-                if (accessToken) {
-                    window.googleToken = accessToken;
-                    localStorage.setItem('google_token', accessToken); // для совместимости
-                    updateGoogleUI(user);
-                } else {
-                    // Не удалось обновить - очищаем
-                    localStorage.removeItem('google_refresh_token');
-                    localStorage.removeItem('google_user');
-                    updateGoogleUI(null);
-                }
-            });
+            const accessToken = await getValidAccessToken();  // ← используем await вместо .then()
+            if (accessToken) {
+                window.googleToken = accessToken;
+                localStorage.setItem('google_token', accessToken); // для совместимости
+                updateGoogleUI(user);
+            } else {
+                // Не удалось обновить - очищаем
+                localStorage.removeItem('google_refresh_token');
+                localStorage.removeItem('google_user');
+                updateGoogleUI(null);
+            }
             
         } catch (e) {
             console.error('Ошибка парсинга пользователя');
@@ -9639,35 +9717,53 @@ if (googleLogoutBtn) {
     googleLogoutBtn.addEventListener('click', googleLogout);
 }
 
-// Запускаем проверку при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    checkGoogleAuth();
+// Запускаем проверку при загрузке (ИСПРАВЛЕНО)
+document.addEventListener('DOMContentLoaded', async function() {  // ← async здесь
+    await checkGoogleAuth();  // ← await здесь
+    // Остальная инициализация...
 });
-let selectedDriveFileId = null;	
+
+let selectedDriveFileId = null;
+
+// ========== ИСПРАВЛЕННАЯ ФУНКЦИЯ ==========
 async function getEstimateDetails(fileId) {
-    const token = localStorage.getItem('google_token');
-    if (!token) return null;
+    // ✅ Используем правильный токен с правами на Drive
+    const token = await getValidAccessToken();
+    if (!token) {
+        console.log('❌ Нет токена для getEstimateDetails');
+        return null;
+    }
     
     try {
+        console.log(`🔍 Загружаем файл ${fileId} для проверки...`);
         const response = await fetch(
             `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
             { headers: { 'Authorization': `Bearer ${token}` } }
         );
         
+        if (!response.ok) {
+            console.log(`❌ Ошибка загрузки файла: ${response.status}`);
+            return null;
+        }
+        
         const data = await response.json();
         
         // Проверяем, что это действительно наша смета
         if (data && data.data && Array.isArray(data.data) && data.data.length > 0) {
+            console.log(`✅ Файл валиден: ${data.data.length} позиций`);
             return {
                 itemsCount: data.data.length,
                 total: data.totals?.totalAmount || 0,
                 date: data.date
             };
+        } else {
+            console.log(`❌ Файл не является сметой (нет данных)`);
+            return null;
         }
     } catch (error) {
-        console.error('Ошибка получения деталей файла:', error);
+        console.error('❌ Ошибка получения деталей файла:', error);
+        return null;
     }
-    return null;
 }
 // Показать окно загрузки из Google Drive
 async function showGoogleDriveLoadModal() {
@@ -9829,11 +9925,15 @@ async function editDriveFileName(fileId, currentName) {
     const newName = prompt('Введите новое название файла:', currentName.replace('.json', ''));
     if (!newName || newName.trim() === '') return;
     
-    const token = localStorage.getItem('google_token');
-    if (!token) return;
+    // ✅ ИСПРАВЛЕНО: используем правильный токен с правами на Drive
+    const token = await getValidAccessToken();
+    if (!token) {
+        showNotification('❌ Ошибка авторизации');
+        return;
+    }
     
     try {
-        await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -9844,10 +9944,14 @@ async function editDriveFileName(fileId, currentName) {
             })
         });
         
+        if (!response.ok) {
+            throw new Error(`Ошибка: ${response.status}`);
+        }
+        
         showNotification('✅ Название файла изменено');
         showGoogleDriveLoadModal(); // Обновляем список
     } catch (error) {
-        console.error('Ошибка переименования:', error);
+        console.error('❌ Ошибка переименования:', error);
         showNotification('❌ Ошибка при переименовании');
     }
 }
@@ -9856,19 +9960,27 @@ async function editDriveFileName(fileId, currentName) {
 async function deleteDriveFile(fileId) {
     if (!confirm('Удалить этот файл из Google Drive?')) return;
     
-    const token = localStorage.getItem('google_token');
-    if (!token) return;
+    // ✅ ИСПРАВЛЕНО: используем правильный токен с правами на Drive
+    const token = await getValidAccessToken();
+    if (!token) {
+        showNotification('❌ Ошибка авторизации');
+        return;
+    }
     
     try {
-        await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+        const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
+        if (!response.ok) {
+            throw new Error(`Ошибка: ${response.status}`);
+        }
+        
         showNotification('✅ Файл удален из Google Drive');
         showGoogleDriveLoadModal(); // Обновляем список
     } catch (error) {
-        console.error('Ошибка удаления:', error);
+        console.error('❌ Ошибка удаления:', error);
         showNotification('❌ Ошибка при удалении');
     }
 }
@@ -9981,11 +10093,12 @@ async function loadSelectedDriveFile() {
 // ========== УПРАВЛЕНИЕ ЛОГОТИПОМ ==========
 let logoDataUrl = localStorage.getItem('companyLogo') || null;
 
-// Сохранить логотип в Google Drive
+// Сохранить логотип в Google Drive (ИСПРАВЛЕНО)
 async function saveLogoToDrive() {
-    const token = localStorage.getItem('google_token');
+    // ✅ ИСПРАВЛЕНО: используем правильный токен с правами на Drive
+    const token = await getValidAccessToken();
     if (!token) {
-        showNotification('❌ Сначала войдите в Google');
+        showNotification('❌ Сначала войдите в Google и получите права на Drive');
         return;
     }
     
@@ -10016,35 +10129,54 @@ async function saveLogoToDrive() {
         });
         
         if (!uploadResponse.ok) {
-            throw new Error('Ошибка загрузки');
+            const errorText = await uploadResponse.text();
+            console.error('❌ Ошибка загрузки:', errorText);
+            throw new Error(`Ошибка загрузки: ${uploadResponse.status}`);
         }
         
+        // Показываем кнопку загрузки из Drive
         const loadBtn = document.getElementById('loadLogoFromDriveBtn');
-        if (loadBtn) loadBtn.style.display = 'inline-block';
+        if (loadBtn) {
+            loadBtn.style.display = 'inline-block';
+            console.log('✅ Кнопка загрузки логотипа активирована');
+        }
         
         showNotification('✅ Логотип сохранен в Google Drive');
         
     } catch (error) {
-        console.error('Ошибка сохранения логотипа:', error);
+        console.error('❌ Ошибка сохранения логотипа:', error);
         showNotification('❌ Ошибка при сохранении логотипа');
     }
 }
-
-// Загрузить логотип из Google Drive
+// Загрузить логотип из Google Drive (ИСПРАВЛЕНО)
 async function loadLogoFromDrive() {
-    const token = localStorage.getItem('google_token');
+    // ✅ ИСПРАВЛЕНО: используем правильный токен с правами на Drive
+    const token = await getValidAccessToken();
     if (!token) {
-        showNotification('❌ Сначала войдите в Google');
+        showNotification('❌ Сначала войдите в Google и получите права на Drive');
         return;
     }
     
     try {
         showNotification('⏳ Загружаем логотип из Drive...');
         
+        // Ищем файл логотипа
         const response = await fetch(
             'https://www.googleapis.com/drive/v3/files?q=name="company_logo.png"&fields=files(id)',
             { headers: { 'Authorization': `Bearer ${token}` } }
         );
+        
+        if (!response.ok) {
+            if (response.status === 403) {
+                showNotification('⚠️ Нет прав доступа к Drive');
+                const granted = await requestDriveScope();
+                if (granted) {
+                    // Повторяем загрузку после получения прав
+                    return loadLogoFromDrive();
+                }
+            }
+            throw new Error(`Ошибка: ${response.status}`);
+        }
         
         const data = await response.json();
         
@@ -10055,18 +10187,25 @@ async function loadLogoFromDrive() {
         
         const fileId = data.files[0].id;
         
+        // Загружаем файл
         const fileResponse = await fetch(
             `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
             { headers: { 'Authorization': `Bearer ${token}` } }
         );
         
+        if (!fileResponse.ok) {
+            throw new Error(`Ошибка загрузки файла: ${fileResponse.status}`);
+        }
+        
         const blob = await fileResponse.blob();
         
+        // Конвертируем в Data URL
         const reader = new FileReader();
         reader.onload = function(e) {
             logoDataUrl = e.target.result;
             localStorage.setItem('companyLogo', logoDataUrl);
             
+            // Обновляем интерфейс
             const logoImg = document.getElementById('logoImage');
             const logoPreview = document.getElementById('logoPreview');
             const clearBtn = document.getElementById('clearLogoBtn');
@@ -10084,7 +10223,7 @@ async function loadLogoFromDrive() {
         reader.readAsDataURL(blob);
         
     } catch (error) {
-        console.error('Ошибка загрузки логотипа из Drive:', error);
+        console.error('❌ Ошибка загрузки логотипа из Drive:', error);
         showNotification('❌ Ошибка при загрузке логотипа');
     }
 }
