@@ -3190,15 +3190,23 @@ async function initializeVersion() {
       }
     });
     
-    return; // Выходим из функции, НЕ пытаемся загрузить sw.js
+    return;
   }
   
-  // ========== ЕСЛИ ЕСТЬ ИНТЕРНЕТ - ТОЛЬКО ТОГДА ГРУЗИМ SW ==========
+  // ========== ЕСЛИ ЕСТЬ ИНТЕРНЕТ - ГРУЗИМ ВЕРСИЮ ИЗ SW ==========
   await loadVersionFromSW();
   const savedVersion = localStorage.getItem('app_version');
   
+  // Если savedVersion пустая - это первый запуск
+  if (!savedVersion) {
+    console.log('👋 Первый запуск, сохраняем версию:', APP_VERSION);
+    localStorage.setItem('app_version', APP_VERSION);
+    return; // НИКАКОГО УВЕДОМЛЕНИЯ!
+  }
+  
+  // Если версии отличаются - это обновление
   if (savedVersion !== APP_VERSION) {
-    console.log(`🔄 ОБНОВЛЕНИЕ: ${savedVersion || 'нет'} → ${APP_VERSION}`);
+    console.log(`🔄 ОБНОВЛЕНИЕ: ${savedVersion} → ${APP_VERSION}`);
     localStorage.setItem('app_version', APP_VERSION);
     
     // Получаем сообщение из Service Worker
@@ -3206,8 +3214,6 @@ async function initializeVersion() {
     
     // Формируем текст уведомления
     let notificationText = `🎉 Обновлено до версии ${APP_VERSION}!`;
-    
-    // Если есть сообщение из SW, добавляем его
     if (swMessage) {
       notificationText = `${notificationText}\n\n📢 ${swMessage}`;
     }
@@ -3236,7 +3242,7 @@ async function initializeVersion() {
         refreshBtn.style.fontWeight = 'bold';
         refreshBtn.style.border = 'none';
         
-        refreshBtn.dataset.oldVersion = savedVersion || 'нет';
+        refreshBtn.dataset.oldVersion = savedVersion;
         refreshBtn.dataset.newVersion = APP_VERSION;
     }
     
