@@ -2535,6 +2535,9 @@
         </button>
     </div>
 </div>
+			<button class="dropdown-item" id="editorBtn" style="display: none;">
+    		<i class="fas fa-edit"></i> Редактор прайс-листа
+			</button>
             
             <!-- Кнопка входа Google (видна когда не вошел) -->
             <button class="dropdown-item" id="googleLoginBtn" style="display: flex;">
@@ -9328,6 +9331,66 @@ function updateGoogleUI(user) {
         }
     }
 }
+// ========== УПРАВЛЕНИЕ КНОПКОЙ РЕДАКТОРА ==========
+const editorBtn = document.getElementById('editorBtn');
+
+// Функция для проверки email и отображения кнопки редактора
+function updateEditorButtonVisibility(user) {
+    if (!editorBtn) return;
+    
+    // Список разрешенных email
+    const allowedEmails = ['gunoev095@gmail.com'];
+    
+    if (user && user.email && allowedEmails.includes(user.email)) {
+        // Показываем кнопку редактора
+        editorBtn.style.display = 'flex';
+        console.log('✅ Кнопка редактора показана для:', user.email);
+        
+        // Добавляем обработчик клика
+        editorBtn.onclick = function() {
+            // Здесь можно открыть редактор в новом окне или в этом же
+            const editorUrl = 'https://alivu.github.io/electro-smeta/edit.html';
+            
+            // Пытаемся открыть в новом окне
+            const editorWindow = window.open(editorUrl, '_blank');
+            
+            if (!editorWindow) {
+                // Если окно заблокировано, показываем сообщение
+                if (confirm('Хотите открыть редактор в этом же окне?')) {
+                    window.location.href = editorUrl;
+                }
+            }
+        };
+    } else {
+        // Скрываем кнопку редактора
+        editorBtn.style.display = 'none';
+        console.log('❌ Кнопка редактора скрыта');
+    }
+}
+
+// Модифицируем существующую функцию updateGoogleUI
+const originalUpdateGoogleUI = updateGoogleUI;
+window.updateGoogleUI = function(user) {
+    // Вызываем оригинальную функцию
+    originalUpdateGoogleUI(user);
+    
+    // Добавляем проверку для кнопки редактора
+    updateEditorButtonVisibility(user);
+};
+
+// Также проверяем при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Загружаем сохраненного пользователя
+    const savedUser = localStorage.getItem('google_user');
+    if (savedUser) {
+        try {
+            const user = JSON.parse(savedUser);
+            updateEditorButtonVisibility(user);
+        } catch (e) {
+            console.error('Ошибка парсинга пользователя');
+        }
+    }
+});		
 // Форматирование номера телефона
 function formatPhoneNumber(phone) {
     if (!phone) return '';
