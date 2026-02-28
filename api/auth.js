@@ -1,6 +1,9 @@
 // api/auth.js
 const axios = require('axios');
-
+console.log('✅ Axios loaded successfully');
+console.log('🔧 Node version:', process.version);
+console.log('🔑 GOOGLE_CLIENT_ID present:', !!process.env.GOOGLE_CLIENT_ID);
+console.log('🔑 GOOGLE_CLIENT_SECRET present:', !!process.env.GOOGLE_CLIENT_SECRET);
 export default async function handler(req, res) {
     // Разрешаем запросы с ваших доменов
     const allowedOrigins = [
