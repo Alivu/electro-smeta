@@ -1,9 +1,10 @@
 // Service Worker для ЭлектроСметы
-const APP_VERSION = '2.2.6';
+const APP_VERSION = '2.2.7'; // Увеличиваем версию
 const urlsToCache = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './price-data.js'  // ← ДОБАВЛЕНО!
 ];
 const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 
@@ -11,7 +12,7 @@ const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 const VERSION_NOTIFICATION = {
   version: APP_VERSION,
   title: '📢 Что нового в версии ' + APP_VERSION,
-  message: '✨ Профиксен вход в гоогле диск.'
+  message: '✨ Добавлен офлайн-режим для прайс-листа!'
 };
 
 // Установка
@@ -28,7 +29,7 @@ self.addEventListener('install', event => {
         );
       })
       .then(() => caches.open(CACHE_NAME))
-      .then(cache => cache.addAll(['./', './index.html']))
+      .then(cache => cache.addAll(urlsToCache)) // ← ТЕПЕРЬ ИСПОЛЬЗУЕМ urlsToCache
       .then(() => self.skipWaiting())
   );
 });
@@ -88,6 +89,28 @@ self.addEventListener('fetch', event => {
   
   // ⚠️ ДОБАВЛЯЕМ: Пропускаем запросы к api.aladhan.com (исламский календарь)
   if (event.request.url.includes('api.aladhan.com')) {
+    return;
+  }
+  
+  // СПЕЦИАЛЬНОЕ ПРАВИЛО ДЛЯ price-data.js (Cache First)
+  if (url.pathname.includes('price-data.js')) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(cachedResponse => {
+          if (cachedResponse) {
+            console.log('✅ price-data.js загружен из кеша');
+            return cachedResponse;
+          }
+          console.log('🌐 price-data.js загружен из сети');
+          return fetch(event.request)
+            .then(networkResponse => {
+              const responseClone = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => cache.put(event.request, responseClone));
+              return networkResponse;
+            });
+        })
+    );
     return;
   }
   
