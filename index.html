@@ -8350,76 +8350,45 @@ function debugEstimateData() {
     const notificationText = `Данные: ${filledRows.length} заполненных из ${estimateData.length} | DOM: ${tableRows.length} строк`;
     showNotification(`Debug: ${notificationText}`);
 }
-		// ========== СЛУШАЕМ ОБНОВЛЕНИЯ ОТ SERVICE WORKER ==========
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('message', event => {
-        if (event.data.type === 'VERSION_UPDATE') {
-            console.log('🎉 Доступна новая версия:', event.data.version);
-            
-            const refreshBtn = document.getElementById('refreshEstimateBtn');
-            if (refreshBtn) {
-                // Сохраняем флаг, что есть новая версия
-                refreshBtn.dataset.newVersion = 'true';
-                
-                // Подсвечиваем кнопку
+// ========== ОБНОВЛЕНИЕ И ПОДСВЕТКА КНОПКИ ==========
+(function() {
+    const refreshBtn = document.getElementById('refreshEstimateBtn');
+    if (!refreshBtn) return;
+
+    // Подсветка при новой версии от Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.addEventListener('message', event => {
+            if (event.data.type === 'VERSION_UPDATE') {
                 refreshBtn.innerHTML = `
                     <i class="fas fa-bolt" style="color: #f39c12;"></i> 
                     Новая версия ${event.data.version}
-                    <span style="
-                        margin-left: 8px; 
-                        background: #e74c3c; 
-                        color: white; 
-                        padding: 2px 6px; 
-                        border-radius: 10px; 
-                        font-size: 0.7em;
-                        font-weight: bold;
-                    ">
-                        NEW
-                    </span>
+                    <span style="margin-left:8px; background:#e74c3c; color:white; padding:2px 6px; border-radius:10px; font-size:0.7em; font-weight:bold;">NEW</span>
                 `;
-                
                 refreshBtn.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
                 refreshBtn.style.color = 'white';
                 refreshBtn.style.fontWeight = 'bold';
+                refreshBtn.dataset.newVersion = 'true';
             }
-        }
-    });
-}
-// ========== КНОПКА ОБНОВЛЕНИЯ ==========
-function refreshEstimate() {
-    const refreshBtn = document.getElementById('refreshEstimateBtn');
-    
-    // Проверяем, есть ли подсветка (атрибут data-new-version)
-    const hasNewVersion = refreshBtn && refreshBtn.dataset.newVersion === 'true';
-    
-    if (hasNewVersion) {
-        // РЕЖИМ 1: Есть новая версия - полная очистка
-        if (confirm('🔄 Доступна новая версия!\n\nОчистить кеш и загрузить обновление?')) {
-            showNotification('⏳ Очистка кеша...');
-            
-            // Очищаем хранилища
+        });
+    }
+
+    // Функция перезагрузки
+    window.refreshEstimate = function() {
+        if (refreshBtn.dataset.newVersion === 'true') {
+            // Если есть новая версия - очищаем кеш
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ action: 'clearAllCaches' });
+            }
             localStorage.clear();
             sessionStorage.clear();
-            
-            // Очищаем кеш Service Worker
-            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.controller.postMessage({ 
-                    action: 'clearAllCaches' 
-                });
-            }
-            
-            // Перезагружаем через секунду
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
         }
-    } else {
-        // РЕЖИМ 2: Нет новой версии - просто перезагрузка
-        if (confirm('🔄 Перезагрузить страницу?')) {
-            window.location.reload();
-        }
-    }
-}
+        // В любом случае перезагружаем страницу
+        window.location.reload();
+    };
+
+    // Привязка к кнопке
+    refreshBtn.addEventListener('click', window.refreshEstimate);
+})();
         // ========== НОВЫЙ ФУНКЦИОНАЛ: ВИДЕО ПО НОМЕРУ ==========
         
         // Базовый URL для видео (ваш репозиторий)
