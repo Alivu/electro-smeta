@@ -1,0 +1,2593 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<script src="price-data.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор прайс-листа электрика</title>
+<style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .control-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+        }
+        
+        button:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-delete {
+            background-color: #e74c3c;
+        }
+        
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-edit {
+            background-color: #f39c12;
+        }
+        
+        .btn-edit:hover {
+            background-color: #d68910;
+        }
+        
+        .btn-save {
+            background-color: #27ae60;
+        }
+        
+        .btn-save:hover {
+            background-color: #219653;
+        }
+        
+        .btn-quick-add {
+            background-color: #9b59b6;
+        }
+        
+        .btn-quick-add:hover {
+            background-color: #8e44ad;
+        }
+        
+        .btn-full-replace {
+            background-color: #34495e;
+        }
+        
+        .btn-full-replace:hover {
+            background-color: #2c3e50;
+        }
+        
+        .btn-export {
+            background-color: #1abc9c;
+        }
+        
+        .btn-export:hover {
+            background-color: #16a085;
+        }
+        
+        .btn-statistics {
+            background-color: #e67e22;
+        }
+        
+        .btn-statistics:hover {
+            background-color: #d35400;
+        }
+        
+        .btn-duplicate {
+            background-color: #8e44ad;
+        }
+        
+        .btn-duplicate:hover {
+            background-color: #7d3c98;
+        }
+        
+        .btn-export-to-html {
+            background-color: #e74c3c;
+        }
+        
+        .btn-export-to-html:hover {
+            background-color: #c0392b;
+        }
+        
+        .undo-redo {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .section {
+            margin-bottom: 25px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: box-shadow 0.3s;
+        }
+        
+        .section:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            background-color: #ecf0f1;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+        
+        .section-header:hover {
+            background-color: #d5dbdb;
+        }
+        
+        .section-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .section-content.expanded {
+            max-height: 5000px;
+        }
+        
+        /* Стили для таблицы */
+        .column-headers {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            background-color: #f8f9fa;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+            min-height: 60px;
+        }
+
+        .item-row:hover {
+            background-color: #f9f9f9;
+        }
+
+        .item-row.changed {
+            background-color: #fff8e1;
+        }
+
+        .item-row.new {
+            background-color: #e8f5e9;
+        }
+
+        .item-id {
+            width: 60px;
+            font-weight: bold;
+            color: #2c3e50;
+            text-align: center;
+            flex-shrink: 0;
+            padding-top: 3px;
+        }
+
+        .item-name {
+            flex: 1;
+            padding: 0 15px;
+            min-width: 0;
+            word-break: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            line-height: 1.4;
+            max-height: 4.2em;
+        }
+
+        .item-unit {
+            width: 80px;
+            text-align: center;
+            flex-shrink: 0;
+            padding-top: 3px;
+            white-space: nowrap;
+        }
+
+        .item-price {
+            width: 120px;
+            text-align: right;
+            font-weight: bold;
+            color: #27ae60;
+            padding-right: 20px;
+            flex-shrink: 0;
+            padding-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-actions {
+            width: 210px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+
+        .column-headers .item-id {
+            width: 60px;
+        }
+
+        .column-headers .item-name {
+            flex: 1;
+            padding: 0 15px;
+            overflow: visible;
+            text-overflow: clip;
+            -webkit-line-clamp: unset;
+            max-height: none;
+        }
+
+        .column-headers .item-unit {
+            width: 80px;
+        }
+
+        .column-headers .item-price {
+            width: 120px;
+            padding-right: 20px;
+        }
+
+        .column-headers .item-actions {
+            width: 210px;
+        }
+        
+        .editor-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .editor-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 150px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .history-info {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #666;
+            border-left: 4px solid #3498db;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-message {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            display: block;
+        }
+        
+        .modal-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+        }
+        
+        .tab-btn.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Стили для поиска */
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+        
+        .search-container input {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .search-container .clear-search {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .search-container .clear-search:hover {
+            color: #e74c3c;
+        }
+        
+        /* Стили для статистики */
+        .stats-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .stat-card p {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        /* Стили для пустых категорий */
+        .empty-category {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .item-row, .column-headers {
+                flex-wrap: wrap;
+                padding: 10px;
+            }
+            
+            .item-id, .column-headers .item-id {
+                width: 100%;
+                margin-bottom: 5px;
+                text-align: left;
+                padding-top: 0;
+            }
+            
+            .item-name, .column-headers .item-name {
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 0;
+                -webkit-line-clamp: 2;
+                max-height: 2.8em;
+            }
+            
+            .item-unit, .column-headers .item-unit {
+                width: 40%;
+                text-align: left;
+                padding-top: 0;
+            }
+            
+            .item-price, .column-headers .item-price {
+                width: 60%;
+                text-align: right;
+                padding-right: 0;
+                padding-top: 0;
+            }
+            
+            .item-actions, .column-headers .item-actions {
+                width: 100%;
+                justify-content: flex-start;
+                margin-top: 10px;
+                flex-wrap: wrap;
+            }
+            
+            .item-actions button {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (min-width: 1400px) {
+            .item-name {
+                -webkit-line-clamp: 2;
+                max-height: 2.8em;
+            }
+        }
+        
+        .item-name[title] {
+            cursor: help;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Редактор прайс-листа электрика</h1>
+        
+        <div class="history-info">
+            <div>
+                <strong>История изменений:</strong> <span id="history-count">0</span> / 10 возможных отмен действий
+                <span id="backup-info" style="margin-left: 20px; font-size: 12px;"></span>
+            </div>
+            <button id="create-backup-btn" class="btn-save" style="font-size: 14px; padding: 5px 10px;">Создать резервную копию</button>
+        </div>
+        
+        <div id="status-message" class="status-message"></div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <button id="add-item-btn">Добавить пункт</button>
+                <button id="quick-add-btn" class="btn-quick-add">Быстрая вставка пункта</button>
+                <button id="full-replace-btn" class="btn-full-replace">Полная замена</button>
+                <button id="save-data-btn" class="btn-save">Сохранить изменения</button>
+                <button id="show-statistics-btn" class="btn-statistics">Статистика</button>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Поиск по названию...">
+                <button id="clear-search" class="clear-search" style="display: none;">×</button>
+            </div>
+            
+            <div class="undo-redo">
+                <button id="undo-btn" disabled>← Отменить</button>
+                <button id="redo-btn" disabled>Повторить →</button>
+            </div>
+        </div>
+        
+        <div class="controls" style="justify-content: center; border: none; padding-top: 0;">
+            <button id="collapse-all-btn">Свернуть все</button>
+            <button id="expand-all-btn">Развернуть все</button>
+        </div>
+        
+        <div id="price-sections">
+            <!-- Секции будут добавлены с помощью JavaScript -->
+        </div>
+        
+        <div class="controls" style="justify-content: center; margin-top: 30px; border: none;">
+		<!-- Добавьте эту кнопку рядом с кнопкой экспорта в JS -->
+			<button id="copy-js-btn" class="btn-export" style="background-color: #9b59b6;">Копировать JS в буфер</button>
+            <button id="export-js-btn" class="btn-export">Экспорт в JS</button>
+            <button id="export-csv-btn" class="btn-export">Экспорт в CSV</button>
+            <button id="export-to-html-btn" class="btn-export-to-html">Экспорт в прайс-лист</button>
+            <button id="print-btn" class="btn-export">Печать</button>
+        </div>
+    </div>
+    
+    <!-- Модальное окно редактора -->
+    <div id="editor-modal" class="editor-modal">
+        <div class="editor-content">
+            <h2 id="modal-title">Добавить новый пункт</h2>
+            
+            <div class="modal-tabs">
+                <button class="tab-btn active" data-tab="manual-tab">Ручной ввод</button>
+                <button class="tab-btn" data-tab="quick-tab">Быстрая вставка</button>
+                <button class="tab-btn" data-tab="replace-tab">Полная замена</button>
+            </div>
+            
+            <!-- Вкладка ручного ввода -->
+            <div id="manual-tab" class="tab-content active">
+                <form id="item-form">
+                    <div class="form-group">
+                        <label for="item-section">Категория:</label>
+                        <select id="item-section" required>
+                            <!-- Опции будут добавлены через JavaScript -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-id">ID (номер пункта):</label>
+                        <input type="number" id="item-id" min="1" required>
+                        <small>При добавлении пункта с существующим ID, все пункты с этим ID и ниже будут смещены вниз</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-name">Наименование работы:</label>
+                        <input type="text" id="item-name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-unit">Единица измерения:</label>
+                        <input type="text" id="item-unit" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="item-price">Цена (руб.):</label>
+                        <input type="number" id="item-price" min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="modal-buttons">
+                        <button type="button" id="cancel-btn">Отмена</button>
+                        <button type="submit" id="save-btn">Сохранить</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Вкладка быстрой вставки -->
+            <div id="quick-tab" class="tab-content">
+                <div class="form-group">
+                    <label for="quick-input">Вставьте строку с данными пункта:</label>
+                    <textarea id="quick-input" placeholder="Пример: 148	Подключение циркуляционного насоса, термодатчика, кондиционера, бойлера	шт.	1000"></textarea>
+                    <small>Формат: ID [таб] Название [таб] Единица измерения [таб] Цена</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quick-section">Категория:</label>
+                    <select id="quick-section" required>
+                        <!-- Опции будут добавлены через JavaScript -->
+                    </select>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" id="cancel-quick-btn">Отмена</button>
+                    <button type="button" id="save-quick-btn">Добавить пункт</button>
+                </div>
+            </div>
+            
+            <!-- Вкладка полной замены -->
+            <div id="replace-tab" class="tab-content">
+                <div class="form-group">
+                    <label for="full-replace-input">Вставьте полный прайс-лист:</label>
+                    <textarea id="full-replace-input" placeholder="Вставьте таблицу с данными..."></textarea>
+                    <small>Вставьте таблицу в формате: ID [таб] Название [таб] Единица измерения [таб] Цена. Разделы должны начинаться с названия категории (например: ① Монтажные работы).</small>
+                </div>
+                
+                <div class="modal-buttons">
+                    <button type="button" id="cancel-replace-btn">Отмена</button>
+                    <button type="button" id="save-replace-btn">Заменить всё</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно статистики -->
+    <div id="statistics-modal" class="editor-modal">
+        <div class="editor-content" style="max-width: 600px;">
+            <h2>Статистика прайс-листа</h2>
+            <div id="statistics-content"></div>
+            <div class="modal-buttons">
+                <button id="close-statistics-btn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно экспорта в HTML -->
+    <div id="export-html-modal" class="editor-modal">
+        <div class="editor-content" style="max-width: 700px;">
+            <h2>Экспорт в прайс-лист (электроСмета)</h2>
+            <div class="form-group">
+                <label for="html-template-select">Выберите шаблон для экспорта:</label>
+                <select id="html-template-select" class="form-control">
+                    <option value="replace">Замена данных в электроСмета (рекомендуется)</option>
+                    <option value="newfile">Создать новый HTML файл</option>
+                </select>
+                <small id="template-description">Заменит данные прайс-листа в файле электроСмета</small>
+            </div>
+            
+            <div class="form-group">
+                <label>Информация о экспорте:</label>
+                <div id="export-info" style="background: #f8f9fa; padding: 15px; border-radius: 5px; font-size: 14px;">
+                    <strong>Будет экспортировано:</strong><br>
+                    • 7 категорий прайс-листа<br>
+                    • Всего пунктов: <span id="export-total-items">0</span><br>
+                    • Максимальный ID: <span id="export-max-id">0</span><br>
+                    • Средняя цена: <span id="export-avg-price">0</span> руб.
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="export-options">Дополнительные опции:</label>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="export-format-names" checked>
+                        <span>Форматировать названия (исправлять мм², пробелы и т.д.)</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="export-validate-ids" checked>
+                        <span>Проверить уникальность ID</span>
+                    </label>
+                    <label style="display: align-items: center; gap: 8px;">
+                        <input type="checkbox" id="export-backup-original" checked>
+                        <span>Создать резервную копию оригинального файла</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button type="button" id="cancel-export-html-btn">Отмена</button>
+                <button type="button" id="export-html-btn" class="btn-export-to-html">Экспортировать</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Исходные данные прайс-листа (исправленная нумерация)
+
+        // Глобальные переменные
+        let currentData = JSON.parse(JSON.stringify(priceData)); // Копия данных для редактирования
+        let history = [JSON.parse(JSON.stringify(priceData))]; // История изменений
+        let historyIndex = 0; // Текущий индекс в истории
+        let isEditing = false; // Флаг режима редактирования
+        let editingItem = null; // Редактируемый элемент
+        let editingSectionIndex = null; // Индекс редактируемой секции
+        let changedItems = new Set(); // Множество измененных элементов
+        let searchQuery = ''; // Поисковый запрос
+        let lastSavedData = JSON.parse(JSON.stringify(priceData)); // Последние сохраненные данные
+
+        // DOM элементы
+        const priceSectionsEl = document.getElementById('price-sections');
+        const addItemBtn = document.getElementById('add-item-btn');
+        const quickAddBtn = document.getElementById('quick-add-btn');
+        const fullReplaceBtn = document.getElementById('full-replace-btn');
+        const saveDataBtn = document.getElementById('save-data-btn');
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        const exportJSBtn = document.getElementById('export-js-btn');
+        const exportCSVBtn = document.getElementById('export-csv-btn');
+        const exportToHTMLBtn = document.getElementById('export-to-html-btn');
+        const printBtn = document.getElementById('print-btn');
+        const editorModal = document.getElementById('editor-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const itemForm = document.getElementById('item-form');
+        const itemSectionEl = document.getElementById('item-section');
+        const itemIdEl = document.getElementById('item-id');
+        const itemNameEl = document.getElementById('item-name');
+        const itemUnitEl = document.getElementById('item-unit');
+        const itemPriceEl = document.getElementById('item-price');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const statusMessage = document.getElementById('status-message');
+        const historyCount = document.getElementById('history-count');
+        const backupInfo = document.getElementById('backup-info');
+        const createBackupBtn = document.getElementById('create-backup-btn');
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search');
+        const collapseAllBtn = document.getElementById('collapse-all-btn');
+        const expandAllBtn = document.getElementById('expand-all-btn');
+        const showStatisticsBtn = document.getElementById('show-statistics-btn');
+        const statisticsModal = document.getElementById('statistics-modal');
+        const statisticsContent = document.getElementById('statistics-content');
+        const closeStatisticsBtn = document.getElementById('close-statistics-btn');
+        const exportHtmlModal = document.getElementById('export-html-modal');
+        const htmlTemplateSelect = document.getElementById('html-template-select');
+        const templateDescription = document.getElementById('template-description');
+        const exportTotalItems = document.getElementById('export-total-items');
+        const exportMaxId = document.getElementById('export-max-id');
+        const exportAvgPrice = document.getElementById('export-avg-price');
+        const exportFormatNames = document.getElementById('export-format-names');
+        const exportValidateIds = document.getElementById('export-validate-ids');
+        const exportBackupOriginal = document.getElementById('export-backup-original');
+        const cancelExportHtmlBtn = document.getElementById('cancel-export-html-btn');
+        const exportHtmlBtn = document.getElementById('export-html-btn');
+        
+        // Элементы быстрой вставки
+        const quickInput = document.getElementById('quick-input');
+        const quickSectionEl = document.getElementById('quick-section');
+        const cancelQuickBtn = document.getElementById('cancel-quick-btn');
+        const saveQuickBtn = document.getElementById('save-quick-btn');
+        
+        // Элементы полной замены
+        const fullReplaceInput = document.getElementById('full-replace-input');
+        const cancelReplaceBtn = document.getElementById('cancel-replace-btn');
+        const saveReplaceBtn = document.getElementById('save-replace-btn');
+        
+        // Вкладки
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Инициализация приложения
+        function init() {
+            renderSections();
+            updateHistoryControls();
+            updateBackupInfo();
+            updateExportInfo();
+            
+            // Заполняем выпадающие списки категорий
+            populateSectionSelect(itemSectionEl);
+            populateSectionSelect(quickSectionEl);
+            
+            // Назначаем обработчики событий
+            addItemBtn.addEventListener('click', () => openEditor('add'));
+            quickAddBtn.addEventListener('click', () => openEditor('quick'));
+            fullReplaceBtn.addEventListener('click', () => openEditor('replace'));
+            saveDataBtn.addEventListener('click', saveDataToLocalStorage);
+            undoBtn.addEventListener('click', undo);
+            redoBtn.addEventListener('click', redo);
+            exportJSBtn.addEventListener('click', exportToJS);
+            exportCSVBtn.addEventListener('click', exportToCSV);
+            exportToHTMLBtn.addEventListener('click', showExportHtmlModal);
+            printBtn.addEventListener('click', printData);
+            cancelBtn.addEventListener('click', closeEditor);
+            itemForm.addEventListener('submit', saveItem);
+            createBackupBtn.addEventListener('click', createBackup);
+            showStatisticsBtn.addEventListener('click', showStatistics);
+            closeStatisticsBtn.addEventListener('click', () => statisticsModal.style.display = 'none');
+            collapseAllBtn.addEventListener('click', collapseAllSections);
+            expandAllBtn.addEventListener('click', expandAllSections);
+            htmlTemplateSelect.addEventListener('change', updateTemplateDescription);
+            cancelExportHtmlBtn.addEventListener('click', () => exportHtmlModal.style.display = 'none');
+            exportHtmlBtn.addEventListener('click', exportToHtmlFile);
+            document.getElementById('copy-js-btn').addEventListener('click', () => exportToJS(true));
+            // Обработчики поиска
+            searchInput.addEventListener('input', handleSearch);
+            clearSearchBtn.addEventListener('click', clearSearch);
+            
+            // Обработчики быстрой вставки
+            cancelQuickBtn.addEventListener('click', closeEditor);
+            saveQuickBtn.addEventListener('click', saveQuickItem);
+            
+            // Обработчики полной замены
+            cancelReplaceBtn.addEventListener('click', closeEditor);
+            saveReplaceBtn.addEventListener('click', saveFullReplace);
+            
+            // Обработчики вкладок
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.dataset.tab;
+                    switchTab(tabId);
+                });
+            });
+            
+            // Загружаем сохраненные данные, если они есть
+            loadSavedData();
+            
+            // Автоматическое сохранение каждые 30 секунд
+            setInterval(createAutoBackup, 30000);
+            
+            // Автоматическая проверка изменений каждые 10 секунд
+            setInterval(checkForChanges, 10000);
+            
+            // Обработчик изменения размера окна
+            window.addEventListener('resize', () => {
+                setTimeout(() => {
+                    addTitleToLongNames();
+                }, 100);
+            });
+        }
+
+        // Функция для добавления title к элементам с обрезанным текстом
+        function addTitleToLongNames() {
+            document.querySelectorAll('.item-name').forEach(nameEl => {
+                // Проверяем, обрезан ли текст
+                if (nameEl.scrollHeight > nameEl.clientHeight + 2 || nameEl.offsetWidth < nameEl.scrollWidth) {
+                    nameEl.setAttribute('title', nameEl.textContent.trim());
+                } else {
+                    nameEl.removeAttribute('title');
+                }
+            });
+        }
+
+        // Переключение вкладок
+        function switchTab(tabId) {
+            // Скрыть все вкладки
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Деактивировать все кнопки вкладок
+            tabBtns.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Показать выбранную вкладку
+            document.getElementById(tabId).classList.add('active');
+            
+            // Активировать выбранную кнопку
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+        }
+
+        // Рендер секций
+        function renderSections() {
+            priceSectionsEl.innerHTML = '';
+            
+            let hasResults = false;
+            
+            currentData.forEach((sectionData, sectionIndex) => {
+                // Пропускаем пустые категории
+                if (sectionData.items.length === 0) {
+                    return;
+                }
+                
+                // Фильтруем элементы по поисковому запросу
+                let filteredItems = sectionData.items;
+                if (searchQuery) {
+                    const query = searchQuery.toLowerCase();
+                    filteredItems = sectionData.items.filter(item => 
+                        item.name.toLowerCase().includes(query) ||
+                        item.unit.toLowerCase().includes(query) ||
+                        item.id.toString().includes(query) ||
+                        item.price.toString().includes(query)
+                    );
+                    
+                    // Пропускаем секции без результатов поиска
+                    if (filteredItems.length === 0) {
+                        return;
+                    }
+                }
+                
+                hasResults = true;
+                
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'section';
+                
+                // Заголовок секции
+                const headerEl = document.createElement('div');
+                headerEl.className = 'section-header';
+                headerEl.innerHTML = `
+                    ${sectionData.section}
+                    <span>${filteredItems.length} пунктов${filteredItems.length !== sectionData.items.length ? ` (отфильтровано из ${sectionData.items.length})` : ''}</span>
+                `;
+                
+                // Контент секции
+                const contentEl = document.createElement('div');
+                contentEl.className = 'section-content'; // Все секции развернуты по умолчанию
+                
+                // Заголовки столбцов
+                const headersEl = document.createElement('div');
+                headersEl.className = 'column-headers';
+                headersEl.innerHTML = `
+                    <div class="item-id">№</div>
+                    <div class="item-name">Наименование работы</div>
+                    <div class="item-unit">Ед. изм.</div>
+                    <div class="item-price">Цена, руб.</div>
+                    <div class="item-actions">Действия</div>
+                `;
+                contentEl.appendChild(headersEl);
+                
+                // Добавляем элементы в секцию
+                filteredItems.forEach(item => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'item-row';
+                    
+                    // Добавляем классы для измененных и новых элементов
+                    if (changedItems.has(`${sectionIndex}-${item.id}`)) {
+                        itemEl.classList.add('changed');
+                    }
+                    
+                    itemEl.innerHTML = `
+                        <div class="item-id">${item.id}</div>
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-unit">${item.unit}</div>
+                        <div class="item-price">${formatPrice(item.price)}</div>
+                        <div class="item-actions">
+                            <button class="btn-edit" data-id="${item.id}" data-section="${sectionIndex}">Изменить</button>
+                            <button class="btn-duplicate" data-id="${item.id}" data-section="${sectionIndex}">Дублировать</button>
+                            <button class="btn-delete" data-id="${item.id}" data-section="${sectionIndex}">Удалить</button>
+                        </div>
+                    `;
+                    contentEl.appendChild(itemEl);
+                });
+                
+                // Событие для раскрытия/скрытия секции
+                headerEl.addEventListener('click', () => {
+                    contentEl.classList.toggle('expanded');
+                });
+                
+                sectionEl.appendChild(headerEl);
+                sectionEl.appendChild(contentEl);
+                priceSectionsEl.appendChild(sectionEl);
+            });
+            
+            // Если нет результатов поиска
+            if (!hasResults && searchQuery) {
+                priceSectionsEl.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <h3>Ничего не найдено</h3>
+                        <p>По запросу "${searchQuery}" ничего не найдено</p>
+                    </div>
+                `;
+            }
+            
+            // Назначаем обработчики для кнопок
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    const sectionIndex = parseInt(e.target.dataset.section);
+                    openEditor('edit', id, sectionIndex);
+                });
+            });
+            
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    const sectionIndex = parseInt(e.target.dataset.section);
+                    deleteItem(id, sectionIndex);
+                });
+            });
+            
+            document.querySelectorAll('.btn-duplicate').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    const sectionIndex = parseInt(e.target.dataset.section);
+                    duplicateItem(id, sectionIndex);
+                });
+            });
+            
+            // Добавляем подсказки к длинным названиям
+            setTimeout(() => {
+                addTitleToLongNames();
+            }, 100);
+            
+            // Обновляем информацию для экспорта
+            updateExportInfo();
+        }
+
+        // Заполняем выпадающий список категорий
+        function populateSectionSelect(selectEl) {
+            selectEl.innerHTML = '';
+            currentData.forEach((section, index) => {
+                // Пропускаем пустые категории в выпадающем списке
+                if (section.items.length === 0) {
+                    return;
+                }
+                
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = section.section;
+                selectEl.appendChild(option);
+            });
+        }
+
+        // Открытие редактора
+        function openEditor(mode, id = null, sectionIndex = null) {
+            isEditing = mode === 'edit';
+            editingItem = id;
+            editingSectionIndex = sectionIndex;
+            
+            if (mode === 'edit' && id !== null && sectionIndex !== null) {
+                // Режим редактирования
+                switchTab('manual-tab');
+                modalTitle.textContent = 'Редактировать пункт';
+                const item = currentData[sectionIndex].items.find(item => item.id === id);
+                
+                if (item) {
+                    itemSectionEl.value = sectionIndex;
+                    itemIdEl.value = item.id;
+                    itemNameEl.value = item.name;
+                    itemUnitEl.value = item.unit;
+                    itemPriceEl.value = item.price;
+                    itemIdEl.disabled = true; // ID нельзя менять при редактировании
+                }
+            } else if (mode === 'quick') {
+                // Режим быстрой вставки
+                switchTab('quick-tab');
+                modalTitle.textContent = 'Быстрая вставка пункта';
+                quickInput.value = '';
+                quickSectionEl.value = 0;
+            } else if (mode === 'replace') {
+                // Режим полной замены
+                switchTab('replace-tab');
+                modalTitle.textContent = 'Полная замена прайс-листа';
+                fullReplaceInput.value = '';
+            } else {
+                // Режим добавления
+                switchTab('manual-tab');
+                modalTitle.textContent = 'Добавить новый пункт';
+                itemSectionEl.value = 0;
+                itemIdEl.value = getNextAvailableId();
+                itemNameEl.value = '';
+                itemUnitEl.value = 'шт.';
+                itemPriceEl.value = '';
+                itemIdEl.disabled = false; // ID можно менять при добавлении
+            }
+            
+            editorModal.style.display = 'flex';
+        }
+
+        // Закрытие редактора
+        function closeEditor() {
+            editorModal.style.display = 'none';
+            itemForm.reset();
+            isEditing = false;
+            editingItem = null;
+            editingSectionIndex = null;
+        }
+
+// Сохранение элемента (ручной ввод)
+function saveItem(e) {
+    e.preventDefault();
+    
+    // Проверка данных перед сохранением
+    const errors = validateFormData();
+    if (errors.length > 0) {
+        showMessage(errors.join('<br>'), 'error');
+        return;
+    }
+    
+    const sectionIndex = parseInt(itemSectionEl.value);
+    const id = parseInt(itemIdEl.value);
+    const name = itemNameEl.value.trim();
+    const unit = itemUnitEl.value.trim();
+    const price = parseFloat(itemPriceEl.value);
+    
+    // Сохраняем текущее состояние в историю перед изменением
+    saveToHistory();
+    
+    if (isEditing) {
+        // Редактирование существующего элемента
+        const itemIndex = currentData[editingSectionIndex].items.findIndex(item => item.id === editingItem);
+        if (itemIndex !== -1) {
+            currentData[editingSectionIndex].items[itemIndex] = {id, name, unit, price};
+            
+            // Если секция изменилась, перемещаем элемент
+            if (sectionIndex !== editingSectionIndex) {
+                const item = currentData[editingSectionIndex].items[itemIndex];
+                currentData[editingSectionIndex].items.splice(itemIndex, 1);
+                currentData[sectionIndex].items.push(item);
+                
+                // Сортируем элементы в новой секции по ID
+                currentData[sectionIndex].items.sort((a, b) => a.id - b.id);
+            }
+            
+            // Помечаем элемент как измененный
+            changedItems.add(`${sectionIndex}-${id}`);
+        }
+    } else {
+        // Добавление нового элемента
+        addItemWithShift(id, sectionIndex, name, unit, price);
+        
+        // Помечаем элемент как новый
+        changedItems.add(`${sectionIndex}-${id}`);
+    }
+    
+    // Обновляем отображение
+    renderSections();
+    closeEditor();
+    showMessage(`Пункт ${isEditing ? 'отредактирован' : 'добавлен'} успешно!`, 'success');
+    updateHistoryControls();
+}
+
+        // Валидация данных формы
+        function validateFormData() {
+            const errors = [];
+            const name = itemNameEl.value.trim();
+            const price = parseFloat(itemPriceEl.value);
+            const id = parseInt(itemIdEl.value);
+            
+            if (!name) {
+                errors.push('Введите наименование работы');
+            }
+            
+            if (isNaN(price) || price < 0) {
+                errors.push('Введите корректную цену (положительное число)');
+            }
+            
+            if (isNaN(id) || id < 1) {
+                errors.push('Введите корректный ID (целое число больше 0)');
+            }
+            
+            return errors;
+        }
+
+        // Валидация всех данных
+        function validateAllData() {
+            const errors = [];
+            currentData.forEach((section, sectionIndex) => {
+                section.items.forEach((item, itemIndex) => {
+                    if (!item.name || item.name.trim() === '') {
+                        errors.push(`Пустое название в секции ${section.section}, пункт ${item.id}`);
+                    }
+                    if (item.price < 0) {
+                        errors.push(`Отрицательная цена в секции ${section.section}, пункт ${item.id}`);
+                    }
+                    if (!item.id || item.id < 1) {
+                        errors.push(`Неверный ID в секции ${section.section}, индекс ${itemIndex}`);
+                    }
+                });
+            });
+            return errors;
+        }
+
+        // Сохранение элемента (быстрая вставка)
+        function saveQuickItem() {
+            const inputText = quickInput.value.trim();
+            const sectionIndex = parseInt(quickSectionEl.value);
+            
+            if (!inputText) {
+                showMessage('Введите данные для вставки!', 'error');
+                return;
+            }
+            
+            // Парсим строку (ожидаем формат: ID TAB Название TAB Единица TAB Цена)
+            const parts = inputText.split(/\t| {3,}/); // Разделитель - таб или 3+ пробелов
+            
+            if (parts.length < 2) {
+                showMessage('Неверный формат данных. Ожидается: ID [таб] Название [таб] Единица [таб] Цена', 'error');
+                return;
+            }
+            
+            const id = parseInt(parts[0].trim());
+            const name = parts[1].trim();
+            
+            if (isNaN(id) || !name) {
+                showMessage('Не удалось распознать данные. Проверьте формат.', 'error');
+                return;
+            }
+            
+            // Обрабатываем единицу измерения и цену (они могут отсутствовать)
+            let unit = "шт.";
+            let price = 0;
+            
+            if (parts.length >= 3) {
+                unit = parts[2].trim() || "шт.";
+            }
+            
+            if (parts.length >= 4) {
+                const priceText = parts[3].trim().replace(',', '.');
+                price = priceText ? parseFloat(priceText) : 0;
+            }
+            
+            // Сохраняем текущее состояние в историю перед изменением
+            saveToHistory();
+            
+            // Добавляем элемент со сдвигом
+            addItemWithShift(id, sectionIndex, name, unit, price);
+            
+            // Помечаем элемент как новый
+            changedItems.add(`${sectionIndex}-${id}`);
+            
+            // Обновляем отображение
+            renderSections();
+            closeEditor();
+            showMessage('Пункт добавлен успешно!', 'success');
+            updateHistoryControls();
+        }
+
+        // Сохранение полной замены
+        function saveFullReplace() {
+            const inputText = fullReplaceInput.value.trim();
+            
+            if (!inputText) {
+                showMessage('Введите данные для замены!', 'error');
+                return;
+            }
+            
+            if (!confirm('Внимание! Это заменит весь текущий прайс-лист. Продолжить?')) {
+                return;
+            }
+            
+            // Валидация данных перед заменой
+            const validationErrors = validateImportData(inputText);
+            if (validationErrors.length > 0) {
+                showMessage('Ошибки при валидации данных:<br>' + validationErrors.join('<br>'), 'error');
+                return;
+            }
+            
+            saveToHistory();
+            
+            try {
+                const lines = inputText.split('\n');
+                
+                // Создаем все категории
+                const sections = [
+                    "① Монтажные работы",
+                    "② Черновые работы", 
+                    "③ Установка щитов",
+                    "④ Чистовая установка",
+                    "⑤ Дополнительные работы",
+                    "⑥ Коэффициенты и особые условия",
+                    "⑦ Примечания"
+                ];
+                
+                // Инициализируем все категории с пустыми массивами
+                let newData = sections.map(section => ({
+                    section: section,
+                    items: []
+                }));
+                
+                let currentSectionIndex = -1;
+                
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    // Проверяем, является ли строка заголовком категории
+                    let foundSectionIndex = -1;
+                    for (let j = 0; j < sections.length; j++) {
+                        const section = sections[j];
+                        // Проверяем по символу категории
+                        if (line.startsWith(section.charAt(0))) {
+                            foundSectionIndex = j;
+                            break;
+                        }
+                    }
+                    
+                    if (foundSectionIndex !== -1) {
+                        currentSectionIndex = foundSectionIndex;
+                        continue;
+                    }
+                    
+                    if (currentSectionIndex === -1) continue;
+                    
+                    // Пропускаем заголовки таблиц
+                    if (line.includes("Ед. Изм") || line.includes("Цена.р") || 
+                        line.includes("Наименование") || line === "№" ||
+                        line.includes("Кол-ство") || line.match(/^[А-Яа-я]+\s*$/)) {
+                        continue;
+                    }
+                    
+                    // Разбиваем строку по табам или множественным пробелам
+                    const parts = line.split(/\t| {4,}/); // Таб или 4+ пробелов
+                    
+                    // Минимум 3 части: ID, Название, Цена
+                    if (parts.length >= 3) {
+                        const idText = parts[0].trim();
+                        const id = parseInt(idText);
+                        
+                        // Если первая часть не число, пропускаем
+                        if (isNaN(id)) continue;
+                        
+                        let name = parts[1].trim();
+                        let priceText = parts[parts.length - 1].trim(); // Цена обычно в последней колонке
+                        
+                        // Ищем единицу измерения (может быть во 2-й или 3-й колонке)
+                        let unit = "шт.";
+                        if (parts.length >= 4) {
+                            // Пробуем найти единицу в предпоследней колонке
+                            const possibleUnit = parts[parts.length - 2].trim();
+                            if (possibleUnit && 
+                                (possibleUnit.includes("шт") || 
+                                 possibleUnit.includes("м/п") || 
+                                 possibleUnit.includes("см") || 
+                                 possibleUnit.includes("коэф") || 
+                                 possibleUnit.includes("%") || 
+                                 possibleUnit.includes("кв.м") || 
+                                 possibleUnit.includes("кВА") ||
+                                 possibleUnit.match(/^[а-яА-Я\.\/%]+$/))) {
+                                unit = possibleUnit;
+                                // Если имя включает единицу, убираем ее
+                                if (name.includes(unit) && unit !== "шт.") {
+                                    name = name.replace(unit, '').trim();
+                                }
+                            }
+                        }
+                        
+                        // Если единица не найдена, но в названии есть известные единицы
+                        if (unit === "шт." && name.match(/(шт\.|м\/п|см\.|коэф\.|%|кв\.м|кВА)$/)) {
+                            const unitMatch = name.match(/(шт\.|м\/п|см\.|коэф\.|%|кв\.м|кВА)$/);
+                            unit = unitMatch[1];
+                            name = name.replace(unit, '').trim();
+                        }
+                        
+                        // Очистка цены
+                        let price = 0;
+                        if (priceText && priceText !== '""' && priceText !== "''") {
+                            // Заменяем запятую на точку для десятичных
+                            const cleanPrice = priceText.replace(',', '.');
+                            price = parseFloat(cleanPrice) || 0;
+                        }
+                        
+                        // Очистка названия
+                        name = cleanName(name);
+                        
+                        
+                        if (name && name !== '""' && name !== "''") {
+                            newData[currentSectionIndex].items.push({
+                                id: id, // Сохраняем ОРИГИНАЛЬНЫЙ ID из таблицы
+                                name: name,
+                                unit: unit,
+                                price: price
+                            });
+                        }
+                    }
+                }
+                
+                // Сортируем элементы в каждой категории по ID
+                newData.forEach(section => {
+                    section.items.sort((a, b) => a.id - b.id);
+                });
+
+                // Удаляем дубликаты ID если есть
+                newData.forEach(section => {
+                    const seenIds = new Set();
+                    section.items = section.items.filter(item => {
+                        if (seenIds.has(item.id)) {
+                            return false;
+                        }
+                        seenIds.add(item.id);
+                        return true;
+                    });
+                });
+                
+                if (newData.length > 0) {
+                    currentData = newData;
+                    changedItems.clear(); // Очищаем список изменений
+                    renderSections();
+                    populateSectionSelect(itemSectionEl);
+                    populateSectionSelect(quickSectionEl);
+                    closeEditor();
+                    showMessage(`Прайс-лист успешно заменен! Обработано ${newData.length} категорий.`, 'success');
+                    updateHistoryControls();
+                } else {
+                    showMessage('Не удалось распознать данные. Вставьте таблицу с табами (Excel -> Копировать).', 'error');
+                }
+            } catch (error) {
+                showMessage('Ошибка при обработке данных: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        // Валидация импортируемых данных
+        function validateImportData(text) {
+            const lines = text.split('\n');
+            const errors = [];
+            
+            lines.forEach((line, index) => {
+                if (line.trim()) {
+                    const parts = line.split(/\t/);
+                    if (parts.length < 2 && !line.match(/^[①②③④⑤⑥⑦]/)) {
+                        errors.push(`Строка ${index + 1}: недостаточно данных (ожидается минимум 2 колонки)`);
+                    }
+                    if (parts[0] && isNaN(parseInt(parts[0])) && !line.match(/^[①②③④⑤⑥⑦]/)) {
+                        errors.push(`Строка ${index + 1}: неверный формат ID "${parts[0]}"`);
+                    }
+                }
+            });
+            
+            return errors;
+        }
+
+        // Очистка названия
+        function cleanName(name) {
+            return name
+                .replace(/\s+/g, ' ')
+                .replace(/\s*,\s*/g, ', ')
+                .replace(/\s*\.\s*/g, '. ')
+                .replace(/\s+\./g, '.')
+                .replace(/\.\s+\./g, '.')
+                .replace(/\.\./g, '.')
+                .replace(/,\s*\./g, '.')
+                .replace(/2, 5/g, '2,5')
+                .replace(/1\. 5/g, '1.5')
+                .replace(/0, 4/g, '0,4')
+                .replace(/4 мм2/g, '4 мм²')
+                .replace(/6 мм2/g, '6 мм²')
+                .replace(/10 мм2/g, '10 мм²')
+                .replace(/16 мм2/g, '16 мм²')
+                .replace(/25 мм2/g, '25 мм²')
+                .replace(/35 мм2/g, '35 мм²')
+                .replace(/95 мм2/g, '95 мм²')
+                .replace(/240 мм2/g, '240 мм²')
+                .replace(/Ø\s+(\d+)/g, 'Ø$1')
+                .replace(/кв\.\s*м/g, 'кв.м')
+                .replace(/\s*\.\s*$/g, '') // Убираем точку в конце
+                .replace(/^\s+/g, '')
+                .replace(/\s+$/g, '')
+                .trim();
+        }
+
+function addItemWithShift(id, sectionIndex, name, unit, price) {
+    const newItem = {id, name, unit, price: price || 0};
+    
+    // Проверяем, есть ли элемент с таким ID
+    let existingItemIndex = -1;
+    let existingSectionIndex = -1;
+    
+    for (let i = 0; i < currentData.length; i++) {
+        const index = currentData[i].items.findIndex(item => item.id === id);
+        if (index !== -1) {
+            existingItemIndex = index;
+            existingSectionIndex = i;
+            break;
+        }
+    }
+    
+    if (existingItemIndex !== -1) {
+        // Смещаем все элементы с этим ID и ниже вниз
+        for (let i = 0; i < currentData.length; i++) {
+            for (let j = 0; j < currentData[i].items.length; j++) {
+                if (currentData[i].items[j].id >= id) {
+                    currentData[i].items[j].id++;
+                }
+            }
+        }
+        
+        // Вставляем новый элемент на нужное место
+        const targetIndex = currentData[existingSectionIndex].items.findIndex(item => item.id === id + 1);
+        if (targetIndex !== -1) {
+            currentData[existingSectionIndex].items.splice(targetIndex, 0, newItem);
+        } else {
+            currentData[sectionIndex].items.push(newItem);
+            currentData[sectionIndex].items.sort((a, b) => a.id - b.id);
+        }
+    } else {
+        // Просто добавляем элемент
+        currentData[sectionIndex].items.push(newItem);
+        currentData[sectionIndex].items.sort((a, b) => a.id - b.id);
+    }
+}
+        
+        // Удаление элемента
+        function deleteItem(id, sectionIndex) {
+            if (!confirm('Вы уверены, что хотите удалить этот пункт?')) return;
+            
+            // Сохраняем текущее состояние в историю перед удалением
+            saveToHistory();
+            
+            // Удаляем элемент
+            const itemIndex = currentData[sectionIndex].items.findIndex(item => item.id === id);
+            if (itemIndex !== -1) {
+                const deletedItem = currentData[sectionIndex].items[itemIndex];
+                currentData[sectionIndex].items.splice(itemIndex, 1);
+                
+                // Перенумеровываем элементы с более высокими ID
+                for (let i = 0; i < currentData.length; i++) {
+                    for (let j = 0; j < currentData[i].items.length; j++) {
+                        if (currentData[i].items[j].id > id) {
+                            currentData[i].items[j].id--;
+                        }
+                    }
+                }
+                
+                // Удаляем из измененных элементов
+                changedItems.delete(`${sectionIndex}-${id}`);
+                
+                renderSections();
+                showMessage('Пункт удален успешно!', 'success');
+                updateHistoryControls();
+            }
+        }
+
+        // Дублирование элемента
+        function duplicateItem(id, sectionIndex) {
+            const item = currentData[sectionIndex].items.find(item => item.id === id);
+            if (!item) return;
+            
+            // Сохраняем текущее состояние в историю перед изменением
+            saveToHistory();
+            
+            const newId = getNextAvailableId();
+            const newItem = {
+                id: newId,
+                name: item.name + " (копия)",
+                unit: item.unit,
+                price: item.price
+            };
+            
+            // Добавляем элемент
+            currentData[sectionIndex].items.push(newItem);
+            currentData[sectionIndex].items.sort((a, b) => a.id - b.id);
+            
+            // Помечаем как новый
+            changedItems.add(`${sectionIndex}-${newId}`);
+            
+            renderSections();
+            showMessage('Пункт продублирован успешно!', 'success');
+            updateHistoryControls();
+        }
+
+        // Получение следующего доступного ID
+        function getNextAvailableId() {
+            let maxId = 0;
+            currentData.forEach(section => {
+                section.items.forEach(item => {
+                    if (item.id > maxId) maxId = item.id;
+                });
+            });
+            return maxId + 1;
+        }
+
+        // Сохранение данных в localStorage
+        function saveDataToLocalStorage() {
+            try {
+                // Валидация перед сохранением
+                const errors = validateAllData();
+                if (errors.length > 0) {
+                    showMessage('Обнаружены ошибки в данных:<br>' + errors.slice(0, 3).join('<br>'), 'error');
+                    return;
+                }
+                
+                localStorage.setItem('electricPriceData', JSON.stringify(currentData));
+                lastSavedData = JSON.parse(JSON.stringify(currentData));
+                changedItems.clear(); // Очищаем список изменений после сохранения
+                renderSections(); // Обновляем отображение чтобы убрать подсветку
+                showMessage('Данные успешно сохранены в браузере!', 'success');
+                updateBackupInfo();
+            } catch (e) {
+                showMessage('Ошибка при сохранении данных: ' + e.message, 'error');
+            }
+        }
+
+        // Загрузка сохраненных данных
+// Загрузка сохраненных данных
+function loadSavedData() {
+    try {
+        const savedData = localStorage.getItem('electricPriceData');
+        if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            
+            // Проверяем, есть ли сохраненные данные
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+                // ПРОВЕРЯЕМ: если сохранено меньше 7 категорий - игнорируем сохраненные данные
+                if (parsedData.length >= 7) {
+                    currentData = parsedData;
+                    lastSavedData = JSON.parse(JSON.stringify(currentData));
+                    showMessage('Сохраненные данные загружены!', 'success');
+                } else {
+                    console.log('Сохраненные данные неполные, используем исходные');
+                    currentData = JSON.parse(JSON.stringify(priceData));
+                    // Можно предложить пользователю выбор
+                    if (confirm('Найдены неполные сохраненные данные. Восстановить исходный прайс-лист?')) {
+                        localStorage.removeItem('electricPriceData');
+                    }
+                }
+            }
+        } else {
+            // Нет сохраненных данных - используем исходные
+            currentData = JSON.parse(JSON.stringify(priceData));
+        }
+        
+        // Всегда проверяем наличие всех категорий
+        ensureAllCategories();
+        
+        lastSavedData = JSON.parse(JSON.stringify(currentData));
+        history = [JSON.parse(JSON.stringify(currentData))];
+        historyIndex = 0;
+        renderSections();
+        populateSectionSelect(itemSectionEl);
+        populateSectionSelect(quickSectionEl);
+        updateHistoryControls();
+        
+    } catch (e) {
+        console.error('Ошибка при загрузке данных:', e);
+        currentData = JSON.parse(JSON.stringify(priceData));
+        showMessage('Ошибка при загрузке сохраненных данных. Загружены исходные.', 'warning');
+        renderSections();
+    }
+}
+// Функция для проверки наличия всех категорий
+function ensureAllCategories() {
+    // Список всех необходимых категорий
+    const requiredSections = [
+        "① Монтажные работы",
+        "② Черновые работы", 
+        "③ Установка щитов",
+        "④ Чистовая установка",
+        "⑤ Дополнительные работы",
+        "⑥ Коэффициенты и особые условия",
+        "⑦ Примечания"
+    ];
+    
+    // Проверяем, есть ли все категории
+    requiredSections.forEach(sectionName => {
+        const sectionExists = currentData.some(section => section.section === sectionName);
+        
+        if (!sectionExists) {
+            // Если категории нет, добавляем её с пустым массивом
+            currentData.push({
+                section: sectionName,
+                items: []
+            });
+        }
+    });
+    
+    // Сортируем секции в правильном порядке
+    currentData.sort((a, b) => {
+        const indexA = requiredSections.indexOf(a.section);
+        const indexB = requiredSections.indexOf(b.section);
+        return indexA - indexB;
+    });
+}
+// Экспорт в JS файл или копирование в буфер
+function exportToJS(copyOnly = false) {
+    // Валидация перед экспортом
+    const errors = validateAllData();
+    if (errors.length > 0) {
+        showMessage('Обнаружены ошибки в данных. Исправьте их перед экспортом.', 'error');
+        return;
+    }
+    
+    // Форматируем данные для экспорта
+    let jsContent = '// Прайс-лист электрика\n';
+    jsContent += '// Сгенерировано: ' + new Date().toLocaleString() + '\n\n';
+    jsContent += 'const priceData = [\n';
+    
+    currentData.forEach((section, sectionIndex) => {
+        // Пропускаем пустые категории при экспорте
+        if (section.items.length === 0) {
+            return;
+        }
+        
+        jsContent += `    {\n        section: "${section.section}",\n        items: [\n`;
+        
+        section.items.forEach((item, itemIndex) => {
+            jsContent += `            {id: ${item.id}, name: "${escapeString(item.name)}", unit: "${escapeString(item.unit)}", price: ${item.price}}`;
+            if (itemIndex < section.items.length - 1) jsContent += ',';
+            jsContent += '\n';
+        });
+        
+        jsContent += '        ]\n    }';
+        
+        // Проверяем, не является ли следующая секция пустой
+        let nextIndex = sectionIndex + 1;
+        while (nextIndex < currentData.length) {
+            if (currentData[nextIndex].items.length > 0) {
+                break;
+            }
+            nextIndex++;
+        }
+        
+        if (nextIndex < currentData.length) jsContent += ',';
+        jsContent += '\n';
+    });
+    
+    jsContent += '];\n';
+    
+    if (copyOnly) {
+        // Копируем в буфер обмена
+        copyToClipboard(jsContent).then(() => {
+            showMessage('Данные скопированы в буфер обмена! Теперь вы можете вставить их в файл price-data.js', 'success');
+        }).catch(() => {
+            showMessage('Не удалось скопировать в буфер. Попробуйте скачать файл.', 'error');
+        });
+    } else {
+        // Скачиваем файл
+        const blob = new Blob([jsContent], { type: 'application/javascript;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `price-data.js`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        showMessage('Файл price-data.js успешно экспортирован!', 'success');
+    }
+}
+
+// Функция для копирования текста в буфер обмена
+async function copyToClipboard(text) {
+    try {
+        // Современный способ с использованием Clipboard API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            return true;
+        }
+        
+        // Запасной вариант для старых браузеров
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        
+        const success = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        if (!success) {
+            throw new Error('Не удалось скопировать');
+        }
+        
+        return true;
+    } catch (err) {
+        console.error('Ошибка копирования:', err);
+        throw err;
+    }
+}
+        // Экранирование строк для JS
+        function escapeString(str) {
+            return str.replace(/"/g, '\\"').replace(/\n/g, '\\n');
+        }
+
+        // Экспорт в CSV
+        function exportToCSV() {
+            // Валидация перед экспортом
+            const errors = validateAllData();
+            if (errors.length > 0) {
+                showMessage('Обнаружены ошибки в данных. Исправьте их перед экспортом.', 'error');
+                return;
+            }
+            
+            let csvContent = "Категория;ID;Наименование;Ед.изм.;Цена\n";
+            
+            currentData.forEach(section => {
+                section.items.forEach(item => {
+                    csvContent += `${section.section};${item.id};"${item.name}";${item.unit};${item.price}\n`;
+                });
+            });
+            
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `priceList_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+            
+            showMessage('CSV файл успешно экспортирован!', 'success');
+        }
+
+        // Печать данных
+        function printData() {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Прайс-лист электрика</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 20px; }
+                        h1 { color: #333; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+                        .section { margin-bottom: 30px; page-break-inside: avoid; }
+                        .section-header { background-color: #f5f5f5; padding: 10px; font-weight: bold; margin-bottom: 10px; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+                        th { background-color: #eee; padding: 8px; text-align: left; border: 1px solid #ddd; }
+                        td { padding: 8px; border: 1px solid #ddd; }
+                        .item-id { width: 50px; text-align: center; }
+                        .item-price { width: 100px; text-align: right; }
+                        .footer { margin-top: 30px; font-size: 12px; color: #666; text-align: center; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Прайс-лист электрика</h1>
+                    <p>Дата печати: ${new Date().toLocaleString()}</p>
+                    <div class="no-print">
+                        <button onclick="window.print()">Печать</button>
+                        <button onclick="window.close()">Закрыть</button>
+                    </div>
+            `);
+            
+            currentData.forEach(section => {
+                if (section.items.length > 0) {
+                    printWindow.document.write(`
+                        <div class="section">
+                            <div class="section-header">${section.section} (${section.items.length} пунктов)</div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="item-id">№</th>
+                                        <th>Наименование работы</th>
+                                        <th>Ед. изм.</th>
+                                        <th class="item-price">Цена, руб.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `);
+                    
+                    section.items.forEach(item => {
+                        printWindow.document.write(`
+                            <tr>
+                                <td class="item-id">${item.id}</td>
+                                <td>${item.name}</td>
+                                <td>${item.unit}</td>
+                                <td class="item-price">${formatPrice(item.price)}</td>
+                            </tr>
+                        `);
+                    });
+                    
+                    printWindow.document.write(`
+                                </tbody>
+                            </table>
+                        </div>
+                    `);
+                }
+            });
+            
+            printWindow.document.write(`
+                    <div class="footer">
+                        <p>Всего пунктов: ${getTotalItems()}</p>
+                        <p>Средняя цена: ${formatPrice(getAveragePrice())}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+        }
+
+        // Свернуть все секции
+        function collapseAllSections() {
+            document.querySelectorAll('.section-content').forEach(content => {
+                content.classList.remove('expanded');
+            });
+        }
+
+        // Развернуть все секции
+        function expandAllSections() {
+            document.querySelectorAll('.section-content').forEach(content => {
+                content.classList.add('expanded');
+            });
+        }
+
+        // Поиск
+        function handleSearch() {
+            searchQuery = searchInput.value.trim().toLowerCase();
+            if (searchQuery) {
+                clearSearchBtn.style.display = 'block';
+            } else {
+                clearSearchBtn.style.display = 'none';
+            }
+            renderSections();
+        }
+
+        // Очистка поиска
+        function clearSearch() {
+            searchInput.value = '';
+            searchQuery = '';
+            clearSearchBtn.style.display = 'none';
+            renderSections();
+        }
+
+        // История изменений
+        function saveToHistory() {
+            // Удаляем будущие состояния, если мы не в конце истории
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            
+            // Добавляем текущее состояние в историю
+            history.push(JSON.parse(JSON.stringify(currentData)));
+            historyIndex++;
+            
+            // Ограничиваем историю 10 шагами
+            if (history.length > 11) { // 10 + текущее состояние
+                history.shift();
+                historyIndex--;
+            }
+            
+            updateHistoryControls();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                currentData = JSON.parse(JSON.stringify(history[historyIndex]));
+                changedItems.clear(); // Очищаем изменения при отмене
+                renderSections();
+                updateHistoryControls();
+                showMessage('Действие отменено', 'success');
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                currentData = JSON.parse(JSON.stringify(history[historyIndex]));
+                changedItems.clear(); // Очищаем изменения при повторе
+                renderSections();
+                updateHistoryControls();
+                showMessage('Действие повторено', 'success');
+            }
+        }
+
+        function updateHistoryControls() {
+            undoBtn.disabled = historyIndex === 0;
+            redoBtn.disabled = historyIndex === history.length - 1;
+            historyCount.textContent = history.length - 1;
+        }
+
+        // Резервное копирование
+        function createBackup() {
+            try {
+                const backupKey = `electricPriceData_backup_${new Date().toISOString().slice(0,19).replace(/[:T]/g, '-')}`;
+                const backupData = {
+                    timestamp: new Date().toISOString(),
+                    data: currentData,
+                    version: '1.0'
+                };
+                
+                localStorage.setItem(backupKey, JSON.stringify(backupData));
+                
+                // Хранить только последние 7 резервных копий
+                const backups = Object.keys(localStorage).filter(key => key.startsWith('electricPriceData_backup_'));
+                if (backups.length > 7) {
+                    backups.sort().slice(0, backups.length - 7).forEach(key => localStorage.removeItem(key));
+                }
+                
+                updateBackupInfo();
+                showMessage('Резервная копия создана успешно!', 'success');
+            } catch (e) {
+                showMessage('Ошибка при создании резервной копии: ' + e.message, 'error');
+            }
+        }
+
+        // Автоматическое резервное копирование
+        function createAutoBackup() {
+            try {
+                // Создаем резервную копию только если есть изменения
+                const currentDataStr = JSON.stringify(currentData);
+                const lastSavedDataStr = JSON.stringify(lastSavedData);
+                
+                if (currentDataStr !== lastSavedDataStr) {
+                    const backupKey = `electricPriceData_auto_${new Date().toISOString().slice(0,13)}`;
+                    const backupData = {
+                        timestamp: new Date().toISOString(),
+                        data: currentData,
+                        version: '1.0'
+                    };
+                    
+                    localStorage.setItem(backupKey, JSON.stringify(backupData));
+                }
+            } catch (e) {
+                console.error('Ошибка при автоматическом резервном копировании:', e);
+            }
+        }
+
+        // Обновление информации о резервных копиях
+        function updateBackupInfo() {
+            try {
+                const backups = Object.keys(localStorage).filter(key => key.startsWith('electricPriceData_backup_'));
+                backupInfo.textContent = `Резервных копий: ${backups.length}`;
+            } catch (e) {
+                backupInfo.textContent = 'Ошибка загрузки информации';
+            }
+        }
+
+        // Проверка изменений
+        function checkForChanges() {
+            const currentDataStr = JSON.stringify(currentData);
+            const lastSavedDataStr = JSON.stringify(lastSavedData);
+            
+            if (currentDataStr !== lastSavedDataStr) {
+                saveDataBtn.style.backgroundColor = '#e74c3c';
+                saveDataBtn.innerHTML = 'Сохранить изменения ●';
+            } else {
+                saveDataBtn.style.backgroundColor = '#27ae60';
+                saveDataBtn.innerHTML = 'Сохранить изменения';
+            }
+        }
+
+        // Показать статистику
+        function showStatistics() {
+            const stats = calculateStatistics();
+            
+            let html = `
+                <div class="stats-container">
+                    <h3>Общая статистика</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h3>Всего пунктов</h3>
+                            <p>${stats.totalItems}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Всего категорий</h3>
+                            <p>${stats.totalSections}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Средняя цена</h3>
+                            <p>${formatPrice(stats.averagePrice)}</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3>Максимальная цена</h3>
+                            <p>${formatPrice(stats.maxPrice)}</p>
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 20px;">Статистика по категориям</h3>
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                        <thead>
+                            <tr>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Категория</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Кол-во</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Средняя цена</th>
+                                <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Макс. цена</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            stats.sections.forEach(section => {
+                html += `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">${section.name}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${section.count}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatPrice(section.average)}</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${formatPrice(section.max)}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 15px; font-size: 12px; color: #666;">
+                        Последнее обновление: ${new Date().toLocaleString()}
+                    </p>
+                </div>
+            `;
+            
+            statisticsContent.innerHTML = html;
+            statisticsModal.style.display = 'flex';
+        }
+
+        // Расчет статистики
+        function calculateStatistics() {
+            let totalItems = 0;
+            let totalPrice = 0;
+            let maxPrice = 0;
+            let sectionsStats = [];
+            
+            currentData.forEach(section => {
+                const itemsCount = section.items.length;
+                const sectionTotal = section.items.reduce((sum, item) => sum + item.price, 0);
+                const sectionMax = section.items.reduce((max, item) => Math.max(max, item.price), 0);
+                
+                sectionsStats.push({
+                    name: section.section,
+                    count: itemsCount,
+                    average: itemsCount > 0 ? sectionTotal / itemsCount : 0,
+                    max: sectionMax
+                });
+                
+                totalItems += itemsCount;
+                totalPrice += sectionTotal;
+                maxPrice = Math.max(maxPrice, sectionMax);
+            });
+            
+            return {
+                totalItems,
+                totalSections: currentData.filter(s => s.items.length > 0).length,
+                averagePrice: totalItems > 0 ? totalPrice / totalItems : 0,
+                maxPrice,
+                sections: sectionsStats
+            };
+        }
+
+        // Получить общее количество элементов
+        function getTotalItems() {
+            return currentData.reduce((total, section) => total + section.items.length, 0);
+        }
+
+        // Получить среднюю цену
+        function getAveragePrice() {
+            const totalItems = getTotalItems();
+            if (totalItems === 0) return 0;
+            
+            const totalPrice = currentData.reduce((sum, section) => 
+                sum + section.items.reduce((sectionSum, item) => sectionSum + item.price, 0), 0);
+            
+            return totalPrice / totalItems;
+        }
+
+        // Получить максимальный ID
+        function getMaxId() {
+            let maxId = 0;
+            currentData.forEach(section => {
+                section.items.forEach(item => {
+                    if (item.id > maxId) maxId = item.id;
+                });
+            });
+            return maxId;
+        }
+
+        // ========== ЭКСПОРТ В HTML ПРАЙС-ЛИСТ ==========
+
+        // Показать модальное окно экспорта
+        function showExportHtmlModal() {
+            // Валидация перед экспортом
+            const errors = validateAllData();
+            if (errors.length > 0) {
+                showMessage('Обнаружены ошибки в данных. Исправьте их перед экспортом:<br>' + errors.slice(0, 3).join('<br>'), 'error');
+                return;
+            }
+            
+            updateExportInfo();
+            exportHtmlModal.style.display = 'flex';
+        }
+
+        // Обновить информацию для экспорта
+        function updateExportInfo() {
+            const stats = calculateStatistics();
+            exportTotalItems.textContent = stats.totalItems;
+            exportMaxId.textContent = getMaxId();
+            exportAvgPrice.textContent = formatPrice(stats.averagePrice);
+        }
+
+        // Обновить описание шаблона
+        function updateTemplateDescription() {
+            const template = htmlTemplateSelect.value;
+            if (template === 'replace') {
+                templateDescription.textContent = 'Заменит данные прайс-листа в файле электроСмета';
+            } else {
+                templateDescription.textContent = 'Создаст новый HTML файл с прайс-листом';
+            }
+        }
+
+        // Функция форматирования названий для экспорта
+        function formatNameForExport(name) {
+            if (!exportFormatNames.checked) {
+                return name;
+            }
+            
+            // Исправляем квадратные миллиметры
+            let formatted = name.replace(/мм2/g, 'мм²');
+            
+            // Убираем лишние пробелы вокруг тире
+            formatted = formatted.replace(/\s*-\s*/g, '-');
+            
+            // Исправляем градусы
+            formatted = formatted.replace(/Ø\s+(\d+)/g, 'Ø$1');
+            
+            // Исправляем квадратные метры
+            formatted = formatted.replace(/кв\.\s*м/g, 'кв.м');
+            
+            // Убираем лишние пробелы после запятых
+            formatted = formatted.replace(/,\s+/g, ', ');
+            
+            // Убираем лишние пробелы перед точками
+            formatted = formatted.replace(/\s+\./g, '.');
+            
+            // Исправляем "1.5" -> "1,5" (русский формат)
+            formatted = formatted.replace(/(\d)\.(\d)/g, '$1,$2');
+            
+            return formatted;
+        }
+
+        // Проверить уникальность ID
+        function validateIdsForExport() {
+            const allIds = [];
+            const duplicates = [];
+            
+            currentData.forEach(section => {
+                section.items.forEach(item => {
+                    if (allIds.includes(item.id)) {
+                        duplicates.push(item.id);
+                    }
+                    allIds.push(item.id);
+                });
+            });
+            
+            return {
+                valid: duplicates.length === 0,
+                duplicates: duplicates
+            };
+        }
+
+// Экспорт в HTML файл
+function exportToHtmlFile() {
+    const template = htmlTemplateSelect.value;
+    
+    // Проверить уникальность ID если выбрано
+    if (exportValidateIds.checked) {
+        const idValidation = validateIdsForExport();
+        if (!idValidation.valid) {
+            showMessage(`Обнаружены дублирующиеся ID: ${idValidation.duplicates.join(', ')}. Исправьте перед экспортом.`, 'error');
+            return;
+        }
+    }
+    
+    if (template === 'replace') {
+        // Режим замены данных в электроСмета
+        replaceElectroSmetaData();
+    } else {
+        // Режим создания нового файла
+        createNewHtmlFile();
+    }
+    
+    exportHtmlModal.style.display = 'none';
+}
+
+// Заменить данные в электроСмета
+function replaceElectroSmetaData() {
+    // Здесь будет код для замены данных в файле электроСмета
+    // Пока создадим новый файл с комментарием о замене
+    
+    let htmlContent = `<!-- 
+    ============================================================
+    ФАЙЛ ПРАЙС-ЛИСТА ДЛЯ ЭЛЕКТРОСМЕТА
+    ============================================================
+    Сгенерировано редактором прайс-листа электрика
+    Дата: ${new Date().toLocaleString()}
+    
+    ИНСТРУКЦИЯ:
+    1. Скопируйте весь блок ниже (от const priceData = [ до конца)
+    2. Откройте файл электроСмета.html в текстовом редакторе
+    3. Найдите строку "const priceData = [" (примерно строка 340)
+    4. Замените весь массив priceData на скопированный блок
+    5. Сохраните файл и обновите страницу в браузере
+    ============================================================
+-->
+
+const priceData = [`;
+
+    currentData.forEach((section, sectionIndex) => {
+        // Пропускаем пустые категории
+        if (section.items.length === 0) {
+            return;
+        }
+        
+        htmlContent += `
+    {
+        section: "${section.section}",
+        items: [`;
+        
+        section.items.forEach((item, itemIndex) => {
+            const formattedName = formatNameForExport(item.name);
+            htmlContent += `
+            {id: ${item.id}, name: "${formattedName}", unit: "${item.unit}", price: ${item.price}}`;
+            
+            if (itemIndex < section.items.length - 1) {
+                htmlContent += ',';
+            }
+        });
+        
+        htmlContent += `
+        ]`;
+        
+        // Проверяем, не является ли следующая секция пустой
+        let nextIndex = sectionIndex + 1;
+        while (nextIndex < currentData.length) {
+            if (currentData[nextIndex].items.length > 0) {
+                break;
+            }
+            nextIndex++;
+        }
+        
+        if (nextIndex < currentData.length) {
+            htmlContent += '    },';
+        } else {
+            htmlContent += '    }';
+        }
+    });
+    
+    htmlContent += `\n];`;
+    
+    // Добавляем инструкцию по проверке ID
+    htmlContent += `
+
+// ============================================================
+// ПРОВЕРКА ДАННЫХ
+// ============================================================
+console.log('Загружен прайс-лист:');
+console.log('- Категорий: ' + priceData.length);
+console.log('- Всего пунктов: ' + priceData.reduce((total, section) => total + section.items.length, 0));
+console.log('- Максимальный ID: ' + Math.max(...priceData.flatMap(section => section.items.map(item => item.id))));
+
+// Проверка уникальности ID
+const allIds = priceData.flatMap(section => section.items.map(item => item.id));
+const uniqueIds = [...new Set(allIds)];
+if (allIds.length !== uniqueIds.length) {
+    console.warn('ВНИМАНИЕ: Обнаружены дублирующиеся ID!');
+    const duplicates = allIds.filter((id, index) => allIds.indexOf(id) !== index);
+    console.warn('Дубликаты: ' + [...new Set(duplicates)].join(', '));
+} else {
+    console.log('✓ Все ID уникальны');
+}
+// ============================================================`;
+
+    // Создаем и скачиваем файл
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `priceData_for_electroSmeta_${new Date().toISOString().slice(0,10)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showMessage('Файл для замены в электроСмета создан! Следуйте инструкциям в файле.', 'success');
+}
+
+// Создать новый HTML файл
+function createNewHtmlFile() {
+    let htmlContent = `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прайс-лист электрика (обновленный)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .section { margin-bottom: 30px; }
+        .section-header { background: #f8f9fa; padding: 10px; font-weight: bold; border-left: 4px solid #3498db; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #2c3e50; color: white; }
+        .item-id { width: 50px; text-align: center; }
+        .item-price { width: 100px; text-align: right; font-weight: bold; color: #27ae60; }
+        .footer { margin-top: 30px; font-size: 12px; color: #666; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Прайс-лист электрика (обновленный)</h1>
+    <p>Дата обновления: ${new Date().toLocaleString()}</p>
+    <p>Всего категорий: ${currentData.filter(s => s.items.length > 0).length}, пунктов: ${getTotalItems()}</p>
+    
+    <div id="price-list">`;
+
+    currentData.forEach(section => {
+        if (section.items.length > 0) {
+            htmlContent += `
+        <div class="section">
+            <div class="section-header">${section.section} (${section.items.length} пунктов)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th class="item-id">№</th>
+                        <th>Наименование работы</th>
+                        <th>Ед. изм.</th>
+                        <th class="item-price">Цена, руб.</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+            
+            section.items.forEach(item => {
+                const formattedName = formatNameForExport(item.name);
+                htmlContent += `
+                    <tr>
+                        <td class="item-id">${item.id}</td>
+                        <td>${formattedName}</td>
+                        <td>${item.unit}</td>
+                        <td class="item-price">${formatPrice(item.price)}</td>
+                    </tr>`;
+            });
+            
+            htmlContent += `
+                </tbody>
+            </table>
+        </div>`;
+        }
+    });
+
+    htmlContent += `
+    </div>
+    
+    <div class="footer">
+        <p>Сгенерировано редактором прайс-листа электрика</p>
+        <p>Всего пунктов: ${getTotalItems()} | Средняя цена: ${formatPrice(getAveragePrice())} руб.</p>
+    </div>
+    
+    <script>
+        // Данные прайс-листа для использования в электроСмета
+        const priceData = [`;
+
+    currentData.forEach((section, sectionIndex) => {
+        if (section.items.length === 0) return;
+        
+        htmlContent += `
+            {
+                section: "${section.section}",
+                items: [`;
+        
+        section.items.forEach((item, itemIndex) => {
+            const formattedName = formatNameForExport(item.name);
+            htmlContent += `
+                    {id: ${item.id}, name: "${formattedName}", unit: "${item.unit}", price: ${item.price}}`;
+            
+            if (itemIndex < section.items.length - 1) {
+                htmlContent += ',';
+            }
+        });
+        
+        htmlContent += `
+                ]`;
+        
+        let nextIndex = sectionIndex + 1;
+        while (nextIndex < currentData.length) {
+            if (currentData[nextIndex].items.length > 0) {
+                break;
+            }
+            nextIndex++;
+        }
+        
+        if (nextIndex < currentData.length) {
+            htmlContent += '            },';
+        } else {
+            htmlContent += '            }';
+        }
+    });
+
+htmlContent += `
+        ];
+        
+        console.log('Прайс-лист загружен:', priceData.length + ' категорий');
+    <\/script>
+</body>
+</html>`;
+
+    // Создаем и скачиваем файл
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `electro_price_list_${new Date().toISOString().slice(0,10)}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showMessage('Новый HTML файл создан и скачан!', 'success');
+}
+
+// Вспомогательные функции
+function formatPrice(price) {
+    if (price % 1 === 0) {
+        return price.toLocaleString('ru-RU');
+    } else {
+        return price.toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+    }
+}
+
+function showMessage(text, type) {
+    statusMessage.textContent = text;
+    statusMessage.className = `status-message ${type}`;
+    statusMessage.style.display = 'block';
+    
+    setTimeout(() => {
+        statusMessage.style.display = 'none';
+    }, 3000);
+}
+
+// Запуск приложения
+document.addEventListener('DOMContentLoaded', init);
+    </script> 
+</body>
+</html> 
