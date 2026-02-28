@@ -7379,7 +7379,7 @@ window.addEventListener('message', async function(event) {
             showNotification('⏳ Получение токенов...');
             
             // Отправляем код на наш сервер (БЕЗ CLIENT SECRET!)
-            const response = await fetch('https://electro-smetanew.vercel.app/api/auth', {
+            const response = await fetch('https://electro-smetanew.vercel.app/api/auth.js', {  // Добавлено .js
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
