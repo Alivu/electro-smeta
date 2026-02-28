@@ -43,7 +43,7 @@ export default async function handler(req, res) {
             code,
             client_id: process.env.GOOGLE_CLIENT_ID,
             client_secret: process.env.GOOGLE_CLIENT_SECRET,
-            redirect_uri: 'https://electro-smetanew.vercel.app/oauth-callback.html',
+            redirect_uri: 'https://electro-smeta.vercel.app/oauth-callback.html',
             grant_type: 'authorization_code'
         });
 
