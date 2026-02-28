@@ -10392,11 +10392,23 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>	
-	<!-- Подвал сайта -->
-<div style="text-align: center; margin-top: 30px; padding: 10px; font-size: 12px; color: #666; border-top: 1px solid #eee;">
-    <a href="/privacy.html" style="color: #3498db; text-decoration: none; margin: 0 10px;">Политика конфиденциальности</a>
-    <a href="/terms.html" style="color: #3498db; text-decoration: none; margin: 0 10px;">Условия использования</a>
+<!-- Подвал сайта -->
+<div style="text-align: center; margin-top: 30px; padding: 10px; border-top: 1px solid #eee;">
+    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; color: #666; font-size: 12px;">
+        <a href="/privacy.html" style="color: #3498db; text-decoration: none;">Политика конфиденциальности</a>
+        <a href="/terms.html" style="color: #3498db; text-decoration: none;">Условия использования</a>
+    </div>
 </div>
+
+<style>
+    @media (max-width: 767px) {
+        div[style*="display: flex"] {
+            flex-direction: column;
+            gap: 10px !important;
+            align-items: center;
+        }
+    }
+</style>
 </body>
 	
 </html>
