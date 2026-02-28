@@ -1,5 +1,5 @@
 // Service Worker для ЭлектроСметы
-const APP_VERSION = '2.3.3'; // Увеличиваем версию
+const APP_VERSION = '2.3.4'; // Увеличиваем версию
 const urlsToCache = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 const VERSION_NOTIFICATION = {
   version: APP_VERSION,
   title: '📢 Что нового в версии ' + APP_VERSION,
-  message: '✨ Мелкие доработки'
+  message: '✨ Исправлено обновление страницы по кнопке'
 };
 
 // Установка
