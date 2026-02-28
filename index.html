@@ -7335,7 +7335,7 @@ function generatePKCE() {
 async function googleLogin() {
     const clientId = '1005885507362-vsplr1th18mhk2uj6prb2akump2c20tb.apps.googleusercontent.com';
     
-    const redirectUri = encodeURIComponent('https://electro-smeta.vercel.app/oauth-callback.html');
+    const redirectUri = encodeURIComponent('https://electro-smetanew.vercel.app/oauth-callback.html');
     
     const scope = encodeURIComponent([
         'https://www.googleapis.com/auth/userinfo.email',
@@ -7804,7 +7804,7 @@ async function requestDriveScope() {
     
     return new Promise(async (resolve) => {
         const clientId = GOOGLE_CLIENT_ID;
-        const redirectUri = encodeURIComponent('https://electro-smeta.vercel.app/oauth-callback.html');
+        const redirectUri = encodeURIComponent('https://electro-smetanew.vercel.app/oauth-callback.html');
         
         // Генерируем codeVerifier
         const codeVerifier = generateRandomString(128);
