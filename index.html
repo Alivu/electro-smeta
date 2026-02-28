@@ -2253,7 +2253,16 @@
     font-size: 9px !important;   /* Уменьшаем шрифт */
 }
 }
+/* ========== СТИЛИ ДЛЯ КНОПКИ ВХОДА ========== */
+#googleLoginBtn {
+    display: flex; /* Кнопка видна по умолчанию */
+}
 
+/* Классы для скрытия */
+#googleLoginBtn.forced-hidden,
+#googleLoginBtn.google-login-hidden {
+    display: none !important;
+}
 
 		/* ========== СТИЛИ ДЛЯ СПИСКА СМЕТ ========== */
 .estimate-item {
@@ -9605,22 +9614,6 @@ function updateGoogleUI(user) {
             loadLogoBtn.style.display = 'none';
         }
     }
-	// АТОМНАЯ БОМБА ДЛЯ КНОПКИ - принудительно скрываем каждые 100мс
-	if (user && user.email) {
-    	let attempts = 0;
-    	const killButton = setInterval(() => {
-        	const btn = document.getElementById('googleLoginBtn');
-        	if (btn) {
-            	btn.style.display = 'none';
-            	btn.classList.add('forced-hidden');
-            	console.log(`💀 Принудительное скрытие кнопки (попытка ${++attempts})`);
-        	}
-        	if (attempts >= 50) { // 5 секунд (50 * 100мс)
-            	clearInterval(killButton);
-            	console.log('🛑 Остановка принудительного скрытия');
-        	}
-  		}, 100);
-	}
 }
 // Форматирование номера телефона
 function formatPhoneNumber(phone) {
