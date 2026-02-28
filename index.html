@@ -8355,34 +8355,57 @@ function debugEstimateData() {
     const refreshBtn = document.getElementById('refreshEstimateBtn');
     if (!refreshBtn) return;
 
+    // При загрузке проверяем, есть ли ожидающее обновление
+    const pendingUpdate = localStorage.getItem('pending_update');
+    
+    if (pendingUpdate) {
+        // Восстанавливаем подсветку кнопки
+        refreshBtn.innerHTML = `
+            <i class="fas fa-bolt" style="color: #f39c12;"></i> 
+            Новая версия ${pendingUpdate}
+            <span style="margin-left:8px; background:#e74c3c; color:white; padding:2px 6px; border-radius:10px; font-size:0.7em; font-weight:bold;">NEW</span>
+        `;
+        refreshBtn.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
+        refreshBtn.style.color = 'white';
+        refreshBtn.style.fontWeight = 'bold';
+    }
+
     // Подсветка при новой версии от Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.addEventListener('message', event => {
             if (event.data.type === 'VERSION_UPDATE') {
+                const version = event.data.version;
+                
+                // Сохраняем в localStorage, что есть новая версия
+                localStorage.setItem('pending_update', version);
+                
+                // Подсвечиваем кнопку
                 refreshBtn.innerHTML = `
                     <i class="fas fa-bolt" style="color: #f39c12;"></i> 
-                    Новая версия ${event.data.version}
+                    Новая версия ${version}
                     <span style="margin-left:8px; background:#e74c3c; color:white; padding:2px 6px; border-radius:10px; font-size:0.7em; font-weight:bold;">NEW</span>
                 `;
                 refreshBtn.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
                 refreshBtn.style.color = 'white';
                 refreshBtn.style.fontWeight = 'bold';
-                refreshBtn.dataset.newVersion = 'true';
             }
         });
     }
 
-    // Функция перезагрузки
+    // Функция перезагрузки с очисткой
     window.refreshEstimate = function() {
-        if (refreshBtn.dataset.newVersion === 'true') {
-            // Если есть новая версия - очищаем кеш
+        const pendingVersion = localStorage.getItem('pending_update');
+        
+        if (pendingVersion) {
+            // Есть ожидающее обновление - чистим всё
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({ action: 'clearAllCaches' });
             }
-            localStorage.clear();
+            localStorage.clear();  // Очищаем всё, включая pending_update
             sessionStorage.clear();
         }
-        // В любом случае перезагружаем страницу
+        
+        // Перезагружаем страницу
         window.location.reload();
     };
 
