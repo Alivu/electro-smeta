@@ -7614,7 +7614,7 @@ async function getValidAccessToken() {
         try {
             console.log('🔄 Обновляем токен через сервер...');
             
-            const response = await fetch('https://electro-smetanew.vercel.app/api/refresh', {
+            const response = await fetch('https://electro-smetanew.vercel.app/api/refresh.js', { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ refresh_token: refreshToken })
