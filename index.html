@@ -10399,12 +10399,13 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 	<style>
-    @media (max-width: 480px) {
-        div[style*="text-align: center"] a {
-            display: block !important;
-            margin: 10px 0 !important;
-        }
+@media (max-width: 767px) {
+    .footer-links {
+        flex-direction: column;
+        gap: 10px !important;
+        align-items: center;
     }
+}
 </style>
 </body>
 	
