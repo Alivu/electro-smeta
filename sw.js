@@ -13,7 +13,7 @@ const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 const VERSION_NOTIFICATION = {
   version: APP_VERSION,
   title: '📢 Что нового в версии ' + APP_VERSION,
-  message: '✨ Мелкие дароботки'
+  message: '✨ Мелкие доработки'
 };
 
 // Установка
