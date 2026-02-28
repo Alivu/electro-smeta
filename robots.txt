@@ -1,0 +1,5 @@
+# robots.txt для ЭлектроСметы
+User-agent: *
+Allow: /
+
+Sitemap: https://electro-smeta.vercel.app/sitemap.xml
