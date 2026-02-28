@@ -4393,11 +4393,11 @@ function initializeEstimateData() {
                 const itemsContainer = document.createElement('div');
                 itemsContainer.className = 'section-content';
                 
-                // Раскрываем первую секцию по умолчанию
-                if (section.section.includes("① Монтажные работы")) {
-                    itemsContainer.classList.add('expanded');
-                    sectionHeader.querySelector('i').className = 'fas fa-chevron-up';
-                }
+// Раскрываем первую секцию по умолчанию (убрано)
+// if (section.section.includes("① Монтажные работы")) {
+//     itemsContainer.classList.add('expanded');
+//     sectionHeader.querySelector('i').className = 'fas fa-chevron-up';
+// }
                 
                 section.items.forEach(item => {
                     const itemElement = document.createElement('div');
