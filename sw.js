@@ -1,8 +1,9 @@
 // Service Worker для ЭлектроСметы
-const APP_VERSION = '2.2.7'; // Увеличиваем версию
+const APP_VERSION = '2.2.8'; // Увеличиваем версию
 const urlsToCache = [
   './',
   './index.html',
+  './edit.html',
   './manifest.json',
   './price-data.js'  // ← ДОБАВЛЕНО!
 ];
