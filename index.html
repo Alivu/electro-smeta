@@ -2524,16 +2524,16 @@
             <i class="fas fa-chevron-down" style="margin-left: 8px;"></i>
         </button>
         <div class="dropdown-menu" id="controlsMenu">
-            <!-- БЛОК ПОЛЬЗОВАТЕЛЯ (виден когда вошел) -->
-            <div id="googleUserBlock" style="display: none; padding: 10px 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; margin-bottom: 5px; border-radius: 5px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-user-circle" style="font-size: 18px;"></i>
-                    <span id="googleUserEmail" style="font-weight: 500; flex: 1;"></span>
-                    <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; font-size: 16px;" title="Выйти">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </div>
-            </div>
+ <!-- БЛОК ПОЛЬЗОВАТЕЛЯ (компактный) -->
+<div id="googleUserBlock" style="display: none; padding: 6px 10px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; margin-bottom: 5px; border-radius: 4px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+        <i class="fas fa-user-circle" style="font-size: 16px;"></i>
+        <span id="googleUserEmail" style="font-weight: 500; font-size: 13px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"></span>
+        <button id="googleLogoutBtn" style="background: none; border: none; color: white; cursor: pointer; font-size: 14px; padding: 2px;" title="Выйти">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+    </div>
+</div>
             
             <!-- Кнопка входа Google (видна когда не вошел) -->
             <button class="dropdown-item" id="googleLoginBtn" style="display: flex;">
