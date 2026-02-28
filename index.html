@@ -7402,20 +7402,22 @@ if (tokens.refresh_token) {
 localStorage.setItem('google_access_token', tokens.access_token);
 localStorage.setItem('google_token_expiry', Date.now() + tokens.expires_in * 1000);
             
-            // Получаем информацию о пользователе
-            const userInfo = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-                headers: { 'Authorization': `Bearer ${tokens.access_token}` }
-            });
-            const userData = await userInfo.json();
-            
-            // Сохраняем пользователя
-            localStorage.setItem('google_user', JSON.stringify({
-                email: userData.email,
-                name: userData.name || userData.email.split('@')[0]
-            }));
-            
-            updateGoogleUI(userData);
-            showNotification(`✅ Вход выполнен: ${userData.email}`);
+// Получаем информацию о пользователе
+const userInfo = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+    headers: { 'Authorization': `Bearer ${tokens.access_token}` }
+});
+const userData = await userInfo.json();
+
+// ✅ СОХРАНЯЕМ ВЕСЬ ОБЪЕКТ ПОЛЬЗОВАТЕЛЯ!
+localStorage.setItem('google_user', JSON.stringify(userData));
+console.log('💾 Сохранён пользователь:', {
+    email: userData.email,
+    name: userData.name,
+    picture: userData.picture  // ← ТЕПЕРЬ БУДЕТ СОХРАНЯТЬСЯ!
+});
+
+updateGoogleUI(userData);
+showNotification(`✅ Вход выполнен: ${userData.email}`);
             
         } catch (error) {
             console.error('❌ Ошибка:', error);
