@@ -1,5 +1,5 @@
 // Service Worker для ЭлектроСметы
-const APP_VERSION = '2.2.5';
+const APP_VERSION = '2.2.6';
 const urlsToCache = [
   './',
   './index.html',
@@ -11,7 +11,7 @@ const CACHE_NAME = `electro-smeta-${APP_VERSION}`;
 const VERSION_NOTIFICATION = {
   version: APP_VERSION,
   title: '📢 Что нового в версии ' + APP_VERSION,
-  message: '✨ Добавлено 110 Розетка выдвижная (Pop-Up) для мебели шт. 2500, Обновлен 109п, 166п, 167.'
+  message: '✨ Профиксен вход в гоогле диск.'
 };
 
 // Установка
